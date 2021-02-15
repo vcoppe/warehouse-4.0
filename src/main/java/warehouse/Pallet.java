@@ -4,8 +4,8 @@ public class Pallet {
 
     private int type;
 
-    public Pallet(int t) {
-        type = t;
+    public Pallet(int type) {
+        this.type = type;
     }
 
 }

@@ -1,27 +1,75 @@
 package agent;
 
-import abstraction.Agent;
+import simulation.Agent;
+import simulation.Simulation;
 import warehouse.Pallet;
+import warehouse.Position;
 
 import java.util.ArrayList;
 
-public class Truck implements Agent {
+public class Truck extends Agent {
 
+    private static int TRUCK_ID = 0;
+    private final int id;
+    private Dock dock;
+    private Position position;
     private ArrayList<Pallet> toLoad;
     private ArrayList<Pallet> toUnload;
-    private boolean atDock = false;
+    private int countDone;
 
-    public Truck(ArrayList<Pallet> tl, ArrayList<Pallet> tu) {
-        toLoad = tl;
-        toUnload = tu;
+    public Truck(Simulation simulation, Dock dock, Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
+        super(simulation);
+        this.id = TRUCK_ID++;
+        this.dock = dock;
+        this.position = position;
+        this.toLoad = toLoad;
+        this.toUnload = toUnload;
+        this.countDone = 0;
     }
 
-    public void act() {
-        // go to dock
-        // or leave dock
+    public Truck(Simulation simulation, Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
+        this(simulation, null, position, toLoad, toUnload);
     }
 
-    public boolean isAvailable() {
-        return !atDock;
+    public int getId() {
+        return this.id;
     }
+
+    public ArrayList<Pallet> getToLoad() {
+        return this.toLoad;
+    }
+
+    public ArrayList<Pallet> getToUnload() {
+        return this.toUnload;
+    }
+
+    public void setDock(Dock dock) {
+        this.dock = dock;
+    }
+
+    public Dock getDock() {
+        return this.dock;
+    }
+
+    public void setPosition(Position position) {
+        this.position = position;
+    }
+
+    public Position getPosition() {
+        return this.position;
+    }
+
+    public void remove(Pallet pallet) {
+        this.countDone++;
+    }
+
+    public void add(Pallet pallet) {
+        this.countDone++;
+    }
+
+    public boolean done() {
+        return this.countDone == (this.toUnload.size() + this.toLoad.size());
+    }
+
+
 }
