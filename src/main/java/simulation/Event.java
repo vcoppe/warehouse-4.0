@@ -21,7 +21,7 @@ public abstract class Event implements Comparable<Event> {
             // enqueue ControllerEvents after all other events at the same time + enqueue only one
             if (this instanceof ControllerEvent && other instanceof ControllerEvent) return 0;
             if (this instanceof ControllerEvent) return 1;
-            if (other instanceof ControllerEvent) return 0;
+            if (other instanceof ControllerEvent) return -1;
             return Integer.compare(this.id, other.id);
         }
         return Double.compare(this.time, other.time);

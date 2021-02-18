@@ -9,15 +9,13 @@ public class MobileMissionEndEvent extends Event {
 
     private final Controller controller;
     private final Stock stock;
-    private final Dock dock;
     private final Mobile mobile;
     private final Mission mission;
 
-    public MobileMissionEndEvent(Simulation simulation, double time, Controller controller, Dock dock, Mobile mobile, Mission mission) {
+    public MobileMissionEndEvent(Simulation simulation, double time, Controller controller, Mobile mobile, Mission mission) {
         super(simulation, time);
         this.controller = controller;
         this.stock = controller.getStock();
-        this.dock = dock;
         this.mobile = mobile;
         this.mission = mission;
     }
@@ -38,7 +36,7 @@ public class MobileMissionEndEvent extends Event {
             Truck truck = this.mission.getEndTruck();
             truck.add(this.mission.getPallet());
             if (truck.done()) {
-                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.dock);
+                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.mission.getEndTruck().getDock());
                 this.simulation.enqueueEvent(event);
             }
         } else {

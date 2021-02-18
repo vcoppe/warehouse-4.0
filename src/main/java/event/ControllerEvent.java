@@ -38,8 +38,7 @@ public class ControllerEvent extends Event {
             Mobile mobile = pair.first;
             Mission mission = pair.second;
 
-            Dock dock = mission.getStartTruck() == null ? (mission.getEndTruck() == null ? null : mission.getEndTruck().getDock()) : mission.getStartTruck().getDock();
-            Event event = new MobileMissionStartEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, dock, mobile, mission);
+            Event event = new MobileMissionStartEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, mobile, mission);
             this.simulation.enqueueEvent(event);
 
             this.controller.remove(mobile);

@@ -15,7 +15,7 @@ public class Simulation {
         this.logger.setLevel(level);
         this.logger.getHandlers()[0].setLevel(level);
 
-        this.eventQueue = new TreeSet<Event>();
+        this.eventQueue = new TreeSet<>();
         this.currentTime = 0;
     }
 
@@ -41,5 +41,13 @@ public class Simulation {
 
     public double getCurrentTime() {
         return this.currentTime;
+    }
+
+    public int queueSize() {
+        return this.eventQueue.size();
+    }
+
+    public Event nextEvent() {
+        return this.eventQueue.first();
     }
 }

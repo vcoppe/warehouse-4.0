@@ -24,7 +24,7 @@ public class Main {
             pallets.add(new Pallet(i));
             configuration.stock.add(new Position(3, i), new Pallet(i));
         }
-        Truck truck = new Truck(configuration.simulation, new Position(0, -20, 0), pallets, new ArrayList<Pallet>());
+        Truck truck = new Truck(configuration.simulation, new Position(0, -20), pallets, new ArrayList<>());
         Event event1 = new TruckArriveEvent(configuration.simulation, 1, configuration.controller, truck);
         configuration.simulation.enqueueEvent(event1);
 
