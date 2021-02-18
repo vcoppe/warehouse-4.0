@@ -67,6 +67,10 @@ public class ProductionLine extends Agent {
         this.productions.remove(production);
     }
 
+    public ArrayList<Production> getProductions() {
+        return new ArrayList<>(this.productions);
+    }
+
     public Production getStartableProduction() {
         for (Production production : this.productions) {
             boolean startable = true;
@@ -102,6 +106,14 @@ public class ProductionLine extends Agent {
 
     public void reserveCapacity(double capacity) {
         this.currentCapacity -= capacity;
+    }
+
+    public int getCapacity() {
+        return this.capacity;
+    }
+
+    public int getCurrentCapacity() {
+        return this.currentCapacity;
     }
 
 }

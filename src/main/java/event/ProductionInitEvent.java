@@ -39,7 +39,7 @@ public class ProductionInitEvent extends Event {
             Pallet pallet = pair.first;
             int quantity = pair.second;
 
-            ArrayList<Position> positions = this.stock.getEndPositions(pallet);
+            ArrayList<Position> positions = this.stock.getStartPositions(pallet);
 
             if (quantity > positions.size()) {
                 this.simulation.logger.warning("FAILURE! Missing pallets to launch production.");
