@@ -6,6 +6,7 @@ import brain.TruckDockSelector;
 import simulation.Agent;
 import simulation.Simulation;
 import warehouse.Mission;
+import warehouse.Warehouse;
 
 import java.util.ArrayList;
 
@@ -14,39 +15,49 @@ public class Controller extends Agent {
     public final MobileMissionSelector mobileMissionSelector;
     public final TruckDockSelector truckDockSelector;
     public final PalletPositionSelector palletPositionSelector;
+    private final Warehouse warehouse;
     private final Stock stock;
-    private final Production production;
+    private final ProductionLine productionLine;
     private final ArrayList<Dock> docks;
     private final ArrayList<Truck> trucks;
     private final ArrayList<Mobile> mobiles;
     private final ArrayList<Mission> missions;
 
-    public Controller(Simulation simulation, Stock stock, Production production, ArrayList<Dock> docks, ArrayList<Mobile> mobiles, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
+    public Controller(Simulation simulation, Warehouse warehouse, Stock stock, ProductionLine productionLine, ArrayList<Dock> docks, ArrayList<Mobile> mobiles, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
         super(simulation);
         this.mobileMissionSelector = mobileMissionSelector;
         this.truckDockSelector = truckDockSelector;
         this.palletPositionSelector = palletPositionSelector;
-        this.production = production;
+        this.warehouse = warehouse;
         this.stock = stock;
+        this.productionLine = productionLine;
         this.docks = docks;
         this.mobiles = mobiles;
-        this.trucks = new ArrayList<Truck>();
-        this.missions = new ArrayList<Mission>();
+        this.trucks = new ArrayList<>();
+        this.missions = new ArrayList<>();
+    }
+
+    public Warehouse getWarehouse() {
+        return this.warehouse;
     }
 
     public Stock getStock() {
-        return stock;
+        return this.stock;
+    }
+
+    public ProductionLine getProductionLine() {
+        return this.productionLine;
     }
 
     public ArrayList<Dock> getDocks() {
         return this.docks;
     }
 
-    public void addDock(Dock dock) {
+    public void add(Dock dock) {
         this.docks.add(dock);
     }
 
-    public void removeDock(Dock dock) {
+    public void remove(Dock dock) {
         this.docks.remove(dock);
     }
 
@@ -54,11 +65,11 @@ public class Controller extends Agent {
         return this.trucks;
     }
 
-    public void addTruck(Truck truck) {
+    public void add(Truck truck) {
         this.trucks.add(truck);
     }
 
-    public void removeTruck(Truck truck) {
+    public void remove(Truck truck) {
         this.trucks.remove(truck);
     }
 
@@ -66,11 +77,11 @@ public class Controller extends Agent {
         return this.mobiles;
     }
 
-    public void addMobile(Mobile mobile) {
+    public void add(Mobile mobile) {
         this.mobiles.add(mobile);
     }
 
-    public void removeMobile(Mobile mobile) {
+    public void remove(Mobile mobile) {
         this.mobiles.remove(mobile);
     }
 
@@ -78,11 +89,11 @@ public class Controller extends Agent {
         return this.missions;
     }
 
-    public void addMission(Mission mission) {
+    public void add(Mission mission) {
         this.missions.add(mission);
     }
 
-    public void removeMission(Mission mission) {
+    public void remove(Mission mission) {
         this.missions.remove(mission);
     }
 

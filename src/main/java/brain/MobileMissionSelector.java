@@ -1,13 +1,13 @@
 package brain;
 
 import agent.Mobile;
-import util.MobileMission;
+import util.Pair;
 import warehouse.Mission;
 
 import java.util.ArrayList;
 
 public interface MobileMissionSelector {
 
-    ArrayList<MobileMission> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions);
+    ArrayList<Pair<Mobile,Mission>> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions);
 
 }

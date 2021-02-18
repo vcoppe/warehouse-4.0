@@ -59,11 +59,11 @@ public class Truck extends Agent {
         return this.position;
     }
 
-    public void remove(Pallet pallet) {
+    public void add(Pallet pallet) {
         this.countDone++;
     }
 
-    public void add(Pallet pallet) {
+    public void remove(Pallet pallet) {
         this.countDone++;
     }
 

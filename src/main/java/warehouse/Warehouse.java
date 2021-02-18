@@ -11,6 +11,18 @@ public class Warehouse {
         this.Z = 2;
     }
 
+    public int getWidth() {
+        return this.X;
+    }
+
+    public int getDepth() {
+        return this.Y;
+    }
+
+    public int getHeight() {
+        return this.Z;
+    }
+
     // TODO use the topology of the site, apply speed wrt type of mobile and zone (and time of the day)
     public int getDistance(Position p1, Position p2) {
         return p1.manhattanDistance2D(p2);

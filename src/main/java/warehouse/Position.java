@@ -1,15 +1,29 @@
 package warehouse;
 
-import java.util.Objects;
-
 public class Position {
 
-    private int x, y, z;
+    private final int x, y, z;
 
     public Position(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    public Position(int x, int y) {
+        this(x, y, 0);
+    }
+
+    public int getX() {
+        return this.x;
+    }
+
+    public int getY() {
+        return this.y;
+    }
+
+    public int getZ() {
+        return this.z;
     }
 
     public int manhattanDistance2D(Position other) {

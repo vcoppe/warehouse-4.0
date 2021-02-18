@@ -10,14 +10,16 @@ public class MobileMissionStartEvent extends Event {
 
     private final Controller controller;
     private final Warehouse warehouse;
+    private final Stock stock;
     private final Dock dock;
     private final Mobile mobile;
     private final Mission mission;
 
-    public MobileMissionStartEvent(Simulation simulation, double time, Controller controller, Warehouse warehouse, Dock dock, Mobile mobile, Mission mission) {
+    public MobileMissionStartEvent(Simulation simulation, double time, Controller controller, Dock dock, Mobile mobile, Mission mission) {
         super(simulation, time);
         this.controller = controller;
-        this.warehouse = warehouse;
+        this.warehouse = controller.getWarehouse();
+        this.stock = controller.getStock();
         this.dock = dock;
         this.mobile = mobile;
         this.mission = mission;
@@ -26,29 +28,28 @@ public class MobileMissionStartEvent extends Event {
     @Override
     public void run() {
         this.simulation.logger.info(
-                String.format("Simulation time %f : MobileMissionStartEvent\n\tmobile %d started mission %d",
+                String.format("Simulation time %f: MobileMissionStartEvent\n\tmobile %d started mission %d",
                         this.simulation.getCurrentTime(),
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        // tell truck or stock that pallet has left the position
+        // tell truck, stock or production line that pallet has left the position
         if (this.mission.getStartTruck() != null) {
             Truck truck = this.mission.getStartTruck();
             truck.remove(this.mission.getPallet());
             if (truck.done()) {
-                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.warehouse, this.dock);
+                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.dock);
                 this.simulation.enqueueEvent(event);
             }
         } else {
-            Stock stock = this.mission.getStock();
-            stock.remove(this.mission.getPallet(), this.mission.getStartPosition());
+            this.stock.remove(this.mission.getStartPosition(), this.mission.getPallet());
         }
 
         double missionEndTime = this.simulation.getCurrentTime();
         missionEndTime += this.warehouse.getDistance(this.mobile.getPosition(), this.mission.getStartPosition());
         missionEndTime += this.warehouse.getDistance(this.mission.getStartPosition(), this.mission.getEndPosition());
 
-        Event event = new MobileMissionEndEvent(this.simulation, missionEndTime, this.controller, this.warehouse, this.dock, this.mobile, this.mission);
+        Event event = new MobileMissionEndEvent(this.simulation, missionEndTime, this.controller, this.dock, this.mobile, this.mission);
         this.simulation.enqueueEvent(event);
     }
 

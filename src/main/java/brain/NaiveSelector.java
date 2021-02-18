@@ -3,8 +3,7 @@ package brain;
 import agent.Dock;
 import agent.Mobile;
 import agent.Truck;
-import util.MobileMission;
-import util.TruckDock;
+import util.Pair;
 import warehouse.Mission;
 import warehouse.Pallet;
 import warehouse.Position;
@@ -14,10 +13,10 @@ import java.util.ArrayList;
 public class NaiveSelector implements MobileMissionSelector, PalletPositionSelector, TruckDockSelector {
 
     @Override
-    public ArrayList<MobileMission> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions) {
-        ArrayList<MobileMission> pairs = new ArrayList<MobileMission>();
+    public ArrayList<Pair<Mobile,Mission>> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions) {
+        ArrayList<Pair<Mobile,Mission>> pairs = new ArrayList<>();
         for (int i=0; i<Math.min(mobiles.size(), missions.size()); i++) {
-            pairs.add(new MobileMission(mobiles.get(i), missions.get(i)));
+            pairs.add(new Pair<>(mobiles.get(i), missions.get(i)));
         }
         return pairs;
     }
@@ -33,10 +32,10 @@ public class NaiveSelector implements MobileMissionSelector, PalletPositionSelec
     }
 
     @Override
-    public ArrayList<TruckDock> matchTruckDock(ArrayList<Truck> trucks, ArrayList<Dock> docks) {
-        ArrayList<TruckDock> pairs = new ArrayList<TruckDock>();
+    public ArrayList<Pair<Truck,Dock>> matchTruckDock(ArrayList<Truck> trucks, ArrayList<Dock> docks) {
+        ArrayList<Pair<Truck,Dock>> pairs = new ArrayList<>();
         for (int i=0; i<Math.min(trucks.size(), docks.size()); i++) {
-            pairs.add(new TruckDock(trucks.get(i), docks.get(i)));
+            pairs.add(new Pair<>(trucks.get(i), docks.get(i)));
         }
         return pairs;
     }
