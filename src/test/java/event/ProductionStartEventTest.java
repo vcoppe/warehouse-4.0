@@ -75,18 +75,6 @@ public class ProductionStartEventTest extends TestCase {
         }
     }
 
-    public void testRemoveProduction() {
-        assertEquals(1, this.productionLine.getProductions().size());
-        this.event.run();
-        assertEquals(0, this.productionLine.getProductions().size());
-    }
-
-    public void testReserveCapacity() {
-        assertEquals(this.productionLine.getCapacity(), this.productionLine.getCurrentCapacity());
-        this.event.run();
-        assertEquals(this.productionLine.getCapacity()-this.production.getCapacity(), this.productionLine.getCurrentCapacity());
-    }
-
     public void testTriggerProductionEndEvent() {
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
