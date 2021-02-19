@@ -43,7 +43,12 @@ public class Production implements Comparable<Production> {
 
     @Override
     public int compareTo(Production other) {
-        return Double.compare(this.dueTime, other.dueTime);
+        double latestStartTime = this.dueTime - this.time;
+        double otherLatestStartTime = other.dueTime - other.time;
+        if (latestStartTime == otherLatestStartTime) {
+            return Integer.compare(this.id, other.id);
+        }
+        return Double.compare(latestStartTime, otherLatestStartTime);
     }
 
 }

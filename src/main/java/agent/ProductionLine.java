@@ -6,23 +6,21 @@ import util.Pair;
 import warehouse.Pallet;
 import warehouse.Position;
 import warehouse.Production;
-import warehouse.Warehouse;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.TreeSet;
 
 public class ProductionLine extends Agent {
 
-    private final Warehouse warehouse;
     private final Stock stock;
     private final int capacity;
     private final ArrayList<Position> startBuffer, endBuffer;
     private final TreeSet<Production> productions;
     private int currentCapacity;
 
-    public ProductionLine(Simulation simulation, Warehouse warehouse, Stock stock, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
+    public ProductionLine(Simulation simulation, Stock stock, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
         super(simulation);
-        this.warehouse = warehouse;
         this.stock = stock;
         this.capacity = capacity;
         this.startBuffer = startBuffer;
@@ -71,9 +69,13 @@ public class ProductionLine extends Agent {
         return new ArrayList<>(this.productions);
     }
 
-    public Production getStartableProduction() {
+    public ArrayList<Production> getStartableProductions() {
+        ArrayList<Production> startableProductions = new ArrayList<>();
+        HashSet<Integer> usedPallets = new HashSet<>();
+        int cumulCapacity = 0;
         for (Production production : this.productions) {
             boolean startable = true;
+            ArrayList<Integer> productionPallets = new ArrayList<>();
 
             for (Pair<Pallet,Integer> pair : production.getIn()) {
                 Pallet pallet = pair.first;
@@ -81,8 +83,13 @@ public class ProductionLine extends Agent {
 
                 int count = 0;
                 for (Position position : this.startBuffer) {
-                    if (this.stock.get(position) != null && this.stock.get(position).getType() == pallet.getType()) {
+                    Pallet bufferPallet = this.stock.get(position);
+                    if (bufferPallet != null
+                            && bufferPallet.getType() == pallet.getType()
+                            && !usedPallets.contains(bufferPallet.getId())
+                            && count < quantity) {
                         count++;
+                        productionPallets.add(bufferPallet.getId());
                     }
                 }
 
@@ -92,12 +99,14 @@ public class ProductionLine extends Agent {
                 }
             }
 
-            if (startable && production.getCapacity() <= this.currentCapacity) {
-                return production;
+            if (startable && production.getCapacity() + cumulCapacity <= this.currentCapacity) {
+                cumulCapacity += production.getCapacity();
+                startableProductions.add(production);
+                usedPallets.addAll(productionPallets);
             }
         }
 
-        return null;
+        return startableProductions;
     }
 
     public void freeCapacity(double capacity) {

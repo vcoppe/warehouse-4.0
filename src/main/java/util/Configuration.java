@@ -41,7 +41,7 @@ public class Configuration {
             this.stock.add(new Position(100-i, 50), Pallet.FREE);
         }
 
-        this.productionLine = new ProductionLine(this.simulation, this.warehouse, this.stock, 1, startBuffer, endBuffer);
+        this.productionLine = new ProductionLine(this.simulation, this.stock, 10, startBuffer, endBuffer);
         this.docks = new ArrayList<>();
         this.mobiles = new ArrayList<>();
 

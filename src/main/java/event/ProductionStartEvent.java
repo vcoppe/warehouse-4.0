@@ -48,9 +48,6 @@ public class ProductionStartEvent extends Event {
             }
         }
 
-        this.productionLine.remove(production);
-        this.productionLine.reserveCapacity(production.getCapacity());
-
         double endTime = this.simulation.getCurrentTime() + this.production.getTime();
         Event event = new ProductionEndEvent(this.simulation, endTime, this.controller, this.production);
         this.simulation.enqueueEvent(event);
