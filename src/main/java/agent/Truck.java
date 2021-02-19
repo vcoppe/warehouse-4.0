@@ -1,11 +1,12 @@
 package agent;
 
+import observer.Observable;
 import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.ArrayList;
 
-public class Truck {
+public class Truck extends Observable {
 
     private static int TRUCK_ID = 0;
     private final int id;
@@ -16,6 +17,7 @@ public class Truck {
     private int countDone;
 
     public Truck(Dock dock, Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
+        super();
         this.id = TRUCK_ID++;
         this.dock = dock;
         this.position = position;
@@ -42,6 +44,7 @@ public class Truck {
 
     public void setDock(Dock dock) {
         this.dock = dock;
+        this.changed();
     }
 
     public Dock getDock() {
@@ -50,6 +53,7 @@ public class Truck {
 
     public void setPosition(Position position) {
         this.position = position;
+        this.changed();
     }
 
     public Position getPosition() {
@@ -58,10 +62,12 @@ public class Truck {
 
     public void add(Pallet pallet) {
         this.countDone++;
+        this.changed();
     }
 
     public void remove(Pallet pallet) {
         this.countDone++;
+        this.changed();
     }
 
     public boolean done() {

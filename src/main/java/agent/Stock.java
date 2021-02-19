@@ -1,5 +1,6 @@
 package agent;
 
+import observer.Observable;
 import warehouse.Pallet;
 import warehouse.Position;
 import warehouse.Warehouse;
@@ -9,12 +10,13 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 // need to add all possible positions with Pallet.FREE at the start
-public class Stock {
+public class Stock extends Observable {
 
     private final Warehouse warehouse;
     private final HashMap<Integer, Pallet> pallets;
 
     public Stock(Warehouse warehouse) {
+        super();
         this.warehouse = warehouse;
         this.pallets = new HashMap<>();
     }
@@ -34,10 +36,12 @@ public class Stock {
 
     public void add(Position position, Pallet pallet) {
         this.pallets.put(this.toInt(position), pallet);
+        this.changed();
     }
 
     public void remove(Position position, Pallet pallet) {
         this.pallets.put(this.toInt(position), Pallet.FREE);
+        this.changed();
     }
 
     public Pallet get(Position position) {

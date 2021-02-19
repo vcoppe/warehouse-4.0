@@ -1,5 +1,6 @@
 package agent;
 
+import observer.Observable;
 import util.Pair;
 import warehouse.Pallet;
 import warehouse.Position;
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeSet;
 
-public class ProductionLine {
+public class ProductionLine extends Observable {
 
     private final Stock stock;
     private final int capacity;
@@ -18,6 +19,7 @@ public class ProductionLine {
     private int currentCapacity;
 
     public ProductionLine(Stock stock, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
+        super();
         this.stock = stock;
         this.capacity = capacity;
         this.startBuffer = startBuffer;
@@ -56,10 +58,12 @@ public class ProductionLine {
 
     public void add(Production production) {
         this.productions.add(production);
+        this.changed();
     }
 
     public void remove(Production production) {
         this.productions.remove(production);
+        this.changed();
     }
 
     public ArrayList<Production> getProductions() {
@@ -108,10 +112,12 @@ public class ProductionLine {
 
     public void freeCapacity(double capacity) {
         this.currentCapacity += capacity;
+        this.changed();
     }
 
     public void reserveCapacity(double capacity) {
         this.currentCapacity -= capacity;
+        this.changed();
     }
 
     public int getCapacity() {

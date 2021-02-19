@@ -1,14 +1,16 @@
 package agent;
 
+import observer.Observable;
 import warehouse.Position;
 
-public class Mobile {
+public class Mobile extends Observable {
 
     private static int MOBILE_ID = 0;
     private final int id;
     private Position position;
 
     public Mobile(Position position) {
+        super();
         this.id = MOBILE_ID++;
         this.position = position;
     }
@@ -19,6 +21,7 @@ public class Mobile {
 
     public void setPosition(Position position) {
         this.position = position;
+        this.changed();
     }
 
     public Position getPosition() {

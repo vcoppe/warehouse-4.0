@@ -3,12 +3,13 @@ package agent;
 import brain.MobileMissionSelector;
 import brain.PalletPositionSelector;
 import brain.TruckDockSelector;
+import observer.Observable;
 import warehouse.Mission;
 import warehouse.Warehouse;
 
 import java.util.ArrayList;
 
-public class Controller {
+public class Controller extends Observable {
 
     public final MobileMissionSelector mobileMissionSelector;
     public final TruckDockSelector truckDockSelector;
@@ -22,6 +23,7 @@ public class Controller {
     private final ArrayList<Mission> missions;
 
     public Controller(Warehouse warehouse, Stock stock, ProductionLine productionLine, ArrayList<Dock> docks, ArrayList<Mobile> mobiles, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
+        super();
         this.mobileMissionSelector = mobileMissionSelector;
         this.truckDockSelector = truckDockSelector;
         this.palletPositionSelector = palletPositionSelector;
@@ -52,10 +54,12 @@ public class Controller {
 
     public void add(Dock dock) {
         this.docks.add(dock);
+        this.changed();
     }
 
     public void remove(Dock dock) {
         this.docks.remove(dock);
+        this.changed();
     }
 
     public ArrayList<Truck> getTrucks() {
@@ -64,10 +68,12 @@ public class Controller {
 
     public void add(Truck truck) {
         this.trucks.add(truck);
+        this.changed();
     }
 
     public void remove(Truck truck) {
         this.trucks.remove(truck);
+        this.changed();
     }
 
     public ArrayList<Mobile> getMobiles() {
@@ -76,10 +82,12 @@ public class Controller {
 
     public void add(Mobile mobile) {
         this.mobiles.add(mobile);
+        this.changed();
     }
 
     public void remove(Mobile mobile) {
         this.mobiles.remove(mobile);
+        this.changed();
     }
 
     public ArrayList<Mission> getMissions() {
@@ -88,10 +96,12 @@ public class Controller {
 
     public void add(Mission mission) {
         this.missions.add(mission);
+        this.changed();
     }
 
     public void remove(Mission mission) {
         this.missions.remove(mission);
+        this.changed();
     }
 
 }
