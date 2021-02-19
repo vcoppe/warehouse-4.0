@@ -1,17 +1,14 @@
 package agent;
 
-import simulation.Agent;
-import simulation.Simulation;
 import warehouse.Position;
 
-public class Dock extends Agent {
+public class Dock {
 
     private static int DOCK_ID = 0;
     private final int id;
     private final Position position;
 
-    public Dock(Simulation simulation, Position position) {
-        super(simulation);
+    public Dock(Position position) {
         this.id = DOCK_ID++;
         this.position = position;
     }

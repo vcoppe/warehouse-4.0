@@ -1,17 +1,14 @@
 package agent;
 
-import simulation.Agent;
-import simulation.Simulation;
 import warehouse.Position;
 
-public class Mobile extends Agent {
+public class Mobile {
 
     private static int MOBILE_ID = 0;
     private final int id;
     private Position position;
 
-    public Mobile(Simulation simulation, Position position) {
-        super(simulation);
+    public Mobile(Position position) {
         this.id = MOBILE_ID++;
         this.position = position;
     }

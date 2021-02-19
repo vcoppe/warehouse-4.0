@@ -35,7 +35,7 @@ public class TruckDockEventTest extends TestCase {
             toUnload.add(new Pallet(5+i));
         }
 
-        this.truck = new Truck(this.configuration.simulation, new Position(0, -10), toLoad, toUnload);
+        this.truck = new Truck(new Position(0, -10), toLoad, toUnload);
         this.event = new TruckDockEvent(this.configuration.simulation, 1, this.configuration.controller, this.dock, this.truck);
     }
 

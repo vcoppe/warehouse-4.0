@@ -40,8 +40,8 @@ public class MobileMissionEndEventTest extends TestCase {
             this.unloadPalletPositions.add(new Position(7, i));
         }
 
-        this.truckLoad = new Truck(this.configuration.simulation, new Position(0, 0), toLoad, new ArrayList<>());
-        this.truckUnload = new Truck(this.configuration.simulation, new Position(10, 0), new ArrayList<>(), toUnload);
+        this.truckLoad = new Truck(new Position(0, 0), toLoad, new ArrayList<>());
+        this.truckUnload = new Truck(new Position(10, 0), new ArrayList<>(), toUnload);
 
 
     }

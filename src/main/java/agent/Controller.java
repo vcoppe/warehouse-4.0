@@ -3,14 +3,12 @@ package agent;
 import brain.MobileMissionSelector;
 import brain.PalletPositionSelector;
 import brain.TruckDockSelector;
-import simulation.Agent;
-import simulation.Simulation;
 import warehouse.Mission;
 import warehouse.Warehouse;
 
 import java.util.ArrayList;
 
-public class Controller extends Agent {
+public class Controller {
 
     public final MobileMissionSelector mobileMissionSelector;
     public final TruckDockSelector truckDockSelector;
@@ -23,8 +21,7 @@ public class Controller extends Agent {
     private final ArrayList<Mobile> mobiles;
     private final ArrayList<Mission> missions;
 
-    public Controller(Simulation simulation, Warehouse warehouse, Stock stock, ProductionLine productionLine, ArrayList<Dock> docks, ArrayList<Mobile> mobiles, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
-        super(simulation);
+    public Controller(Warehouse warehouse, Stock stock, ProductionLine productionLine, ArrayList<Dock> docks, ArrayList<Mobile> mobiles, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
         this.mobileMissionSelector = mobileMissionSelector;
         this.truckDockSelector = truckDockSelector;
         this.palletPositionSelector = palletPositionSelector;

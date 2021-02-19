@@ -1,7 +1,5 @@
 package agent;
 
-import simulation.Agent;
-import simulation.Simulation;
 import warehouse.Pallet;
 import warehouse.Position;
 import warehouse.Warehouse;
@@ -11,13 +9,12 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 // need to add all possible positions with Pallet.FREE at the start
-public class Stock extends Agent {
+public class Stock {
 
     private final Warehouse warehouse;
     private final HashMap<Integer, Pallet> pallets;
 
-    public Stock(Simulation simulation, Warehouse warehouse) {
-        super(simulation);
+    public Stock(Warehouse warehouse) {
         this.warehouse = warehouse;
         this.pallets = new HashMap<>();
     }

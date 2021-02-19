@@ -1,13 +1,11 @@
 package agent;
 
-import simulation.Agent;
-import simulation.Simulation;
 import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.ArrayList;
 
-public class Truck extends Agent {
+public class Truck {
 
     private static int TRUCK_ID = 0;
     private final int id;
@@ -17,8 +15,7 @@ public class Truck extends Agent {
     private ArrayList<Pallet> toUnload;
     private int countDone;
 
-    public Truck(Simulation simulation, Dock dock, Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
-        super(simulation);
+    public Truck(Dock dock, Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
         this.id = TRUCK_ID++;
         this.dock = dock;
         this.position = position;
@@ -27,8 +24,8 @@ public class Truck extends Agent {
         this.countDone = 0;
     }
 
-    public Truck(Simulation simulation, Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
-        this(simulation, null, position, toLoad, toUnload);
+    public Truck(Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
+        this(null, position, toLoad, toUnload);
     }
 
     public int getId() {

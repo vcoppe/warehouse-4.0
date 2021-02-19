@@ -42,7 +42,7 @@ public class ControllerEventTest extends TestCase {
         this.productions = new ArrayList<>();
         for (int i=0; i<5; i++) {
             this.missions.add(new Mission(new Pallet(0), new Position(0, 0), new Position(0, 0)));
-            this.trucks.add(new Truck(this.configuration.simulation, new Position(0, 0), new ArrayList<>(), new ArrayList<>()));
+            this.trucks.add(new Truck(new Position(0, 0), new ArrayList<>(), new ArrayList<>()));
 
             ArrayList<Pair<Pallet,Integer>> in = new ArrayList<>();
             in.add(new Pair<>(new Pallet(0), 1));

@@ -1,7 +1,5 @@
 package agent;
 
-import simulation.Agent;
-import simulation.Simulation;
 import util.Pair;
 import warehouse.Pallet;
 import warehouse.Position;
@@ -11,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeSet;
 
-public class ProductionLine extends Agent {
+public class ProductionLine {
 
     private final Stock stock;
     private final int capacity;
@@ -19,8 +17,7 @@ public class ProductionLine extends Agent {
     private final TreeSet<Production> productions;
     private int currentCapacity;
 
-    public ProductionLine(Simulation simulation, Stock stock, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
-        super(simulation);
+    public ProductionLine(Stock stock, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
         this.stock = stock;
         this.capacity = capacity;
         this.startBuffer = startBuffer;

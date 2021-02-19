@@ -28,7 +28,7 @@ public class TruckArriveEventTest extends TestCase {
             toUnload.add(new Pallet(i));
         }
 
-        this.truck = new Truck(this.configuration.simulation, new Position(0, 0), toLoad, toUnload);
+        this.truck = new Truck(new Position(0, 0), toLoad, toUnload);
         this.event = new TruckArriveEvent(this.configuration.simulation, 1, this.configuration.controller, this.truck);
     }
 
