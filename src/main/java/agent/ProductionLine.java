@@ -83,7 +83,7 @@ public class ProductionLine extends Observable {
                 int quantity = pair.second;
 
                 int count = 0;
-                for (Position position : this.startBuffer) {
+                for (Position position : this.startBuffer) if (!this.stock.isLocked(position)) {
                     Pallet bufferPallet = this.stock.get(position);
                     if (bufferPallet != null
                             && bufferPallet.getType() == pallet.getType()
@@ -108,6 +108,25 @@ public class ProductionLine extends Observable {
         }
 
         return startableProductions;
+    }
+
+    public void lockProductionPallets(Production production) {
+        for (Pair<Pallet,Integer> pair : production.getIn()) {
+            Pallet pallet = pair.first;
+            int quantity = pair.second;
+
+            int count = 0;
+            for (Position position : this.startBuffer) if (!this.stock.isLocked(position)) {
+                Pallet bufferPallet = this.stock.get(position);
+                if (bufferPallet != null && bufferPallet.getType() == pallet.getType()) {
+                    this.stock.lock(position);
+                    count++;
+                    if (count == quantity) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public void freeCapacity(double capacity) {

@@ -31,7 +31,7 @@ public class MobileMissionEndEvent extends Event {
         this.controller.add(this.mobile);
         this.mobile.setPosition(this.mission.getEndPosition());
 
-        // tell truck, stock or production line that pallet has arrived at position
+        // tell truck or stock that pallet has arrived at position
         if (this.mission.getEndTruck() != null) {
             Truck truck = this.mission.getEndTruck();
             truck.add(this.mission.getPallet());
@@ -46,4 +46,5 @@ public class MobileMissionEndEvent extends Event {
         Event event = new ControllerEvent(this.simulation, this.simulation.getCurrentTime(), this.controller);
         this.simulation.enqueueEvent(event);
     }
+
 }

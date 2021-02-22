@@ -3,7 +3,6 @@ package warehouse;
 public class Pallet {
 
     public static Pallet FREE = new Pallet(-1);
-    public static Pallet RESERVED = new Pallet(-2);
 
     private static int PALLET_ID = 0;
     private final int id, type;
@@ -20,4 +19,5 @@ public class Pallet {
     public int getType() {
         return this.type;
     }
+
 }

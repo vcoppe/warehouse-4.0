@@ -31,23 +31,9 @@ public class MobileMissionStartEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        // tell truck, stock or production line that pallet has left the position
-        if (this.mission.getStartTruck() != null) {
-            Truck truck = this.mission.getStartTruck();
-            truck.remove(this.mission.getPallet());
-            if (truck.done()) {
-                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.mission.getStartTruck().getDock());
-                this.simulation.enqueueEvent(event);
-            }
-        } else {
-            this.stock.remove(this.mission.getStartPosition(), this.mission.getPallet());
-        }
+        double missionPickUpTime = this.simulation.getCurrentTime() + this.warehouse.getDistance(this.mobile.getPosition(), this.mission.getStartPosition());
 
-        double missionEndTime = this.simulation.getCurrentTime();
-        missionEndTime += this.warehouse.getDistance(this.mobile.getPosition(), this.mission.getStartPosition());
-        missionEndTime += this.warehouse.getDistance(this.mission.getStartPosition(), this.mission.getEndPosition());
-
-        Event event = new MobileMissionEndEvent(this.simulation, missionEndTime, this.controller, this.mobile, this.mission);
+        Event event = new MobileMissionPickUpEvent(this.simulation, missionPickUpTime, this.controller, this.mobile, this.mission);
         this.simulation.enqueueEvent(event);
     }
 

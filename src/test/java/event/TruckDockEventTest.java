@@ -58,7 +58,7 @@ public class TruckDockEventTest extends TestCase {
             if (mission.getStartTruck() != null) { // unload mission
                 assertEquals(this.dock.getPosition(), mission.getStartPosition());
                 unloadMissionPallets.add(mission.getPallet());
-                assertEquals(Pallet.RESERVED, this.configuration.stock.get(mission.getEndPosition())); // reserve spot for pallet
+                assertTrue(this.configuration.stock.isLocked(mission.getEndPosition())); // reserve spot for pallet
             } else if (mission.getEndTruck() != null) { // load mission
                 assertEquals(this.dock.getPosition(), mission.getEndPosition());
                 loadMissionPallets.add(mission.getPallet());

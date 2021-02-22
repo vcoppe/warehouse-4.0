@@ -34,6 +34,7 @@ public class ProductionStartEventTest extends TestCase {
         for (int i=0; i<3; i++) {
             in.add(new Pair<>(new Pallet(i), 1));
             this.configuration.stock.add(this.productionLine.getStartBuffer().get(i), new Pallet(i)); // add to stock
+            this.configuration.stock.lock(this.productionLine.getStartBuffer().get(i)); // lock for production
             out.add(new Pair<>(new Pallet(3 + i), 1));
         }
 

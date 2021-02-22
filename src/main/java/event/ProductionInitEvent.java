@@ -58,7 +58,8 @@ public class ProductionInitEvent extends Event {
 
                 Mission mission = new Mission(pallet, startPosition, endPosition);
                 this.controller.add(mission);
-                this.stock.add(endPosition, Pallet.RESERVED);
+                this.stock.lock(startPosition);
+                this.stock.lock(endPosition);
             }
         }
 

@@ -62,7 +62,7 @@ public class ProductionEndEventTest extends TestCase {
         ArrayList<Pallet> bufferPallets = new ArrayList<>();
         for (Position position : this.productionLine.getEndBuffer()) {
             Pallet pallet = this.stock.get(position);
-            if (pallet != Pallet.FREE && pallet != Pallet.RESERVED) {
+            if (pallet != Pallet.FREE) {
                 bufferPallets.add(pallet);
             }
         }
@@ -104,7 +104,7 @@ public class ProductionEndEventTest extends TestCase {
             missionPallets.add(mission.getPallet());
 
             assertEquals(mission.getPallet().getType(), this.configuration.stock.get(mission.getStartPosition()).getType());
-            assertEquals(Pallet.RESERVED, this.configuration.stock.get(mission.getEndPosition()));
+            assertTrue(this.configuration.stock.isLocked(mission.getEndPosition()));
         }
 
         productionPallets.sort(Comparator.comparingInt(Pallet::getType));

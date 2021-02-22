@@ -59,7 +59,7 @@ public class ProductionEndEvent extends Event {
                 Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, positions);
                 Mission mission = new Mission(pallet, startPosition, endPosition);
                 this.controller.add(mission);
-                this.stock.add(endPosition, Pallet.RESERVED);
+                this.stock.lock(endPosition);
             }
         }
 

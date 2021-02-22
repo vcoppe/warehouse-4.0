@@ -1,7 +1,5 @@
 package warehouse;
 
-import agent.ProductionLine;
-import agent.Stock;
 import agent.Truck;
 
 public class Mission {

@@ -50,7 +50,7 @@ public class TruckDockEvent extends Event {
             Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, positions);
             Mission mission = new Mission(pallet, this.truck, null, this.dock.getPosition(), endPosition);
             this.controller.add(mission);
-            this.stock.add(endPosition, Pallet.RESERVED);
+            this.stock.lock(endPosition);
         }
 
         for (Pallet pallet : this.truck.getToLoad()) {
@@ -64,6 +64,7 @@ public class TruckDockEvent extends Event {
             Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, positions);
             Mission mission = new Mission(pallet, null, this.truck, startPosition, this.dock.getPosition());
             this.controller.add(mission);
+            this.stock.lock(startPosition);
         }
 
         Event event = new ControllerEvent(this.simulation, this.simulation.getCurrentTime(), this.controller);

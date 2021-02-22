@@ -71,6 +71,7 @@ public class ControllerEvent extends Event {
             Event event = new ProductionStartEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, production);
             this.simulation.enqueueEvent(event);
 
+            this.productionLine.lockProductionPallets(production);
             this.productionLine.remove(production);
             this.productionLine.reserveCapacity(production.getCapacity());
         }

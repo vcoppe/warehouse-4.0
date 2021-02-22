@@ -37,7 +37,7 @@ public class ProductionStartEvent extends Event {
             int quantity = pair.second;
 
             int count = 0;
-            for (Position position : this.productionLine.getStartBuffer()) {
+            for (Position position : this.productionLine.getStartBuffer()) if (this.stock.isLocked(position)) {
                 if (this.stock.get(position) != null && this.stock.get(position).getType() == pallet.getType()) {
                     this.stock.remove(position, pallet);
                     count++;
@@ -45,6 +45,10 @@ public class ProductionStartEvent extends Event {
                         break;
                     }
                 }
+            }
+
+            if (count < quantity) {
+                this.simulation.logger.warning("FAILURE! Missing pallets to start production.");
             }
         }
 

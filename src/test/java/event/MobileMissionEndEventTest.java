@@ -36,7 +36,7 @@ public class MobileMissionEndEventTest extends TestCase {
             this.configuration.stock.add(new Position(5, i), new Pallet(i)); // add in stock
             this.loadPalletPositions.add(new Position(5, i));
             toUnload.add(new Pallet(i));
-            this.configuration.stock.add(new Position(7, i), Pallet.RESERVED);
+            this.configuration.stock.lock(new Position(7, i));
             this.unloadPalletPositions.add(new Position(7, i));
         }
 
@@ -53,8 +53,9 @@ public class MobileMissionEndEventTest extends TestCase {
         Mission mission = new Mission(pallet, truckUnload, null, startPosition, endPosition);
         MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
 
-        assertEquals(Pallet.RESERVED, this.configuration.stock.get(endPosition));
+        assertTrue(this.configuration.stock.isLocked(endPosition));
         event.run();
+        assertFalse(this.configuration.stock.isLocked(endPosition));
         assertEquals(pallet.getType(), this.configuration.stock.get(endPosition).getType());
     }
 
