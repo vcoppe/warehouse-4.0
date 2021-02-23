@@ -15,7 +15,7 @@ public class ControllerEvent extends Event {
     private final ProductionLine productionLine;
 
     public ControllerEvent(Simulation simulation, double time, Controller controller) {
-        super(simulation, time);
+        super(simulation, time, Integer.MAX_VALUE); // set large id to have ControllerEvents at the end of each timestep
         this.controller = controller;
         this.productionLine = this.controller.getProductionLine();
     }

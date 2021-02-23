@@ -1,27 +1,24 @@
 package simulation;
 
-import event.ControllerEvent;
-
 public abstract class Event implements Comparable<Event> {
 
     private static int EVENT_ID = 0;
-    private final int id;
-
+    protected final int id;
     protected Simulation simulation;
     protected double time;
 
-    public Event(Simulation simulation, double time) {
-        this.id = EVENT_ID++;
+    public Event(Simulation simulation, double time, int id) {
+        this.id = id;
         this.simulation = simulation;
         this.time = time;
     }
 
+    public Event(Simulation simulation, double time) {
+        this(simulation, time, EVENT_ID++);
+    }
+
     public int compareTo(Event other) {
         if (this.time == other.time) {
-            // enqueue ControllerEvents after all other events at the same time + enqueue only one
-            if (this instanceof ControllerEvent && other instanceof ControllerEvent) return 0;
-            if (this instanceof ControllerEvent) return 1;
-            if (other instanceof ControllerEvent) return -1;
             return Integer.compare(this.id, other.id);
         }
         return Double.compare(this.time, other.time);

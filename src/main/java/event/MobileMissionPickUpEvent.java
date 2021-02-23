@@ -29,7 +29,7 @@ public class MobileMissionPickUpEvent extends Event {
     @Override
     public void run() {
         this.simulation.logger.info(
-                String.format("Simulation time %f: MobileMissionPickUpEvent\n\tmobile %d started mission %d",
+                String.format("Simulation time %f: MobileMissionPickUpEvent\n\tmobile %d picked up pallet of mission %d",
                         this.simulation.getCurrentTime(),
                         this.mobile.getId(),
                         this.mission.getId()));
