@@ -8,7 +8,6 @@ import warehouse.Warehouse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map.Entry;
 
 // need to add all possible positions with Pallet.FREE at the start
 public class Stock extends Observable {
