@@ -41,7 +41,7 @@ public class MobileMissionPickUpEvent extends Event {
             Truck truck = this.mission.getStartTruck();
             truck.remove(this.mission.getPallet());
             if (truck.done()) {
-                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.mission.getStartTruck().getDock());
+                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.mission.getStartTruck().getDock(), this.mission.getStartTruck());
                 this.simulation.enqueueEvent(event);
             }
         } else {

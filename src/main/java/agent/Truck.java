@@ -12,8 +12,8 @@ public class Truck extends Observable {
     private final int id;
     private Dock dock;
     private Position position;
-    private ArrayList<Pallet> toLoad;
-    private ArrayList<Pallet> toUnload;
+    private final ArrayList<Pallet> toLoad;
+    private final ArrayList<Pallet> toUnload;
     private int countDone;
 
     public Truck(Dock dock, Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {

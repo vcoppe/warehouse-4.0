@@ -36,7 +36,7 @@ public class MobileMissionEndEvent extends Event {
             Truck truck = this.mission.getEndTruck();
             truck.add(this.mission.getPallet());
             if (truck.done()) {
-                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.mission.getEndTruck().getDock());
+                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.mission.getEndTruck().getDock(), this.mission.getEndTruck());
                 this.simulation.enqueueEvent(event);
             }
         } else {

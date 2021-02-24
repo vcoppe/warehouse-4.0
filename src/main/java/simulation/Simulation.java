@@ -21,10 +21,11 @@ public class Simulation {
 
     public void run(double horizon) {
 
-        while (!this.eventQueue.isEmpty()) {
-            Event event = this.eventQueue.pollFirst();
+        while (this.hasNextEvent()) {
+            Event event = this.eventQueue.first();
 
             if (event.getTime() <= horizon) {
+                this.eventQueue.pollFirst();
                 this.currentTime = event.getTime();
                 event.run();
             } else {
@@ -49,5 +50,9 @@ public class Simulation {
 
     public Event nextEvent() {
         return this.eventQueue.first();
+    }
+
+    public boolean hasNextEvent() {
+        return !this.eventQueue.isEmpty();
     }
 }

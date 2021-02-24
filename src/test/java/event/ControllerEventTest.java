@@ -6,7 +6,7 @@ import agent.Stock;
 import agent.Truck;
 import brain.NaiveSelector;
 import junit.framework.TestCase;
-import util.Configuration;
+import warehouse.Configuration;
 import util.Pair;
 import warehouse.Mission;
 import warehouse.Pallet;

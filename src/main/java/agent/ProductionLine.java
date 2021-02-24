@@ -16,11 +16,16 @@ public class ProductionLine extends Observable {
     private final int capacity;
     private final ArrayList<Position> startBuffer, endBuffer;
     private final TreeSet<Production> productions;
+    private final Position position;
+    private final int width, depth;
     private int currentCapacity;
 
-    public ProductionLine(Stock stock, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
+    public ProductionLine(Stock stock, Position position, int width, int depth, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
         super();
         this.stock = stock;
+        this.position = position;
+        this.width = width;
+        this.depth = depth;
         this.capacity = capacity;
         this.startBuffer = startBuffer;
         this.endBuffer = endBuffer;
@@ -147,4 +152,15 @@ public class ProductionLine extends Observable {
         return this.currentCapacity;
     }
 
+    public Position getPosition() {
+        return this.position;
+    }
+
+    public int getWidth() {
+        return this.width;
+    }
+
+    public int getDepth() {
+        return this.depth;
+    }
 }

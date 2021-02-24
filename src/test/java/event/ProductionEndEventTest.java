@@ -4,7 +4,7 @@ import agent.ProductionLine;
 import agent.Stock;
 import brain.NaiveSelector;
 import junit.framework.TestCase;
-import util.Configuration;
+import warehouse.Configuration;
 import util.Pair;
 import warehouse.Mission;
 import warehouse.Pallet;

@@ -2,6 +2,7 @@ package event;
 
 import agent.Controller;
 import agent.Dock;
+import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
 
@@ -9,11 +10,13 @@ public class TruckDoneEvent extends Event {
 
     private final Controller controller;
     private final Dock dock;
+    private final Truck truck;
 
-    public TruckDoneEvent(Simulation simulation, double time, Controller controller, Dock dock) {
+    public TruckDoneEvent(Simulation simulation, double time, Controller controller, Dock dock, Truck truck) {
         super(simulation, time);
         this.controller = controller;
         this.dock = dock;
+        this.truck = truck;
     }
 
     @Override
@@ -24,6 +27,7 @@ public class TruckDoneEvent extends Event {
                         this.dock.getId()));
 
         this.controller.add(this.dock);
+        this.truck.setPosition(null);
 
         Event event = new ControllerEvent(this.simulation, this.simulation.getCurrentTime(), this.controller);
         this.simulation.enqueueEvent(event);

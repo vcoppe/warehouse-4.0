@@ -4,7 +4,7 @@ import agent.Truck;
 import brain.NaiveSelector;
 import event.ProductionInitEvent;
 import event.TruckArriveEvent;
-import util.Configuration;
+import warehouse.Configuration;
 import util.Pair;
 import warehouse.Pallet;
 import warehouse.Position;
@@ -17,7 +17,7 @@ public class Main {
     public static void main(String[] args) {
 
         NaiveSelector selector = new NaiveSelector();
-        Configuration configuration = new Configuration(1, 3, selector, selector, selector);
+        Configuration configuration = new Configuration(100, 100 , 1, 3, selector, selector, selector);
 
         ArrayList<Pallet> pallets = new ArrayList<>();
         for (int i=0; i<10; i++) {

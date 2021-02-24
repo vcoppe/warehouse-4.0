@@ -1,6 +1,6 @@
 package observer;
 
-interface Observer<T extends Observable> {
+interface Observer<T> {
 
     void update(T t);
 

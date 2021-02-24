@@ -22,7 +22,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.5</version>
                 <configuration>
-                    <mainClass>visualization.Main</mainClass>
+                    <mainClass>graphic.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>

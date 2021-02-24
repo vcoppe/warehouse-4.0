@@ -3,7 +3,7 @@ package event;
 import agent.Truck;
 import brain.NaiveSelector;
 import junit.framework.TestCase;
-import util.Configuration;
+import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
 
