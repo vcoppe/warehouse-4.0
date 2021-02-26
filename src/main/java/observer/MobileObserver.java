@@ -2,21 +2,23 @@ package observer;
 
 import agent.Mobile;
 import graphic.MobileShape;
-import javafx.scene.Group;
-import javafx.scene.shape.Shape;
+import graphic.ShapeHandler;
+import util.Pair;
 import warehouse.Configuration;
+import warehouse.Position;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class MobileObserver implements Observer<Mobile> {
 
     private final Configuration configuration;
-    private final Group group;
+    private final ShapeHandler shapeHandler;
     private final HashMap<Integer,MobileShape> shapes;
 
-    public MobileObserver(Configuration configuration, Group group) {
+    public MobileObserver(Configuration configuration, ShapeHandler shapeHandler) {
         this.configuration = configuration;
-        this.group = group;
+        this.shapeHandler = shapeHandler;
         this.shapes = new HashMap<>();
     }
 
@@ -28,7 +30,7 @@ public class MobileObserver implements Observer<Mobile> {
                 this.configuration.palletSize
         );
         this.shapes.put(mobile.getId(), shape);
-        this.group.getChildren().add(shape.getShape());
+        this.shapeHandler.add(shape);
         return shape;
     }
 
@@ -39,7 +41,18 @@ public class MobileObserver implements Observer<Mobile> {
             mobileShape = this.add(mobile);
         }
 
-        mobileShape.setPosition(mobile.getPosition());
+        // TODO ask warehouse the real path
+
+        LinkedList<Pair<Position,Double>> moves = new LinkedList<>();
+        moves.add(new Pair<>(
+                mobile.getPosition(),
+                5.0/*(double) this.configuration.warehouse.getDistance(
+                        mobileShape.getPosition(),
+                        mobile.getPosition()
+                )*/)
+        );
+
+        mobileShape.move(moves);
     }
 
 }

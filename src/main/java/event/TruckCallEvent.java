@@ -30,9 +30,11 @@ public class TruckCallEvent extends Event {
                         this.truck.getId(),
                         this.dock.getId()));
 
-        this.truck.setDock(this.dock);
-
         double endTime = this.simulation.getCurrentTime() + this.warehouse.getDistance(this.truck.getPosition(), this.dock.getPosition());
+
+        this.truck.setDock(this.dock);
+        this.truck.setPosition(this.dock.getPosition());
+
         Event event = new TruckDockEvent(this.simulation, endTime, this.controller, this.dock, this.truck);
         this.simulation.enqueueEvent(event);
     }

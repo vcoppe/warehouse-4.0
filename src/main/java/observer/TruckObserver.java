@@ -1,24 +1,24 @@
 package observer;
 
-import agent.Mobile;
 import agent.Truck;
-import graphic.MobileShape;
+import graphic.ShapeHandler;
 import graphic.TruckShape;
-import javafx.scene.Group;
-import javafx.scene.shape.Shape;
+import util.Pair;
 import warehouse.Configuration;
+import warehouse.Position;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class TruckObserver implements Observer<Truck> {
 
     private final Configuration configuration;
-    private final Group group;
+    private final ShapeHandler shapeHandler;
     private final HashMap<Integer, TruckShape> shapes;
 
-    public TruckObserver(Configuration configuration, Group group) {
+    public TruckObserver(Configuration configuration, ShapeHandler shapeHandler) {
         this.configuration = configuration;
-        this.group = group;
+        this.shapeHandler = shapeHandler;
         this.shapes = new HashMap<>();
     }
 
@@ -30,13 +30,13 @@ public class TruckObserver implements Observer<Truck> {
                 configuration.dockWidth
         );
         this.shapes.put(truck.getId(), shape);
-        this.group.getChildren().add(shape.getShape());
+        this.shapeHandler.add(shape);
         return shape;
     }
 
     public void remove(Truck truck) {
         TruckShape shape = this.shapes.get(truck.getId());
-        this.group.getChildren().remove(shape.getShape());
+        this.shapeHandler.remove(shape);
         this.shapes.remove(truck.getId());
     }
 
@@ -49,8 +49,10 @@ public class TruckObserver implements Observer<Truck> {
 
         if (truck.getPosition() == null) { // truck is done
             this.remove(truck);
-        } else {
-            truckShape.setPosition(truck.getPosition());
+        } else if (!truckShape.getPosition().equals(truck.getPosition())) {
+            LinkedList<Pair<Position,Double>> moves = new LinkedList<>();
+            moves.add(new Pair<>(truck.getPosition(), 5.0));
+            truckShape.move(moves);
         }
     }
 

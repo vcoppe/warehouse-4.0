@@ -2,6 +2,7 @@ package graphic;
 
 import agent.Truck;
 import brain.NaiveSelector;
+import event.ProductionInitEvent;
 import event.TruckArriveEvent;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -14,9 +15,11 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import simulation.Event;
 import simulation.Simulation;
+import util.Pair;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
+import warehouse.Production;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -36,20 +39,41 @@ public class Main extends Application {
 
         ArrayList<Pallet> pallets = new ArrayList<>();
         for (int i=0; i<30*26; i++) {
-            Pallet pallet = new Pallet(random.nextInt(10));
-            configuration.stock.add(
-                    new Position(
-                            (2*(i/30)+(i/30)%2)*configuration.palletSize,
-                            (i%30)*configuration.palletSize
-                    ),
-                    pallet
-            );
-            if (random.nextInt(1000) < 50) pallets.add(pallet);
+            if (random.nextInt(100) < 50) {
+                Pallet pallet = new Pallet(random.nextInt(10));
+                configuration.stock.add(
+                        new Position(
+                                (2 * (i / 30) + (i / 30) % 2) * configuration.palletSize,
+                                (i % 30) * configuration.palletSize
+                        ),
+                        pallet
+                );
+                if (random.nextInt(100) < 2) pallets.add(pallet);
+            } else {
+                configuration.stock.add(
+                        new Position(
+                                (2 * (i / 30) + (i / 30) % 2) * configuration.palletSize,
+                                (i % 30) * configuration.palletSize
+                        ),
+                        Pallet.FREE
+                );
+            }
         }
 
         Truck truck = new Truck(new Position(0, configuration.warehouse.depth + 110), pallets, new ArrayList<>());
         Event event = new TruckArriveEvent(configuration.simulation, 0, configuration.controller, truck);
-        configuration.simulation.enqueueEvent(event);
+        configuration.simulation.enqueueEvent(event);ArrayList<Pair<Pallet,Integer>> in = new ArrayList<>();
+
+        ArrayList<Pair<Pallet,Integer>> out = new ArrayList<>();
+        for (int i=0; i<3; i++) {
+            in.add(new Pair<>(new Pallet(i), 1));
+            out.add(new Pair<>(new Pallet(3 + i), 1));
+        }
+        Production production = new Production(in, out, 10, 1, 1000);
+        Event event2 = new ProductionInitEvent(configuration.simulation, 300, configuration.controller, production);
+        configuration.simulation.enqueueEvent(event2);
+
+        ShapeHandler shapeHandler = new ShapeHandler(configuration);
 
         Button button = new Button("Forward");
         button.setOnMouseClicked(mouseEvent -> {
@@ -58,6 +82,7 @@ public class Main extends Application {
                 double currentTime = simulation.nextEvent().getTime();
                 this.delta = currentTime - previousTime;
                 simulation.run(currentTime);
+                shapeHandler.playAnimations();
             }
         });
 
@@ -66,7 +91,7 @@ public class Main extends Application {
         pane.setBottom(new Text("Bottom"));
         pane.setLeft(new Text("Left"));
         pane.setRight(new Text("Right"));
-        pane.setCenter(ShapeCreator.getShapes(configuration));
+        pane.setCenter(shapeHandler.getGroup());
 
         Scene scene = new Scene(pane);
         stage.setScene(scene);

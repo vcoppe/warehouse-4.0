@@ -7,16 +7,24 @@ import warehouse.Pallet;
 public class PalletShape extends BaseShape {
 
     private static final Color[] colors = {
+            Color.RED,
             Color.GREEN,
             Color.BLUE,
-            Color.RED,
             Color.YELLOW,
-            Color.ORANGE,
-            Color.PINK
+            Color.MAGENTA,
+            Color.DARKORANGE,
+            Color.CYAN,
+            Color.SIENNA,
+            Color.DARKRED,
+            Color.SPRINGGREEN,
+            Color.DEEPSKYBLUE,
+            Color.DARKORCHID,
+            Color.TEAL,
+            Color.PALEVIOLETRED
     };
 
     public PalletShape(int x, int y, int  width, int type) {
-        super(x, y);
+        super(x, y, width, width);
         this.shape = new Rectangle(x, y,width, width);
         this.setType(type);
     }
