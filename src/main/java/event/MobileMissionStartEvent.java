@@ -31,8 +31,9 @@ public class MobileMissionStartEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
+        this.mobile.setTargetPosition(this.mission.getStartPosition());
+
         double missionPickUpTime = this.simulation.getCurrentTime() + this.warehouse.getDistance(this.mobile.getPosition(), this.mission.getStartPosition());
-        this.mobile.setPosition(this.mission.getStartPosition());
 
         Event event = new MobileMissionPickUpEvent(this.simulation, missionPickUpTime, this.controller, this.mobile, this.mission);
         this.simulation.enqueueEvent(event);

@@ -11,7 +11,7 @@ public class Truck extends Observable {
     private static int TRUCK_ID = 0;
     private final int id;
     private Dock dock;
-    private Position position;
+    private Position position, targetPosition;
     private final ArrayList<Pallet> toLoad;
     private final ArrayList<Pallet> toUnload;
     private int countDone;
@@ -21,6 +21,7 @@ public class Truck extends Observable {
         this.id = TRUCK_ID++;
         this.dock = dock;
         this.position = position;
+        this.targetPosition = position;
         this.toLoad = toLoad;
         this.toUnload = toUnload;
         this.countDone = 0;
@@ -58,6 +59,15 @@ public class Truck extends Observable {
 
     public Position getPosition() {
         return this.position;
+    }
+
+    public void setTargetPosition(Position position) {
+        this.targetPosition = position;
+        this.changed();
+    }
+
+    public Position getTargetPosition() {
+        return this.targetPosition;
     }
 
     public void add(Pallet pallet) {

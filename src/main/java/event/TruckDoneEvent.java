@@ -27,7 +27,7 @@ public class TruckDoneEvent extends Event {
                         this.dock.getId()));
 
         this.controller.add(this.dock);
-        this.truck.setPosition(null);
+        this.truck.setTargetPosition(null);
 
         Event event = new ControllerEvent(this.simulation, this.simulation.getCurrentTime(), this.controller);
         this.simulation.enqueueEvent(event);
