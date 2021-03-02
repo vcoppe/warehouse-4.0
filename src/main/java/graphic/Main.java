@@ -27,7 +27,6 @@ import java.util.Random;
 public class Main extends Application {
 
     public double WIDTH, HEIGHT, TIMESTEP;
-    private double delta = 0;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -77,12 +76,11 @@ public class Main extends Application {
 
         Button button = new Button("Forward");
         button.setOnMouseClicked(mouseEvent -> {
-            double previousTime = simulation.getCurrentTime();
             if (simulation.hasNextEvent()) {
                 double currentTime = simulation.nextEvent().getTime();
-                this.delta = currentTime - previousTime;
                 simulation.run(currentTime);
-                shapeHandler.playAnimations();
+                double delta = simulation.nextEvent().getTime() - currentTime;
+                shapeHandler.playAnimations(currentTime, delta);
             }
         });
 
@@ -96,8 +94,6 @@ public class Main extends Application {
         Scene scene = new Scene(pane);
         stage.setScene(scene);
         stage.show();
-
-        // TODO keep list of all animations (in each shape ?) and run for delta time
 
     }
 

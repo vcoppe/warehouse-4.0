@@ -4,7 +4,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import warehouse.Pallet;
 
-public class PalletShape extends BaseShape {
+public class PalletShape extends MyShape {
 
     private static final Color[] colors = {
             Color.RED,

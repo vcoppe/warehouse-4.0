@@ -44,15 +44,16 @@ public class MobileObserver implements Observer<Mobile> {
         // TODO ask warehouse the real path
 
         LinkedList<Pair<Position,Double>> moves = new LinkedList<>();
+        moves.add(new Pair<>(mobile.getPosition(), 0.0));
         moves.add(new Pair<>(
-                mobile.getPosition(),
-                5.0/*(double) this.configuration.warehouse.getDistance(
-                        mobileShape.getPosition(),
-                        mobile.getPosition()
-                )*/)
+                mobile.getTargetPosition(),
+                this.configuration.warehouse.getDistance(
+                        mobile.getPosition(),
+                        mobile.getTargetPosition()
+                ))
         );
 
-        mobileShape.move(moves);
+        this.shapeHandler.add(mobileShape.getAnimation(moves));
     }
 
 }

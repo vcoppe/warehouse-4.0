@@ -3,7 +3,7 @@ package graphic;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-public class WarehouseShape extends BaseShape {
+public class WarehouseShape extends MyShape {
 
     public WarehouseShape(int x, int y, int width, int height) {
         super(x, y, width, height);

@@ -3,7 +3,7 @@ package graphic;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-public class MobileShape extends BaseShape {
+public class MobileShape extends MyShape {
 
     public MobileShape(int x, int y, int width) {
         super(x, y, width, width);

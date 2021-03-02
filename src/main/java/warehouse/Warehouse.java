@@ -24,8 +24,8 @@ public class Warehouse {
     }
 
     // TODO use the topology of the site (represented as a graph), apply speed wrt type of mobile and zone (and time of the day)
-    public int getDistance(Position p1, Position p2) {
-        return p1.manhattanDistance2D(p2);
+    public double getDistance(Position p1, Position p2) {
+        return p1.manhattanDistance2D(p2) / 100.0;
     }
 
 }

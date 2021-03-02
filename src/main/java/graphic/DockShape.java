@@ -5,7 +5,7 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 
-public class DockShape extends BaseShape {
+public class DockShape extends MyShape {
 
     public DockShape(int x, int y, int width) {
         super(x, y, width, 3 * width);

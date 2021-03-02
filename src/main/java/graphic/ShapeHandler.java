@@ -2,28 +2,30 @@ package graphic;
 
 import agent.Dock;
 import agent.Mobile;
-import javafx.animation.Animation;
-import javafx.animation.ParallelTransition;
+import javafx.animation.PauseTransition;
 import javafx.scene.Group;
+import javafx.util.Duration;
 import observer.ControllerObserver;
 import observer.MobileObserver;
 import observer.StockObserver;
 import observer.TruckObserver;
 import warehouse.Configuration;
 
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.stream.Collectors;
 
 public class ShapeHandler {
 
-    private final LinkedList<BaseShape> shapes;
+    private final LinkedList<MyShape> shapes;
     private final Group group;
+    private final HashMap<Integer,MyAnimation> animations;
 
     public ShapeHandler(Configuration configuration) {
         // TODO compute scaling and apply to all
 
         this.shapes = new LinkedList<>();
         this.group = new Group();
+        this.animations = new HashMap<>();
 
         SiteShape siteShape = new SiteShape(configuration.warehouse.width, 3 * configuration.warehouse.depth / 2);
         this.add(siteShape);
@@ -62,17 +64,32 @@ public class ShapeHandler {
 
     }
 
-    public void add(BaseShape shape) {
+    public void add(MyShape shape) {
         this.shapes.add(shape);
         this.group.getChildren().add(shape.getShape());
     }
 
-    public void remove(BaseShape shape) {
+    public void remove(MyShape shape) {
         this.shapes.remove(shape);
         this.group.getChildren().remove(shape.getShape());
     }
 
-    public LinkedList<BaseShape> getShapes() {
+    public void add(MyAnimation animation) {
+        this.animations.put(animation.getShape().getId(), animation);
+
+        animation.getAnimation().setOnFinished((event) -> {
+            //this.remove(animation);
+            System.out.println("animation finished");
+        });
+    }
+
+    public void remove(MyAnimation animation) {
+        if (this.animations.get(animation.getShape().getId()) == animation) {
+            this.animations.remove(animation.getShape().getId());
+        }
+    }
+
+    public LinkedList<MyShape> getShapes() {
         return this.shapes;
     }
 
@@ -80,17 +97,32 @@ public class ShapeHandler {
         return this.group;
     }
 
-    // TODO handle animations, play all at the same time using ParallelAnimation
-    public void playAnimations() {
-        ParallelTransition parallelAnimation = new ParallelTransition();
-
-        for (BaseShape shape : this.shapes) {
-            for (Animation animation : shape.getAnimations()) {
-                parallelAnimation.getChildren().add(animation);
+    private void playAnimations(double start) {
+        LinkedList<MyAnimation> toRemove = new LinkedList<>();
+        for (MyAnimation animation : this.animations.values()) {
+            if (animation.done(start)) {
+                toRemove.add(animation);
             }
         }
+        for (MyAnimation animation : toRemove) {
+            this.remove(animation);
+        }
+        for (MyAnimation animation : this.animations.values()) {
+            animation.play(start);
+        }
+    }
 
-        parallelAnimation.play();
+    private void pauseAnimations() {
+        for (MyAnimation animation : this.animations.values()) {
+            animation.pause();
+        }
+    }
+
+    public void playAnimations(double start, double delta) {
+        PauseTransition pauseTransition = new PauseTransition(Duration.seconds(delta));
+        pauseTransition.setOnFinished((event) -> this.pauseAnimations());
+        pauseTransition.play();
+        this.playAnimations(start);
     }
 
 }

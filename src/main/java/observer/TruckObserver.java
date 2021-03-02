@@ -47,12 +47,18 @@ public class TruckObserver implements Observer<Truck> {
             truckShape = this.add(truck);
         }
 
-        if (truck.getPosition() == null) { // truck is done
+        if (truck.getTargetPosition() == null) { // truck is done
             this.remove(truck);
-        } else if (!truckShape.getPosition().equals(truck.getPosition())) {
+        } else if (!truck.getPosition().equals(truck.getTargetPosition())) {
             LinkedList<Pair<Position,Double>> moves = new LinkedList<>();
-            moves.add(new Pair<>(truck.getPosition(), 5.0));
-            truckShape.move(moves);
+            moves.add(new Pair<>(truck.getPosition(), 0.0));
+            moves.add(new Pair<>(
+                    truck.getTargetPosition(),
+                    this.configuration.warehouse.getDistance(
+                            truck.getPosition(),
+                            truck.getTargetPosition()
+                    )));
+            this.shapeHandler.add(truckShape.getAnimation(moves));
         }
     }
 
