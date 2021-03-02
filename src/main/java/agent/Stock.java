@@ -88,7 +88,7 @@ public class Stock extends Observable {
         ArrayList<Position> positions = new ArrayList<>();
         for (Integer position : this.pallets.keySet()) {
             Pallet stockPallet = this.pallets.get(position);
-            if (stockPallet != null && !this.lock.contains(position)) {
+            if (stockPallet == Pallet.FREE && !this.lock.contains(position)) {
                 positions.add(this.toPosition(position));
             }
         }

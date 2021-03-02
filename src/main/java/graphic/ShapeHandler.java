@@ -3,6 +3,7 @@ package graphic;
 import agent.Dock;
 import agent.Mobile;
 import javafx.animation.PauseTransition;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.util.Duration;
 import observer.ControllerObserver;
@@ -19,6 +20,7 @@ public class ShapeHandler {
     private final LinkedList<MyShape> shapes;
     private final Group group;
     private final HashMap<Integer,MyAnimation> animations;
+    private EventHandler callback;
 
     public ShapeHandler(Configuration configuration) {
         // TODO compute scaling and apply to all
@@ -120,9 +122,16 @@ public class ShapeHandler {
 
     public void playAnimations(double start, double delta) {
         PauseTransition pauseTransition = new PauseTransition(Duration.seconds(delta));
-        pauseTransition.setOnFinished((event) -> this.pauseAnimations());
+        pauseTransition.setOnFinished((event) -> {
+            this.pauseAnimations();
+            this.callback.handle(event);
+        });
         pauseTransition.play();
         this.playAnimations(start);
+    }
+
+    public void setCallback(EventHandler handler) {
+        this.callback = handler;
     }
 
 }

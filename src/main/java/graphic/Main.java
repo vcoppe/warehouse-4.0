@@ -4,6 +4,7 @@ import agent.Truck;
 import brain.NaiveSelector;
 import event.ProductionInitEvent;
 import event.TruckArriveEvent;
+import event.TruckGeneratorEvent;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -36,7 +37,6 @@ public class Main extends Application {
 
         Random random = new Random(0);
 
-        ArrayList<Pallet> pallets = new ArrayList<>();
         for (int i=0; i<30*26; i++) {
             if (random.nextInt(100) < 50) {
                 Pallet pallet = new Pallet(random.nextInt(10));
@@ -47,7 +47,6 @@ public class Main extends Application {
                         ),
                         pallet
                 );
-                if (random.nextInt(100) < 2) pallets.add(pallet);
             } else {
                 configuration.stock.add(
                         new Position(
@@ -59,10 +58,10 @@ public class Main extends Application {
             }
         }
 
-        Truck truck = new Truck(new Position(0, configuration.warehouse.depth + 110), pallets, new ArrayList<>());
-        Event event = new TruckArriveEvent(configuration.simulation, 0, configuration.controller, truck);
-        configuration.simulation.enqueueEvent(event);ArrayList<Pair<Pallet,Integer>> in = new ArrayList<>();
+        Event event = new TruckGeneratorEvent(configuration.simulation, 0, configuration.warehouse, configuration.controller);
+        configuration.simulation.enqueueEvent(event);
 
+        /*ArrayList<Pair<Pallet,Integer>> in = new ArrayList<>();
         ArrayList<Pair<Pallet,Integer>> out = new ArrayList<>();
         for (int i=0; i<3; i++) {
             in.add(new Pair<>(new Pallet(i), 1));
@@ -70,19 +69,22 @@ public class Main extends Application {
         }
         Production production = new Production(in, out, 10, 1, 1000);
         Event event2 = new ProductionInitEvent(configuration.simulation, 300, configuration.controller, production);
-        configuration.simulation.enqueueEvent(event2);
+        configuration.simulation.enqueueEvent(event2);*/
 
         ShapeHandler shapeHandler = new ShapeHandler(configuration);
 
-        Button button = new Button("Forward");
-        button.setOnMouseClicked(mouseEvent -> {
+        EventHandler handler = e -> {
             if (simulation.hasNextEvent()) {
                 double currentTime = simulation.nextEvent().getTime();
                 simulation.run(currentTime);
                 double delta = simulation.nextEvent().getTime() - currentTime;
                 shapeHandler.playAnimations(currentTime, delta);
             }
-        });
+        };
+
+        Button button = new Button("Forward");
+        button.setOnMouseClicked(handler);
+        shapeHandler.setCallback(handler);
 
         BorderPane pane = new BorderPane();
         pane.setTop(button);
