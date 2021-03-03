@@ -26,6 +26,7 @@ public class ShapeHandler {
     private EventHandler callback;
     private PauseTransition pauseTransition;
     private double rate;
+    private boolean autoplay;
 
     public ShapeHandler(Configuration configuration) {
         this.shapes = new LinkedList<>();
@@ -33,6 +34,7 @@ public class ShapeHandler {
         this.pane = new Pane(group);
         this.animations = new HashMap<>();
         this.rate = 1;
+        this.autoplay = true;
 
         int width = configuration.warehouse.getWidth();
         int height = 3 * configuration.warehouse.getDepth() / 2;
@@ -96,18 +98,6 @@ public class ShapeHandler {
 
     public void add(MyAnimation animation) {
         this.animations.put(animation.getShape().getId(), animation);
-
-        animation.getAnimation().setOnFinished((event) -> this.remove(animation));
-    }
-
-    public void remove(MyAnimation animation) {
-        if (this.animations.get(animation.getShape().getId()) == animation) {
-            this.animations.remove(animation.getShape().getId());
-        }
-    }
-
-    public LinkedList<MyShape> getShapes() {
-        return this.shapes;
     }
 
     public Pane getPane() {
@@ -115,15 +105,6 @@ public class ShapeHandler {
     }
 
     private void playAnimations(double start) {
-        LinkedList<MyAnimation> toRemove = new LinkedList<>();
-        for (MyAnimation animation : this.animations.values()) {
-            if (animation.done(start)) {
-                toRemove.add(animation);
-            }
-        }
-        for (MyAnimation animation : toRemove) {
-            this.remove(animation);
-        }
         for (MyAnimation animation : this.animations.values()) {
             animation.getAnimation().setRate(this.rate);
             animation.play(start);
@@ -145,7 +126,9 @@ public class ShapeHandler {
             this.pauseTransition.setOnFinished((event) -> {
                 this.pauseAnimations();
                 this.pauseTransition = null;
-                this.callback.handle(event);
+                if (this.autoplay) {
+                    this.callback.handle(event);
+                }
             });
             this.pauseTransition.play();
             this.playAnimations(start);
@@ -154,7 +137,9 @@ public class ShapeHandler {
 
     public void pauseAnimation() {
         this.pauseAnimations();
-        this.pauseTransition.pause();
+        if (this.pauseTransition != null) {
+            this.pauseTransition.pause();
+        }
     }
 
     public void resumeAnimation() {
@@ -186,4 +171,11 @@ public class ShapeHandler {
         }
     }
 
+    public boolean isAutoplay() {
+        return this.autoplay;
+    }
+
+    public void setAutoplay(boolean autoplay) {
+        this.autoplay = autoplay;
+    }
 }

@@ -24,25 +24,22 @@ public class MyAnimation {
     }
 
     public void play() {
-        this.animation.play();
+        if (this.animation.currentTimeProperty().get().lessThan(this.animation.getTotalDuration())) {
+            this.animation.play();
+        }
     }
 
     public void play(double time) {
         if (this.start == null) {
             this.start = time;
         }
-        this.animation.playFrom(Duration.seconds(time - this.start));
+        if (this.animation.currentTimeProperty().get().lessThan(this.animation.getTotalDuration())) {
+            this.animation.playFrom(Duration.seconds(time - this.start));
+        }
     }
 
     public void pause() {
         this.animation.pause();
-    }
-
-    public boolean done(double time) {
-        if (this.start == null) {
-            return false;
-        }
-        return Duration.seconds(time-this.start).greaterThanOrEqualTo(this.animation.getTotalDuration());
     }
 
 }
