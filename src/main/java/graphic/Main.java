@@ -7,6 +7,8 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import simulation.Event;
@@ -16,12 +18,11 @@ import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main extends Application {
-
-    private double rate = 10;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -69,17 +70,40 @@ public class Main extends Application {
                 double currentTime = simulation.nextEvent().getTime();
                 simulation.run(currentTime);
                 double delta = simulation.nextEvent().getTime() - currentTime;
-                shapeHandler.playAnimations(currentTime, delta, rate);
+                shapeHandler.playAnimations(currentTime, delta);
             }
         };
 
-        Button button = new Button("Forward");
-        button.setOnMouseClicked(handler);
         shapeHandler.setCallback(handler);
 
+        // bottom pane
+        Pane bottomPane = new HBox();
+
+        Button play = new Button("Play");
+        AtomicBoolean playing = new AtomicBoolean(false);
+        play.setOnMouseClicked((e) -> {
+            if (playing.get()) {
+                shapeHandler.pauseAnimation();
+                playing.set(false);
+                play.setText("Play");
+            } else {
+                shapeHandler.resumeAnimation();
+                playing.set(true);
+                play.setText("Pause");
+            }
+        });
+
+        Button decreaseRate = new Button("/2");
+        decreaseRate.setOnMouseClicked((e) -> shapeHandler.setRate(shapeHandler.getRate() / 2));
+
+        Button increaseRate = new Button("x2");
+        increaseRate.setOnMouseClicked((e) -> shapeHandler.setRate(shapeHandler.getRate() * 2));
+
+        bottomPane.getChildren().addAll(play, decreaseRate, increaseRate);
+
         BorderPane pane = new BorderPane();
-        pane.setTop(button);
-        pane.setBottom(new Text("Bottom"));
+        pane.setTop(new Text("Top"));
+        pane.setBottom(bottomPane);
         pane.setLeft(new Text("Left"));
         pane.setRight(new Text("Right"));
         pane.setCenter(shapeHandler.getPane());

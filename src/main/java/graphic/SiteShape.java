@@ -9,6 +9,7 @@ public class SiteShape extends MyShape {
         super(0, 0, width, height);
         this.shape = new Rectangle(0, 0, width, height);
         this.shape.setFill(Color.GREY);
+        this.shape.setStroke(Color.GREY);
     }
 
 }

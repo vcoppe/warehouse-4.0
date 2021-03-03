@@ -23,11 +23,15 @@ public class MyAnimation {
         return this.animation;
     }
 
+    public void play() {
+        this.animation.play();
+    }
+
     public void play(double time) {
         if (this.start == null) {
             this.start = time;
         }
-        this.animation.playFrom(Duration.seconds(time-this.start));
+        this.animation.playFrom(Duration.seconds(time - this.start));
     }
 
     public void pause() {

@@ -22,14 +22,17 @@ public class ShapeHandler {
     private final LinkedList<MyShape> shapes;
     private final Pane pane;
     private final Group group;
-    private final HashMap<Integer,MyAnimation> animations;
+    private final HashMap<Integer, MyAnimation> animations;
     private EventHandler callback;
+    private PauseTransition pauseTransition;
+    private double rate;
 
     public ShapeHandler(Configuration configuration) {
         this.shapes = new LinkedList<>();
         this.group = new Group();
         this.pane = new Pane(group);
         this.animations = new HashMap<>();
+        this.rate = 1;
 
         int width = configuration.warehouse.getWidth();
         int height = 3 * configuration.warehouse.getDepth() / 2;
@@ -111,7 +114,7 @@ public class ShapeHandler {
         return this.pane;
     }
 
-    private void playAnimations(double start, double rate) {
+    private void playAnimations(double start) {
         LinkedList<MyAnimation> toRemove = new LinkedList<>();
         for (MyAnimation animation : this.animations.values()) {
             if (animation.done(start)) {
@@ -122,7 +125,7 @@ public class ShapeHandler {
             this.remove(animation);
         }
         for (MyAnimation animation : this.animations.values()) {
-            animation.getAnimation().setRate(rate);
+            animation.getAnimation().setRate(this.rate);
             animation.play(start);
         }
     }
@@ -133,18 +136,54 @@ public class ShapeHandler {
         }
     }
 
-    public void playAnimations(double start, double delta, double rate) {
-        PauseTransition pauseTransition = new PauseTransition(Duration.seconds(delta));
-        pauseTransition.setRate(rate);
-        pauseTransition.setOnFinished((event) -> {
-            this.pauseAnimations();
-            this.callback.handle(event);
-        });
-        pauseTransition.play();
-        this.playAnimations(start, rate);
+    public void playAnimations(double start, double delta) {
+        if (this.pauseTransition != null) {
+            this.resumeAnimation();
+        } else {
+            this.pauseTransition = new PauseTransition(Duration.seconds(delta));
+            this.pauseTransition.setRate(this.rate);
+            this.pauseTransition.setOnFinished((event) -> {
+                this.pauseAnimations();
+                this.pauseTransition = null;
+                this.callback.handle(event);
+            });
+            this.pauseTransition.play();
+            this.playAnimations(start);
+        }
+    }
+
+    public void pauseAnimation() {
+        this.pauseAnimations();
+        this.pauseTransition.pause();
+    }
+
+    public void resumeAnimation() {
+        if (this.pauseTransition != null) {
+            for (MyAnimation animation : this.animations.values()) {
+                animation.play();
+            }
+            this.pauseTransition.play();
+        } else {
+            this.callback.handle(null);
+        }
     }
 
     public void setCallback(EventHandler handler) {
         this.callback = handler;
     }
+
+    public double getRate() {
+        return this.rate;
+    }
+
+    public void setRate(double rate) {
+        this.rate = rate;
+        if (this.pauseTransition != null) {
+            this.pauseTransition.setRate(rate);
+        }
+        for (MyAnimation animation : this.animations.values()) {
+            animation.getAnimation().setRate(rate);
+        }
+    }
+
 }
