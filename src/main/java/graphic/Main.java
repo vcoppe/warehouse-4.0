@@ -1,29 +1,23 @@
 package graphic;
 
-import agent.Truck;
 import brain.NaiveSelector;
-import event.ProductionInitEvent;
-import event.TruckArriveEvent;
 import event.TruckGeneratorEvent;
 import javafx.application.Application;
 import javafx.event.EventHandler;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import simulation.Event;
 import simulation.Simulation;
-import util.Pair;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
-import warehouse.Production;
 
-import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main extends Application {
 
@@ -31,13 +25,16 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        Logger logger = Logger.getLogger("javafx");
+        logger.setLevel(Level.OFF);
+
         NaiveSelector selector = new NaiveSelector();
         Configuration configuration = new Configuration(10, 5, selector, selector, selector);
         Simulation simulation = configuration.simulation;
 
         Random random = new Random(0);
 
-        for (int i=0; i<30*26; i++) {
+        for (int i = 0; i < 30 * 26; i++) {
             if (random.nextInt(100) < 50) {
                 Pallet pallet = new Pallet(random.nextInt(10));
                 configuration.stock.add(

@@ -11,9 +11,8 @@ public class Simulation {
     private double currentTime;
 
     public Simulation(Level level) {
-        this.logger = Logger.getLogger("");
+        this.logger = Logger.getLogger("warehouse");
         this.logger.setLevel(level);
-        this.logger.getHandlers()[0].setLevel(level);
 
         this.eventQueue = new TreeSet<>();
         this.currentTime = 0;
