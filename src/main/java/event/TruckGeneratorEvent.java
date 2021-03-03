@@ -40,7 +40,7 @@ public class TruckGeneratorEvent extends Event {
                         this.simulation.getCurrentTime(),
                         this.controller,
                         new Truck(
-                                new Position(this.warehouse.width, this.warehouse.depth + 50),
+                                new Position(this.warehouse.getWidth(), this.warehouse.getDepth() + 50),
                                 toLoad,
                                 toUnload
                         )

@@ -2,7 +2,7 @@ package warehouse;
 
 public class Warehouse {
 
-    public final int width, depth, height; // dimensions
+    private final int width, depth, height; // dimensions
 
     public Warehouse(int width, int depth) {
         // TODO constructor with number of shops, number of slots per shop etc

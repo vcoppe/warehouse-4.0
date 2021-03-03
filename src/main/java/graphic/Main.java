@@ -88,7 +88,7 @@ public class Main extends Application {
         pane.setBottom(new Text("Bottom"));
         pane.setLeft(new Text("Left"));
         pane.setRight(new Text("Right"));
-        pane.setCenter(shapeHandler.getGroup());
+        pane.setCenter(shapeHandler.getPane());
 
         Scene scene = new Scene(pane);
         stage.setScene(scene);

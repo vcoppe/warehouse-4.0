@@ -1,14 +1,17 @@
 package observer;
 
 import agent.Truck;
+import graphic.MyAnimation;
 import graphic.ShapeHandler;
 import graphic.TruckShape;
-import util.Pair;
+import javafx.animation.PathTransition;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
+import javafx.util.Duration;
 import warehouse.Configuration;
-import warehouse.Position;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 public class TruckObserver implements Observer<Truck> {
 
@@ -50,15 +53,26 @@ public class TruckObserver implements Observer<Truck> {
         if (truck.getTargetPosition() == null) { // truck is done
             this.remove(truck);
         } else if (!truck.getPosition().equals(truck.getTargetPosition())) {
-            LinkedList<Pair<Position,Double>> moves = new LinkedList<>();
-            moves.add(new Pair<>(truck.getPosition(), 0.0));
-            moves.add(new Pair<>(
-                    truck.getTargetPosition(),
-                    this.configuration.warehouse.getDistance(
+            Path path = new Path();
+            path.getElements().add(new MoveTo(
+                    truck.getPosition().getX() + 0.5 * truckShape.getWidth(),
+                    truck.getPosition().getY() + 0.5 * truckShape.getHeight()
+            ));
+            path.getElements().add(new LineTo(
+                    truck.getTargetPosition().getX() + 0.5 * truckShape.getWidth(),
+                    truck.getTargetPosition().getY() + 0.5 * truckShape.getHeight()
+            ));
+
+            PathTransition pathTransition = new PathTransition(
+                    Duration.seconds(this.configuration.warehouse.getDistance(
                             truck.getPosition(),
                             truck.getTargetPosition()
-                    )));
-            this.shapeHandler.add(truckShape.getAnimation(moves));
+                    )),
+                    path,
+                    truckShape.getShape()
+            );
+
+            this.shapeHandler.add(new MyAnimation(truckShape, pathTransition));
         }
     }
 

@@ -5,6 +5,8 @@ import agent.Mobile;
 import javafx.animation.PauseTransition;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.layout.Pane;
+import javafx.scene.transform.Scale;
 import javafx.util.Duration;
 import observer.ControllerObserver;
 import observer.MobileObserver;
@@ -18,21 +20,35 @@ import java.util.LinkedList;
 public class ShapeHandler {
 
     private final LinkedList<MyShape> shapes;
+    private final Pane pane;
     private final Group group;
     private final HashMap<Integer,MyAnimation> animations;
     private EventHandler callback;
 
     public ShapeHandler(Configuration configuration) {
-        // TODO compute scaling and apply to all
-
         this.shapes = new LinkedList<>();
         this.group = new Group();
+        this.pane = new Pane(group);
         this.animations = new HashMap<>();
 
-        SiteShape siteShape = new SiteShape(configuration.warehouse.width, 3 * configuration.warehouse.depth / 2);
+        int width = configuration.warehouse.getWidth();
+        int height = 3 * configuration.warehouse.getDepth() / 2;
+        double ratio = (double) width / height;
+
+        double pixelWidth = Math.min(600.0, ratio * 600.0);
+        double pixelHeight = Math.min(600.0, 600.0 / ratio);
+
+        Scale scale = new Scale(
+                pixelWidth / width,
+                pixelHeight / height
+        );
+        this.pane.getTransforms().add(scale);
+        this.pane.setPrefSize(pixelWidth, pixelHeight);
+
+        SiteShape siteShape = new SiteShape(width, height);
         this.add(siteShape);
 
-        WarehouseShape warehouseShape = new WarehouseShape(0, 0, configuration.warehouse.width, configuration.warehouse.depth);
+        WarehouseShape warehouseShape = new WarehouseShape(0, 0, configuration.warehouse.getWidth(), configuration.warehouse.getDepth());
         this.add(warehouseShape);
 
         ProductionLineShape productionLineShape = new ProductionLineShape(
@@ -63,7 +79,6 @@ public class ShapeHandler {
         TruckObserver truckObserver = new TruckObserver(configuration, this);
         ControllerObserver controllerObserver = new ControllerObserver(truckObserver);
         configuration.controller.attach(controllerObserver);
-
     }
 
     public void add(MyShape shape) {
@@ -79,10 +94,7 @@ public class ShapeHandler {
     public void add(MyAnimation animation) {
         this.animations.put(animation.getShape().getId(), animation);
 
-        animation.getAnimation().setOnFinished((event) -> {
-            //this.remove(animation);
-            System.out.println("animation finished");
-        });
+        animation.getAnimation().setOnFinished((event) -> this.remove(animation));
     }
 
     public void remove(MyAnimation animation) {
@@ -95,8 +107,8 @@ public class ShapeHandler {
         return this.shapes;
     }
 
-    public Group getGroup() {
-        return this.group;
+    public Pane getPane() {
+        return this.pane;
     }
 
     private void playAnimations(double start) {
@@ -133,5 +145,4 @@ public class ShapeHandler {
     public void setCallback(EventHandler handler) {
         this.callback = handler;
     }
-
 }
