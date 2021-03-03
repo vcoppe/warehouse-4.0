@@ -111,7 +111,7 @@ public class ShapeHandler {
         return this.pane;
     }
 
-    private void playAnimations(double start) {
+    private void playAnimations(double start, double rate) {
         LinkedList<MyAnimation> toRemove = new LinkedList<>();
         for (MyAnimation animation : this.animations.values()) {
             if (animation.done(start)) {
@@ -122,6 +122,7 @@ public class ShapeHandler {
             this.remove(animation);
         }
         for (MyAnimation animation : this.animations.values()) {
+            animation.getAnimation().setRate(rate);
             animation.play(start);
         }
     }
@@ -132,14 +133,15 @@ public class ShapeHandler {
         }
     }
 
-    public void playAnimations(double start, double delta) {
+    public void playAnimations(double start, double delta, double rate) {
         PauseTransition pauseTransition = new PauseTransition(Duration.seconds(delta));
+        pauseTransition.setRate(rate);
         pauseTransition.setOnFinished((event) -> {
             this.pauseAnimations();
             this.callback.handle(event);
         });
         pauseTransition.play();
-        this.playAnimations(start);
+        this.playAnimations(start, rate);
     }
 
     public void setCallback(EventHandler handler) {

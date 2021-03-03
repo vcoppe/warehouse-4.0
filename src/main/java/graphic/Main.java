@@ -21,13 +21,15 @@ import java.util.logging.Logger;
 
 public class Main extends Application {
 
-    public double WIDTH, HEIGHT, TIMESTEP;
+    private double rate = 10;
 
     @Override
     public void start(Stage stage) throws Exception {
+        // disable JavaFX logging
         Logger logger = Logger.getLogger("javafx");
         logger.setLevel(Level.OFF);
 
+        // create scenario
         NaiveSelector selector = new NaiveSelector();
         Configuration configuration = new Configuration(10, 5, selector, selector, selector);
         Simulation simulation = configuration.simulation;
@@ -35,7 +37,7 @@ public class Main extends Application {
         Random random = new Random(0);
 
         for (int i = 0; i < 30 * 26; i++) {
-            if (random.nextInt(100) < 50) {
+            if (random.nextInt(100) < 70) {
                 Pallet pallet = new Pallet(random.nextInt(10));
                 configuration.stock.add(
                         new Position(
@@ -58,24 +60,16 @@ public class Main extends Application {
         Event event = new TruckGeneratorEvent(configuration.simulation, 0, configuration.warehouse, configuration.controller);
         configuration.simulation.enqueueEvent(event);
 
-        /*ArrayList<Pair<Pallet,Integer>> in = new ArrayList<>();
-        ArrayList<Pair<Pallet,Integer>> out = new ArrayList<>();
-        for (int i=0; i<3; i++) {
-            in.add(new Pair<>(new Pallet(i), 1));
-            out.add(new Pair<>(new Pallet(3 + i), 1));
-        }
-        Production production = new Production(in, out, 10, 1, 1000);
-        Event event2 = new ProductionInitEvent(configuration.simulation, 300, configuration.controller, production);
-        configuration.simulation.enqueueEvent(event2);*/
-
+        // create all shapes and observers
         ShapeHandler shapeHandler = new ShapeHandler(configuration);
 
+        // run simulation
         EventHandler handler = e -> {
             if (simulation.hasNextEvent()) {
                 double currentTime = simulation.nextEvent().getTime();
                 simulation.run(currentTime);
                 double delta = simulation.nextEvent().getTime() - currentTime;
-                shapeHandler.playAnimations(currentTime, delta);
+                shapeHandler.playAnimations(currentTime, delta, rate);
             }
         };
 
