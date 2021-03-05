@@ -41,6 +41,12 @@ public class TruckCallEventTest extends TestCase {
         assertEquals(this.dock, this.truck.getDock());
     }
 
+    public void testSetTargetPosition() {
+        assertFalse(this.truck.getTargetPosition().equals(this.dock.getPosition()));
+        this.event.run();
+        assertTrue(this.truck.getTargetPosition().equals(this.dock.getPosition()));
+    }
+
     public void testTriggerTruckDockEvent() {
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();

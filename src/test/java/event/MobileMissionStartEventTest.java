@@ -43,6 +43,18 @@ public class MobileMissionStartEventTest extends TestCase {
         this.truckUnload = new Truck(new Position(10, 0), new ArrayList<>(), toUnload);
     }
 
+    public void testSetTargetPosition() {
+        Pallet pallet = this.truckLoad.getToLoad().get(0);
+        Position startPosition = this.loadPalletPositions.get(0);
+        Position endPosition = this.truckLoad.getPosition();
+        Mission mission = new Mission(pallet, null, this.truckLoad, startPosition, endPosition);
+        MobileMissionStartEvent event = new MobileMissionStartEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
+
+        assertFalse(startPosition.equals(this.mobile.getTargetPosition()));
+        event.run();
+        assertTrue(startPosition.equals(this.mobile.getTargetPosition()));
+    }
+
     public void testTriggerMobileMissionPickUpEvent() {
         Pallet pallet = this.truckUnload.getToUnload().get(0);
         Position startPosition = this.truckUnload.getPosition();

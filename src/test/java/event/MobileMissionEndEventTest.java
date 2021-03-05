@@ -46,6 +46,18 @@ public class MobileMissionEndEventTest extends TestCase {
 
     }
 
+    public void testSetPosition() {
+        Pallet pallet = this.truckLoad.getToLoad().get(0);
+        Position startPosition = this.loadPalletPositions.get(0);
+        Position endPosition = this.truckLoad.getPosition();
+        Mission mission = new Mission(pallet, null, this.truckLoad, startPosition, endPosition);
+        MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
+
+        assertFalse(endPosition.equals(this.mobile.getPosition()));
+        event.run();
+        assertTrue(endPosition.equals(this.mobile.getPosition()));
+    }
+
     public void testAddPalletToStock() {
         Pallet pallet = this.truckUnload.getToUnload().get(0);
         Position startPosition = this.truckUnload.getPosition();
