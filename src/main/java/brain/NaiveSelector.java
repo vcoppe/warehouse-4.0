@@ -22,12 +22,12 @@ public class NaiveSelector implements MobileMissionSelector, PalletPositionSelec
     }
 
     @Override
-    public Position selectStartPosition(Pallet pallet, ArrayList<Position> positions) {
+    public Position selectStartPosition(Pallet pallet, Position endPosition, ArrayList<Position> positions) {
         return positions.get(0);
     }
 
     @Override
-    public Position selectEndPosition(Pallet pallet, ArrayList<Position> positions) {
+    public Position selectEndPosition(Pallet pallet, Position startPosition, ArrayList<Position> positions) {
         return positions.get(0);
     }
 

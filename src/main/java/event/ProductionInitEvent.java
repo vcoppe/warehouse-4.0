@@ -47,9 +47,9 @@ public class ProductionInitEvent extends Event {
             }
 
             for (int i=0; i<quantity; i++) {
-                Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, positions);
-                positions.remove(startPosition);
                 Position endPosition = this.productionLine.getStartBufferPosition();
+                Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, positions);
+                positions.remove(startPosition);
 
                 if (endPosition == null) {
                     this.simulation.logger.warning("FAILURE! Start buffer of production line is full.");

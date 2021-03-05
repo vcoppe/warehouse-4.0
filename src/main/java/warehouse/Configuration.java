@@ -41,7 +41,7 @@ public class Configuration {
 
 
         this.mobileMissionSelector = new ClosestUrgentMissionSelector(this.warehouse);
-        this.palletPositionSelector = new NaiveSelector();
+        this.palletPositionSelector = new ClosestPositionSelector(this.warehouse);
         this.truckDockSelector = new NaiveSelector();
 
         this.controller = new Controller(this.warehouse, this.stock, this.productionLine, this.docks, this.mobiles, this.mobileMissionSelector, this.truckDockSelector, this.palletPositionSelector);

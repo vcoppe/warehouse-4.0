@@ -7,7 +7,8 @@ import java.util.ArrayList;
 
 public interface PalletPositionSelector {
 
-    Position selectStartPosition(Pallet pallet, ArrayList<Position> positions);
-    Position selectEndPosition(Pallet pallet, ArrayList<Position> positions);
+    Position selectStartPosition(Pallet pallet, Position endPosition, ArrayList<Position> positions);
+
+    Position selectEndPosition(Pallet pallet, Position startPosition, ArrayList<Position> positions);
 
 }

@@ -52,6 +52,10 @@ public class Warehouse {
         return this.graph.getShortestPath(this.toInt(p1), this.toInt(p2)).stream().map(this::toPosition).collect(Collectors.toList());
     }
 
+    public double getDistance(Position p1, Position p2) {
+        return this.graph.getShortestDistance(this.toInt(p1), this.toInt(p2));
+    }
+
     public double getTravelTime(Position p1, Position p2, Mobile mobile) {
         return this.graph.getShortestDistance(this.toInt(p1), this.toInt(p2)) / mobile.getSpeed();
     }
