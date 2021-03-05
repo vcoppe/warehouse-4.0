@@ -5,7 +5,10 @@ import warehouse.Pallet;
 import warehouse.Position;
 import warehouse.Warehouse;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 // need to add all possible positions with Pallet.FREE at the start
@@ -23,16 +26,11 @@ public class Stock extends Observable {
     }
 
     public int toInt(Position position) {
-        return position.getX() + this.warehouse.getWidth() *
-                (position.getY() + this.warehouse.getDepth() * position.getZ());
+        return this.warehouse.toInt(position);
     }
 
     public Position toPosition(int hash) {
-        return new Position(
-                hash % this.warehouse.getWidth(),
-                (hash / this.warehouse.getWidth()) % this.warehouse.getDepth(),
-                hash / (this.warehouse.getWidth() * this.warehouse.getDepth())
-                );
+        return this.warehouse.toPosition(hash);
     }
 
     public void add(Position position, Pallet pallet) {

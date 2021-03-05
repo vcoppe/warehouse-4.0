@@ -55,7 +55,7 @@ public class TruckGeneratorEvent extends Event {
         );
         this.simulation.enqueueEvent(new TruckGeneratorEvent(
                 this.simulation,
-                this.simulation.getCurrentTime() + random.nextInt(50),
+                this.simulation.getCurrentTime() + 100 + random.nextInt(50),
                 this.warehouse,
                 this.controller
         ));

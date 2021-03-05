@@ -1,6 +1,8 @@
 package event;
 
-import agent.*;
+import agent.Controller;
+import agent.Mobile;
+import agent.Stock;
 import simulation.Event;
 import simulation.Simulation;
 import warehouse.Mission;
@@ -33,7 +35,7 @@ public class MobileMissionStartEvent extends Event {
 
         this.mobile.setTargetPosition(this.mission.getStartPosition());
 
-        double missionPickUpTime = this.simulation.getCurrentTime() + this.warehouse.getDistance(this.mobile.getPosition(), this.mission.getStartPosition());
+        double missionPickUpTime = this.simulation.getCurrentTime() + this.warehouse.getTravelTime(this.mobile.getPosition(), this.mission.getStartPosition(), this.mobile);
 
         Event event = new MobileMissionPickUpEvent(this.simulation, missionPickUpTime, this.controller, this.mobile, this.mission);
         this.simulation.enqueueEvent(event);

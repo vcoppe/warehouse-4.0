@@ -10,6 +10,7 @@ public class Truck extends Observable {
 
     private static int TRUCK_ID = 0;
     private final int id;
+    private double speed;
     private Dock dock;
     private Position position, targetPosition;
     private final ArrayList<Pallet> toLoad;
@@ -19,6 +20,7 @@ public class Truck extends Observable {
     public Truck(Dock dock, Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
         super();
         this.id = TRUCK_ID++;
+        this.speed = 20;
         this.dock = dock;
         this.position = position;
         this.targetPosition = position;
@@ -33,6 +35,10 @@ public class Truck extends Observable {
 
     public int getId() {
         return this.id;
+    }
+
+    public double getSpeed() {
+        return this.speed;
     }
 
     public ArrayList<Pallet> getToLoad() {

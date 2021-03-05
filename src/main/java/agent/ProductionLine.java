@@ -88,14 +88,16 @@ public class ProductionLine extends Observable {
                 int quantity = pair.second;
 
                 int count = 0;
-                for (Position position : this.startBuffer) if (!this.stock.isLocked(position)) {
-                    Pallet bufferPallet = this.stock.get(position);
-                    if (bufferPallet != null
-                            && bufferPallet.getType() == pallet.getType()
-                            && !usedPallets.contains(bufferPallet.getId())
-                            && count < quantity) {
-                        count++;
-                        productionPallets.add(bufferPallet.getId());
+                for (Position position : this.startBuffer) {
+                    if (!this.stock.isLocked(position)) {
+                        Pallet bufferPallet = this.stock.get(position);
+                        if (bufferPallet != null
+                                && bufferPallet.getType() == pallet.getType()
+                                && !usedPallets.contains(bufferPallet.getId())
+                                && count < quantity) {
+                            count++;
+                            productionPallets.add(bufferPallet.getId());
+                        }
                     }
                 }
 
@@ -121,13 +123,15 @@ public class ProductionLine extends Observable {
             int quantity = pair.second;
 
             int count = 0;
-            for (Position position : this.startBuffer) if (!this.stock.isLocked(position)) {
-                Pallet bufferPallet = this.stock.get(position);
-                if (bufferPallet != null && bufferPallet.getType() == pallet.getType()) {
-                    this.stock.lock(position);
-                    count++;
-                    if (count == quantity) {
-                        break;
+            for (Position position : this.startBuffer) {
+                if (!this.stock.isLocked(position)) {
+                    Pallet bufferPallet = this.stock.get(position);
+                    if (bufferPallet != null && bufferPallet.getType() == pallet.getType()) {
+                        this.stock.lock(position);
+                        count++;
+                        if (count == quantity) {
+                            break;
+                        }
                     }
                 }
             }

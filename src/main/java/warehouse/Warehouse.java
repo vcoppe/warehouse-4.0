@@ -1,14 +1,23 @@
 package warehouse;
 
+import agent.Mobile;
+import util.Graph;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Warehouse {
 
     private final int width, depth, height; // dimensions
+    private final Graph graph;
 
     public Warehouse(int width, int depth) {
         // TODO constructor with number of shops, number of slots per shop etc
         this.width = width;
         this.depth = depth;
         this.height = 2;
+        this.graph = new Graph();
     }
 
     public int getWidth() {
@@ -23,9 +32,41 @@ public class Warehouse {
         return this.height;
     }
 
-    // TODO use the topology of the site (represented as a graph), apply speed wrt type of mobile and zone (and time of the day)
-    public double getDistance(Position p1, Position p2) {
-        return p1.manhattanDistance2D(p2) / 100.0;
+    public int toInt(Position position) {
+        return position.getX() + this.width *
+                (position.getZ() + this.height * position.getY());
+    }
+
+    public Position toPosition(int hash) {
+        return new Position(
+                hash % this.width,
+                hash / (this.width * this.height),
+                (hash / this.width) % this.height
+        );
+    }
+
+    public void addEdge(Position p1, Position p2) {
+        this.graph.addEdge(this.toInt(p1), this.toInt(p2), p1.manhattanDistance3D(p2));
+    }
+
+    public void updatePaths() {
+        // only compute paths from docks to all slots and vice-versa
+        // this.graph.computeAllPairsShortestPath();
+    }
+
+    public List<Position> getPath(Position p1, Position p2) {
+        return this.graph.shortestPath(this.toInt(p1), this.toInt(p2)).stream().map(this::toPosition).collect(Collectors.toList());
+    }
+
+    public double getTravelTime(Position p1, Position p2, Mobile mobile) {
+        ArrayList<Integer> path = this.graph.shortestPath(this.toInt(p1), this.toInt(p2));
+
+        double distance = 0;
+        for (int i = 1; i < path.size(); i++) {
+            distance += this.toPosition(path.get(i)).manhattanDistance3D(this.toPosition(path.get(i - 1)));
+        }
+
+        return distance / mobile.getSpeed();
     }
 
 }

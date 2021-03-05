@@ -8,16 +8,22 @@ public class Mobile extends Observable {
     private static int MOBILE_ID = 0;
     private final int id;
     private Position position, targetPosition;
+    private final double speed;
 
     public Mobile(Position position) {
         super();
         this.id = MOBILE_ID++;
         this.position = position;
         this.targetPosition = position;
+        this.speed = 10;
     }
 
     public int getId() {
         return this.id;
+    }
+
+    public double getSpeed() {
+        return this.speed;
     }
 
     public void setPosition(Position position) {

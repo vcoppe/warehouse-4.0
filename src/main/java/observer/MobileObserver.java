@@ -9,12 +9,11 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
-import util.Pair;
 import warehouse.Configuration;
 import warehouse.Position;
 
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.List;
 
 public class MobileObserver implements Observer<Mobile> {
 
@@ -47,33 +46,33 @@ public class MobileObserver implements Observer<Mobile> {
             mobileShape = this.add(mobile);
         }
 
-        // TODO ask warehouse the real path
-
-        LinkedList<Pair<Position, Double>> moves = new LinkedList<>();
-        moves.add(new Pair<>(mobile.getPosition(), 0.0));
-        moves.add(new Pair<>(
-                mobile.getTargetPosition(),
-                this.configuration.warehouse.getDistance(
-                        mobile.getPosition(),
-                        mobile.getTargetPosition()
-                ))
+        List<Position> positions = this.configuration.warehouse.getPath(
+                mobile.getPosition(),
+                mobile.getTargetPosition()
         );
 
         Path path = new Path();
-        path.getElements().add(new MoveTo(
-                mobile.getPosition().getX() + 0.5 * mobileShape.getWidth(),
-                mobile.getPosition().getY() + 0.5 * mobileShape.getHeight()
-        ));
-        path.getElements().add(new LineTo(
-                mobile.getTargetPosition().getX() + 0.5 * mobileShape.getWidth(),
-                mobile.getTargetPosition().getY() + 0.5 * mobileShape.getHeight()
-        ));
-        //path.getTransforms().add(this.shapeHandler.getScale());
+        boolean first = true;
+        for (Position position : positions) {
+            if (first) {
+                path.getElements().add(new MoveTo(
+                        position.getX() + 0.5 * mobileShape.getWidth(),
+                        position.getY() + 0.5 * mobileShape.getHeight()
+                ));
+                first = false;
+            } else {
+                path.getElements().add(new LineTo(
+                        position.getX() + 0.5 * mobileShape.getWidth(),
+                        position.getY() + 0.5 * mobileShape.getHeight()
+                ));
+            }
+        }
 
         PathTransition pathTransition = new PathTransition(
-                Duration.seconds(this.configuration.warehouse.getDistance(
+                Duration.seconds(this.configuration.warehouse.getTravelTime(
                         mobile.getPosition(),
-                        mobile.getTargetPosition()
+                        mobile.getTargetPosition(),
+                        mobile
                 )),
                 path,
                 mobileShape.getShape()

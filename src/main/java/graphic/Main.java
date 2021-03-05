@@ -48,14 +48,6 @@ public class Main extends Application {
                         ),
                         pallet
                 );
-            } else {
-                configuration.stock.add(
-                        new Position(
-                                (2 * (i / 30) + (i / 30) % 2) * configuration.palletSize,
-                                (i % 30) * configuration.palletSize
-                        ),
-                        Pallet.FREE
-                );
             }
         }
 

@@ -42,8 +42,6 @@ public class MobileMissionEndEventTest extends TestCase {
 
         this.truckLoad = new Truck(new Position(0, 0), toLoad, new ArrayList<>());
         this.truckUnload = new Truck(new Position(10, 0), new ArrayList<>(), toUnload);
-
-
     }
 
     public void testSetPosition() {

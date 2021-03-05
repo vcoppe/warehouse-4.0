@@ -49,7 +49,7 @@ public class MobileMissionPickUpEvent extends Event {
             this.stock.remove(this.mission.getStartPosition(), this.mission.getPallet());
         }
 
-        double missionEndTime = this.simulation.getCurrentTime() + this.warehouse.getDistance(this.mission.getStartPosition(), this.mission.getEndPosition());
+        double missionEndTime = this.simulation.getCurrentTime() + this.warehouse.getTravelTime(this.mission.getStartPosition(), this.mission.getEndPosition(), this.mobile);
 
         Event event = new MobileMissionEndEvent(this.simulation, missionEndTime, this.controller, this.mobile, this.mission);
         this.simulation.enqueueEvent(event);

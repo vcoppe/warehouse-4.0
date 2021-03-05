@@ -30,17 +30,17 @@ public class MobileMissionPickUpEventTest extends TestCase {
         this.loadPalletPositions = new ArrayList<>();
         this.unloadPalletPositions = new ArrayList<>();
 
-        for (int i=0; i<5; i++) {
+        for (int i = 0; i < 5; i++) {
             toLoad.add(new Pallet(i));
-            this.configuration.stock.add(new Position(5, i), new Pallet(i)); // add in stock
-            this.loadPalletPositions.add(new Position(5, i));
+            this.configuration.stock.add(new Position(0, i * this.configuration.palletSize), new Pallet(i)); // add in stock
+            this.loadPalletPositions.add(new Position(0, i * this.configuration.palletSize));
             toUnload.add(new Pallet(i));
-            this.configuration.stock.lock(new Position(7, i));
-            this.unloadPalletPositions.add(new Position(7, i));
+            this.configuration.stock.lock(new Position(30, i * this.configuration.palletSize));
+            this.unloadPalletPositions.add(new Position(30, i * this.configuration.palletSize));
         }
 
-        this.truckLoad = new Truck(new Position(0, 0), toLoad, new ArrayList<>());
-        this.truckUnload = new Truck(new Position(10, 0), new ArrayList<>(), toUnload);
+        this.truckLoad = new Truck(new Position(0, this.configuration.warehouse.getDepth()), toLoad, new ArrayList<>());
+        this.truckUnload = new Truck(new Position(this.configuration.dockWidth, this.configuration.warehouse.getDepth()), new ArrayList<>(), toUnload);
     }
 
     public void testSetPosition() {

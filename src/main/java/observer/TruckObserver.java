@@ -64,10 +64,7 @@ public class TruckObserver implements Observer<Truck> {
             ));
 
             PathTransition pathTransition = new PathTransition(
-                    Duration.seconds(this.configuration.warehouse.getDistance(
-                            truck.getPosition(),
-                            truck.getTargetPosition()
-                    )),
+                    Duration.seconds(truck.getPosition().manhattanDistance2D(truck.getTargetPosition()) / truck.getSpeed()),
                     path,
                     truckShape.getShape()
             );
