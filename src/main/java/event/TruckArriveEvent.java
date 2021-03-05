@@ -20,11 +20,11 @@ public class TruckArriveEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: TruckArriveEvent\n\ttruck %d arrived",
-                        this.simulation.getCurrentTime(),
+                        this.time,
                         this.truck.getId()));
 
         this.controller.add(this.truck);
-        Event event = new ControllerEvent(this.simulation, this.simulation.getCurrentTime(), this.controller);
+        Event event = new ControllerEvent(this.simulation, this.time, this.controller);
         this.simulation.enqueueEvent(event);
     }
 }

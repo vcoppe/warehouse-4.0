@@ -29,7 +29,7 @@ public class ProductionStartEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: ProductionStartEvent\n\tproduction %d started",
-                        this.simulation.getCurrentTime(),
+                        this.time,
                         this.production.getId()));
 
         for (Pair<Pallet,Integer> pair : production.getIn()) {
@@ -52,7 +52,7 @@ public class ProductionStartEvent extends Event {
             }
         }
 
-        double endTime = this.simulation.getCurrentTime() + this.production.getTime();
+        double endTime = this.time + this.production.getTime();
         Event event = new ProductionEndEvent(this.simulation, endTime, this.controller, this.production);
         this.simulation.enqueueEvent(event);
     }

@@ -26,14 +26,14 @@ public class TruckCallEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: TruckCallEvent\n\ttruck %d called at dock %d",
-                        this.simulation.getCurrentTime(),
+                        this.time,
                         this.truck.getId(),
                         this.dock.getId()));
 
         this.truck.setDock(this.dock);
         this.truck.setTargetPosition(this.dock.getPosition());
 
-        double endTime = this.simulation.getCurrentTime() + this.truck.getPosition().manhattanDistance2D(this.dock.getPosition()) / this.truck.getSpeed();
+        double endTime = this.time + this.truck.getPosition().manhattanDistance2D(this.dock.getPosition()) / this.truck.getSpeed();
 
         Event event = new TruckDockEvent(this.simulation, endTime, this.controller, this.dock, this.truck);
         this.simulation.enqueueEvent(event);

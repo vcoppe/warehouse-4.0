@@ -4,8 +4,8 @@ import agent.ProductionLine;
 import agent.Stock;
 import brain.NaiveSelector;
 import junit.framework.TestCase;
-import warehouse.Configuration;
 import util.Pair;
+import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
 import warehouse.Production;
@@ -25,7 +25,7 @@ public class ProductionStartEventTest extends TestCase {
         super.setUp();
 
         NaiveSelector selector = new NaiveSelector();
-        this.configuration = new Configuration(1, 1, selector, selector, selector);
+        this.configuration = new Configuration(1, 1);
         this.productionLine = this.configuration.productionLine;
         this.stock = this.configuration.stock;
 

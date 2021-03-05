@@ -30,7 +30,7 @@ public class MobileMissionPickUpEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: MobileMissionPickUpEvent\n\tmobile %d picked up pallet of mission %d",
-                        this.simulation.getCurrentTime(),
+                        this.time,
                         this.mobile.getId(),
                         this.mission.getId()));
 
@@ -42,14 +42,14 @@ public class MobileMissionPickUpEvent extends Event {
             Truck truck = this.mission.getStartTruck();
             truck.remove(this.mission.getPallet());
             if (truck.done()) {
-                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.mission.getStartTruck().getDock(), this.mission.getStartTruck());
+                Event event = new TruckDoneEvent(this.simulation, this.time, this.controller, this.mission.getStartTruck().getDock(), this.mission.getStartTruck());
                 this.simulation.enqueueEvent(event);
             }
         } else {
             this.stock.remove(this.mission.getStartPosition(), this.mission.getPallet());
         }
 
-        double missionEndTime = this.simulation.getCurrentTime() + this.warehouse.getTravelTime(this.mission.getStartPosition(), this.mission.getEndPosition(), this.mobile);
+        double missionEndTime = this.time + this.warehouse.getTravelTime(this.mission.getStartPosition(), this.mission.getEndPosition(), this.mobile);
 
         Event event = new MobileMissionEndEvent(this.simulation, missionEndTime, this.controller, this.mobile, this.mission);
         this.simulation.enqueueEvent(event);

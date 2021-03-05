@@ -19,7 +19,7 @@ public class TruckArriveEventTest extends TestCase {
         super.setUp();
 
         NaiveSelector selector = new NaiveSelector();
-        this.configuration = new Configuration(1, 1, selector, selector, selector);
+        this.configuration = new Configuration(1, 1);
 
         ArrayList<Pallet> toLoad = new ArrayList<>();
         ArrayList<Pallet> toUnload = new ArrayList<>();

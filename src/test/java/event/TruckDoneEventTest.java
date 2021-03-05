@@ -19,7 +19,7 @@ public class TruckDoneEventTest extends TestCase {
         super.setUp();
 
         NaiveSelector selector = new NaiveSelector();
-        this.configuration = new Configuration(1, 1, selector, selector, selector);
+        this.configuration = new Configuration(1, 1);
         this.dock = this.configuration.docks.get(0);
         this.truck = new Truck(this.dock, this.dock.getPosition(), new ArrayList<>(), new ArrayList<>());
         this.configuration.controller.remove(this.dock); // mark as currently used

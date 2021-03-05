@@ -1,6 +1,5 @@
 package graphic;
 
-import brain.NaiveSelector;
 import event.TruckGeneratorEvent;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -32,8 +31,7 @@ public class Main extends Application {
         logger.setLevel(Level.OFF);
 
         // create scenario
-        NaiveSelector selector = new NaiveSelector();
-        Configuration configuration = new Configuration(10, 5, selector, selector, selector);
+        Configuration configuration = new Configuration(10, 5);
         Simulation simulation = configuration.simulation;
 
         Random random = new Random(0);

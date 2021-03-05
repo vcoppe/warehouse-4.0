@@ -42,8 +42,8 @@ public class GraphTest extends TestCase {
 
         graph.computeAllPairsShortestPath();
 
-        assertEquals(11, graph.shortestPath(0, 10).size());
-        assertEquals(0, graph.shortestPath(10, 0).size());
+        assertEquals(11, graph.getShortestPath(0, 10).size());
+        assertEquals(0, graph.getShortestPath(10, 0).size());
     }
 
 }

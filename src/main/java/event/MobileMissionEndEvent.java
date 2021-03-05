@@ -1,6 +1,9 @@
 package event;
 
-import agent.*;
+import agent.Controller;
+import agent.Mobile;
+import agent.Stock;
+import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
 import warehouse.Mission;
@@ -24,7 +27,7 @@ public class MobileMissionEndEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: MobileMissionEndEvent\n\tmobile %d finished mission %d",
-                        this.simulation.getCurrentTime(),
+                        this.time,
                         this.mobile.getId(),
                         this.mission.getId()));
 
@@ -36,14 +39,14 @@ public class MobileMissionEndEvent extends Event {
             Truck truck = this.mission.getEndTruck();
             truck.add(this.mission.getPallet());
             if (truck.done()) {
-                Event event = new TruckDoneEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, this.mission.getEndTruck().getDock(), this.mission.getEndTruck());
+                Event event = new TruckDoneEvent(this.simulation, this.time, this.controller, this.mission.getEndTruck().getDock(), this.mission.getEndTruck());
                 this.simulation.enqueueEvent(event);
             }
         } else {
             this.stock.add(this.mission.getEndPosition(), this.mission.getPallet());
         }
 
-        Event event = new ControllerEvent(this.simulation, this.simulation.getCurrentTime(), this.controller);
+        Event event = new ControllerEvent(this.simulation, this.time, this.controller);
         this.simulation.enqueueEvent(event);
     }
 

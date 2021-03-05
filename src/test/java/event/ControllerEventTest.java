@@ -6,12 +6,8 @@ import agent.Stock;
 import agent.Truck;
 import brain.NaiveSelector;
 import junit.framework.TestCase;
-import warehouse.Configuration;
 import util.Pair;
-import warehouse.Mission;
-import warehouse.Pallet;
-import warehouse.Position;
-import warehouse.Production;
+import warehouse.*;
 
 import java.util.ArrayList;
 
@@ -30,7 +26,7 @@ public class ControllerEventTest extends TestCase {
         super.setUp();
 
         NaiveSelector selector = new NaiveSelector();
-        this.configuration = new Configuration(2, 2, selector, selector, selector);
+        this.configuration = new Configuration(2, 2);
         this.controller = this.configuration.controller;
         this.stock = this.configuration.stock;
         this.productionLine = this.configuration.productionLine;
@@ -41,7 +37,7 @@ public class ControllerEventTest extends TestCase {
         this.trucks = new ArrayList<>();
         this.productions = new ArrayList<>();
         for (int i=0; i<5; i++) {
-            this.missions.add(new Mission(new Pallet(0), new Position(0, 0), new Position(0, 0)));
+            this.missions.add(new Mission(0, new Pallet(0), new Position(0, 0), new Position(0, 0)));
             this.trucks.add(new Truck(new Position(0, 0), new ArrayList<>(), new ArrayList<>()));
 
             ArrayList<Pair<Pallet,Integer>> in = new ArrayList<>();

@@ -32,7 +32,7 @@ public class ProductionEndEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: ProductionEndEvent\n\tproduction %d ended",
-                        this.simulation.getCurrentTime(),
+                        this.time,
                         this.production.getId()));
 
         for (Pair<Pallet,Integer> pair : this.production.getOut()) {
@@ -57,7 +57,7 @@ public class ProductionEndEvent extends Event {
                 }
 
                 Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, positions);
-                Mission mission = new Mission(pallet, startPosition, endPosition);
+                Mission mission = new Mission(this.time, pallet, startPosition, endPosition);
                 this.controller.add(mission);
                 this.stock.lock(endPosition);
             }
@@ -65,7 +65,7 @@ public class ProductionEndEvent extends Event {
 
         this.productionLine.freeCapacity(this.production.getCapacity());
 
-        Event event = new ControllerEvent(this.simulation, this.simulation.getCurrentTime(), this.controller);
+        Event event = new ControllerEvent(this.simulation, this.time, this.controller);
         this.simulation.enqueueEvent(event);
     }
 

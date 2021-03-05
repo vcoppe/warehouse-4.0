@@ -32,7 +32,7 @@ public class ProductionInitEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: ProductionInitEvent\n\tproduction %d initiated",
-                        this.simulation.getCurrentTime(),
+                        this.time,
                         this.production.getId()));
 
         for (Pair<Pallet,Integer> pair : this.production.getIn()) {
@@ -56,7 +56,7 @@ public class ProductionInitEvent extends Event {
                     return;
                 }
 
-                Mission mission = new Mission(pallet, startPosition, endPosition);
+                Mission mission = new Mission(this.time, pallet, startPosition, endPosition);
                 this.controller.add(mission);
                 this.stock.lock(startPosition);
                 this.stock.lock(endPosition);
@@ -65,7 +65,7 @@ public class ProductionInitEvent extends Event {
 
         this.productionLine.add(this.production);
 
-        Event event = new ControllerEvent(this.simulation, this.simulation.getCurrentTime(), this.controller);
+        Event event = new ControllerEvent(this.simulation, this.time, this.controller);
         this.simulation.enqueueEvent(event);
     }
 

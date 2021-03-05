@@ -23,7 +23,7 @@ public class TruckDockEventTest extends TestCase {
         super.setUp();
 
         NaiveSelector selector = new NaiveSelector();
-        this.configuration = new Configuration(5, 1, selector, selector, selector);
+        this.configuration = new Configuration(5, 1);
         this.dock = this.configuration.docks.get(0);
 
         ArrayList<Pallet> toLoad = new ArrayList<>();

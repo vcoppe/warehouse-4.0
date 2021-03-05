@@ -3,7 +3,6 @@ package warehouse;
 import agent.Mobile;
 import util.Graph;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,24 +48,12 @@ public class Warehouse {
         this.graph.addEdge(this.toInt(p1), this.toInt(p2), p1.manhattanDistance3D(p2));
     }
 
-    public void updatePaths() {
-        // only compute paths from docks to all slots and vice-versa
-        // this.graph.computeAllPairsShortestPath();
-    }
-
     public List<Position> getPath(Position p1, Position p2) {
-        return this.graph.shortestPath(this.toInt(p1), this.toInt(p2)).stream().map(this::toPosition).collect(Collectors.toList());
+        return this.graph.getShortestPath(this.toInt(p1), this.toInt(p2)).stream().map(this::toPosition).collect(Collectors.toList());
     }
 
     public double getTravelTime(Position p1, Position p2, Mobile mobile) {
-        ArrayList<Integer> path = this.graph.shortestPath(this.toInt(p1), this.toInt(p2));
-
-        double distance = 0;
-        for (int i = 1; i < path.size(); i++) {
-            distance += this.toPosition(path.get(i)).manhattanDistance3D(this.toPosition(path.get(i - 1)));
-        }
-
-        return distance / mobile.getSpeed();
+        return this.graph.getShortestDistance(this.toInt(p1), this.toInt(p2)) / mobile.getSpeed();
     }
 
 }

@@ -1,9 +1,7 @@
 package warehouse;
 
 import agent.*;
-import brain.MobileMissionSelector;
-import brain.PalletPositionSelector;
-import brain.TruckDockSelector;
+import brain.*;
 import simulation.Simulation;
 
 import java.util.ArrayList;
@@ -27,7 +25,7 @@ public class Configuration {
     public int dockWidth = 30;
     public int productionLineWidth = 50;
 
-    public Configuration(int width, int depth, int nDocks, int nMobiles, MobileMissionSelector mobileMissionSelector, PalletPositionSelector palletPositionSelector, TruckDockSelector truckDockSelector, Level level) {
+    public Configuration(int width, int depth, int nDocks, int nMobiles, Level level) {
         this.simulation = new Simulation(level);
 
         this.warehouse = new Warehouse(width, depth);
@@ -37,22 +35,24 @@ public class Configuration {
         this.docks = new ArrayList<>();
         this.mobiles = new ArrayList<>();
 
-        for (int i=0; i<nDocks; i++) this.docks.add(new Dock(new Position(dockWidth*i, depth)));
-        for (int i=0; i<nMobiles; i++) this.mobiles.add(new Mobile(new Position(dockWidth*i, depth-palletSize)));
+        for (int i = 0; i < nDocks; i++) this.docks.add(new Dock(new Position(dockWidth * i, depth)));
+        for (int i = 0; i < nMobiles; i++)
+            this.mobiles.add(new Mobile(new Position(dockWidth * i, depth - palletSize)));
 
-        this.controller = new Controller(this.warehouse, this.stock, this.productionLine, this.docks, this.mobiles, mobileMissionSelector, truckDockSelector, palletPositionSelector);
 
-        this.mobileMissionSelector = mobileMissionSelector;
-        this.palletPositionSelector = palletPositionSelector;
-        this.truckDockSelector = truckDockSelector;
+        this.mobileMissionSelector = new ClosestUrgentMissionSelector(this.warehouse);
+        this.palletPositionSelector = new NaiveSelector();
+        this.truckDockSelector = new NaiveSelector();
+
+        this.controller = new Controller(this.warehouse, this.stock, this.productionLine, this.docks, this.mobiles, this.mobileMissionSelector, this.truckDockSelector, this.palletPositionSelector);
     }
 
-    public Configuration(int width, int height, int nDocks, int nMobiles, MobileMissionSelector mobileMissionSelector, PalletPositionSelector palletPositionSelector, TruckDockSelector truckDockSelector) {
-        this(width, height, nDocks, nMobiles, mobileMissionSelector, palletPositionSelector, truckDockSelector, Level.ALL);
+    public Configuration(int width, int height, int nDocks, int nMobiles) {
+        this(width, height, nDocks, nMobiles, Level.ALL);
     }
 
-    public Configuration(int nDocks, int nMobiles, MobileMissionSelector mobileMissionSelector, PalletPositionSelector palletPositionSelector, TruckDockSelector truckDockSelector) {
-        this(700, 350, nDocks, nMobiles, mobileMissionSelector, palletPositionSelector, truckDockSelector, Level.ALL);
+    public Configuration(int nDocks, int nMobiles) {
+        this(700, 350, nDocks, nMobiles, Level.ALL);
 
         for (int i = 0; i < 10; i++) {
             this.productionLine.getStartBuffer().add(new Position(this.warehouse.getWidth() - this.productionLine.getWidth() - 2 * this.palletSize + i / 5 * this.palletSize, (i % 5) * this.palletSize));
@@ -142,30 +142,26 @@ public class Configuration {
                         );
                     }
                 } else {
-                    if (x - this.palletSize > 2 * nAisles * this.palletSize) {
+                    if (x - this.palletSize >= 2 * nAisles * this.palletSize) {
                         this.warehouse.addEdge(
                                 position,
                                 new Position(x - this.palletSize, y)
                         );
                     }
-                    if (x + this.palletSize < this.warehouse.getWidth() - this.productionLine.getWidth()) {
-                        this.warehouse.addEdge(
-                                position,
-                                new Position(x + this.palletSize, y)
-                        );
-                    }
-                    if (y - this.palletSize >= 0 && (x / this.palletSize) % 2 == 1) {
+                    this.warehouse.addEdge(
+                            position,
+                            new Position(x + this.palletSize, y)
+                    );
+                    if (y - this.palletSize >= 0) {
                         this.warehouse.addEdge(
                                 position,
                                 new Position(x, y - this.palletSize)
                         );
                     }
-                    if ((x / this.palletSize) % 2 == 0) {
-                        this.warehouse.addEdge(
-                                position,
-                                new Position(x, y + this.palletSize)
-                        );
-                    }
+                    this.warehouse.addEdge(
+                            position,
+                            new Position(x, y + this.palletSize)
+                    );
                 }
             }
         }

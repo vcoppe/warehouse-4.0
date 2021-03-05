@@ -24,7 +24,7 @@ public class ControllerEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: ControllerEvent\n\t%d available mobiles\n\t%d waiting missions\n\t%d available docks\n\t%d waiting trucks\n\t%d waiting productions",
-                        this.simulation.getCurrentTime(),
+                        this.time,
                         this.controller.getMobiles().size(),
                         this.controller.getMissions().size(),
                         this.controller.getDocks().size(),
@@ -41,7 +41,7 @@ public class ControllerEvent extends Event {
             Mobile mobile = pair.first;
             Mission mission = pair.second;
 
-            Event event = new MobileMissionStartEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, mobile, mission);
+            Event event = new MobileMissionStartEvent(this.simulation, this.time, this.controller, mobile, mission);
             this.simulation.enqueueEvent(event);
 
             this.controller.remove(mobile);
@@ -58,7 +58,7 @@ public class ControllerEvent extends Event {
             Truck truck = pair.first;
             Dock dock = pair.second;
 
-            Event event = new TruckCallEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, dock, truck);
+            Event event = new TruckCallEvent(this.simulation, this.time, this.controller, dock, truck);
             this.simulation.enqueueEvent(event);
 
             this.controller.remove(truck);
@@ -68,7 +68,7 @@ public class ControllerEvent extends Event {
         // launch waiting productions if components have arrived
         ArrayList<Production> startableProductions = this.productionLine.getStartableProductions();
         for (Production production : startableProductions) {
-            Event event = new ProductionStartEvent(this.simulation, this.simulation.getCurrentTime(), this.controller, production);
+            Event event = new ProductionStartEvent(this.simulation, this.time, this.controller, production);
             this.simulation.enqueueEvent(event);
 
             this.productionLine.lockProductionPallets(production);

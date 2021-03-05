@@ -31,9 +31,9 @@ public class TruckDockEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: TruckDockEvent\n\ttruck %d arrived at dock %d",
-                    this.simulation.getCurrentTime(),
-                    this.truck.getId(),
-                    this.dock.getId()));
+                        this.time,
+                        this.truck.getId(),
+                        this.dock.getId()));
 
         this.truck.setPosition(this.dock.getPosition());
 
@@ -48,7 +48,7 @@ public class TruckDockEvent extends Event {
             }
 
             Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, positions);
-            Mission mission = new Mission(pallet, this.truck, null, this.dock.getPosition(), endPosition);
+            Mission mission = new Mission(this.time, pallet, this.truck, null, this.dock.getPosition(), endPosition);
             this.controller.add(mission);
             this.stock.lock(endPosition);
         }
@@ -62,12 +62,12 @@ public class TruckDockEvent extends Event {
             }
 
             Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, positions);
-            Mission mission = new Mission(pallet, null, this.truck, startPosition, this.dock.getPosition());
+            Mission mission = new Mission(this.time, pallet, null, this.truck, startPosition, this.dock.getPosition());
             this.controller.add(mission);
             this.stock.lock(startPosition);
         }
 
-        Event event = new ControllerEvent(this.simulation, this.simulation.getCurrentTime(), this.controller);
+        Event event = new ControllerEvent(this.simulation, this.time, this.controller);
         this.simulation.enqueueEvent(event);
     }
 

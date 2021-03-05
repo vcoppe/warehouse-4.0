@@ -6,12 +6,12 @@ public class Graph {
 
     private final HashMap<Integer, TreeSet<Edge>> g;
     private final HashMap<Integer, HashMap<Integer, Double>> dist;
-    private final HashMap<Integer, HashMap<Integer, Integer>> next;
+    private final HashMap<Integer, HashMap<Integer, Integer>> prev;
 
     public Graph() {
         this.g = new HashMap<>();
         this.dist = new HashMap<>();
-        this.next = new HashMap<>();
+        this.prev = new HashMap<>();
     }
 
     public Set<Integer> getVertices() {
@@ -34,65 +34,7 @@ public class Graph {
         this.g.get(u).add(new Edge(v, w));
     }
 
-    public void computeAllPairsShortestPath() {
-        this.dist.clear();
-        this.next.clear();
-
-        for (int u : this.g.keySet()) {
-            this.dist.put(u, new HashMap<>());
-            this.next.put(u, new HashMap<>());
-
-            this.dist.get(u).put(u, 0.0);
-            this.next.get(u).put(u, u);
-
-            for (Edge e : this.g.get(u)) {
-                int v = e.to;
-                double w = e.w;
-
-                this.dist.get(u).put(v, w);
-                this.next.get(u).put(v, v);
-            }
-        }
-
-        for (int k : this.g.keySet()) {
-            for (int i : this.g.keySet()) {
-                for (int j : this.g.keySet()) {
-                    Double dist_ij = this.dist.get(i).get(j);
-                    Double dist_ik = this.dist.get(i).get(k);
-                    Double dist_kj = this.dist.get(k).get(j);
-
-                    if (dist_ik == null || dist_kj == null) {
-                        continue;
-                    }
-
-                    if (dist_ij == null || dist_ij > dist_ik + dist_kj) {
-                        this.dist.get(i).put(j, dist_ik + dist_kj);
-                        this.next.get(i).put(j, this.next.get(i).get(k));
-                    }
-                }
-            }
-        }
-    }
-
-    public ArrayList<Integer> shortestPath(int s, int t) {
-        /*
-        Using Floyd-Warshall
-        ArrayList<Integer> path = new ArrayList<>();
-
-        if (!this.next.get(u).containsKey(v)) {
-            return path;
-        }
-
-        path.add(u);
-        while (u != v) {
-            u = this.next.get(u).get(v);
-            path.add(u);
-        }
-
-        return path;*/
-
-        HashMap<Integer, Double> dist = new HashMap<>();
-        HashMap<Integer, Integer> prev = new HashMap<>();
+    public void dijkstra(int s, HashMap<Integer, Double> dist, HashMap<Integer, Integer> prev) {
         PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
 
         dist.put(s, 0.0);
@@ -120,6 +62,35 @@ public class Graph {
                 }
             }
         }
+    }
+
+    public void computeShortestPaths(int s) {
+        this.dist.put(s, new HashMap<>());
+        this.prev.put(s, new HashMap<>());
+        this.dijkstra(s, this.dist.get(s), this.prev.get(s));
+    }
+
+    public double getShortestDistance(int s, int t) {
+        if (!this.dist.containsKey(s)) {
+            this.computeShortestPaths(s);
+        }
+        try {
+            return this.dist.get(s).get(t);
+        } catch (Exception e) {
+            System.out.println(s + ", " + t);
+            e.printStackTrace();
+            System.exit(0);
+        }
+        return 0;
+    }
+
+    public ArrayList<Integer> getShortestPath(int s, int t) {
+        if (!this.dist.containsKey(s)) {
+            this.computeShortestPaths(s);
+        }
+
+        HashMap<Integer, Double> dist = this.dist.get(s);
+        HashMap<Integer, Integer> prev = this.prev.get(s);
 
         ArrayList<Integer> path = new ArrayList<>();
 

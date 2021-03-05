@@ -29,13 +29,13 @@ public class MobileMissionStartEvent extends Event {
     public void run() {
         this.simulation.logger.info(
                 String.format("Simulation time %f: MobileMissionStartEvent\n\tmobile %d started mission %d",
-                        this.simulation.getCurrentTime(),
+                        this.time,
                         this.mobile.getId(),
                         this.mission.getId()));
 
         this.mobile.setTargetPosition(this.mission.getStartPosition());
 
-        double missionPickUpTime = this.simulation.getCurrentTime() + this.warehouse.getTravelTime(this.mobile.getPosition(), this.mission.getStartPosition(), this.mobile);
+        double missionPickUpTime = this.time + this.warehouse.getTravelTime(this.mobile.getPosition(), this.mission.getStartPosition(), this.mobile);
 
         Event event = new MobileMissionPickUpEvent(this.simulation, missionPickUpTime, this.controller, this.mobile, this.mission);
         this.simulation.enqueueEvent(event);
