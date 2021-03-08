@@ -1,5 +1,6 @@
-package graphic;
+package graphic.animation;
 
+import graphic.shape.MyShape;
 import javafx.animation.Animation;
 import javafx.util.Duration;
 

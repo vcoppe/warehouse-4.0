@@ -1,4 +1,4 @@
-package graphic;
+package graphic.shape;
 
 import javafx.scene.shape.Shape;
 

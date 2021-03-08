@@ -1,9 +1,9 @@
 package observer;
 
 import agent.Mobile;
-import graphic.MobileShape;
-import graphic.MyAnimation;
-import graphic.ShapeHandler;
+import graphic.shape.MobileShape;
+import graphic.animation.MyAnimation;
+import graphic.dashboard.AnimationDashboard;
 import javafx.animation.PathTransition;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -18,12 +18,12 @@ import java.util.List;
 public class MobileObserver implements Observer<Mobile> {
 
     private final Configuration configuration;
-    private final ShapeHandler shapeHandler;
+    private final AnimationDashboard animationDashboard;
     private final HashMap<Integer,MobileShape> shapes;
 
-    public MobileObserver(Configuration configuration, ShapeHandler shapeHandler) {
+    public MobileObserver(Configuration configuration, AnimationDashboard animationDashboard) {
         this.configuration = configuration;
-        this.shapeHandler = shapeHandler;
+        this.animationDashboard = animationDashboard;
         this.shapes = new HashMap<>();
     }
 
@@ -35,7 +35,7 @@ public class MobileObserver implements Observer<Mobile> {
                 this.configuration.palletSize
         );
         this.shapes.put(mobile.getId(), shape);
-        this.shapeHandler.add(shape);
+        this.animationDashboard.add(shape);
         return shape;
     }
 
@@ -78,7 +78,7 @@ public class MobileObserver implements Observer<Mobile> {
                 mobileShape.getShape()
         );
 
-        this.shapeHandler.add(new MyAnimation(mobileShape, pathTransition));
+        this.animationDashboard.add(new MyAnimation(mobileShape, pathTransition));
     }
 
 }

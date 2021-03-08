@@ -1,6 +1,7 @@
 package graphic;
 
 import event.TruckGeneratorEvent;
+import graphic.dashboard.AnimationDashboard;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -53,18 +54,18 @@ public class Main extends Application {
         configuration.simulation.enqueueEvent(event);
 
         // create all shapes and observers
-        ShapeHandler shapeHandler = new ShapeHandler(configuration);
+        AnimationDashboard animationDashboard = new AnimationDashboard(configuration);
 
         EventHandler callback = e -> {
             if (simulation.hasNextEvent()) {
                 double currentTime = simulation.nextEvent().getTime();
                 simulation.run(currentTime);
                 double delta = simulation.nextEvent().getTime() - currentTime;
-                shapeHandler.playAnimations(currentTime, delta);
+                animationDashboard.playAnimations(currentTime, delta);
             }
         };
 
-        shapeHandler.setCallback(callback);
+        animationDashboard.setCallback(callback);
 
         // bottom pane
         Pane bottomPane = new HBox();
@@ -73,12 +74,12 @@ public class Main extends Application {
         AtomicBoolean playing = new AtomicBoolean(false);
         EventHandler playHandler = e -> {
             if (playing.get()) {
-                shapeHandler.pauseAnimation();
+                animationDashboard.pauseAnimation();
                 playing.set(false);
                 play.setText("Play");
             } else {
-                shapeHandler.resumeAnimation();
-                if (shapeHandler.isAutoplay()) {
+                animationDashboard.resumeAnimation();
+                if (animationDashboard.isAutoplay()) {
                     playing.set(true);
                     play.setText("Pause");
                 }
@@ -87,14 +88,14 @@ public class Main extends Application {
         play.setOnMouseClicked(playHandler);
 
         Button decreaseRate = new Button("/2");
-        decreaseRate.setOnMouseClicked(e -> shapeHandler.setRate(shapeHandler.getRate() / 2));
+        decreaseRate.setOnMouseClicked(e -> animationDashboard.setRate(animationDashboard.getRate() / 2));
 
         Button increaseRate = new Button("x2");
-        increaseRate.setOnMouseClicked(e -> shapeHandler.setRate(shapeHandler.getRate() * 2));
+        increaseRate.setOnMouseClicked(e -> animationDashboard.setRate(animationDashboard.getRate() * 2));
 
         CheckBox autoPlay = new CheckBox("Play automatically");
         autoPlay.setSelected(true);
-        autoPlay.setOnMouseClicked(e -> shapeHandler.setAutoplay(autoPlay.isSelected()));
+        autoPlay.setOnMouseClicked(e -> animationDashboard.setAutoplay(autoPlay.isSelected()));
 
         bottomPane.getChildren().addAll(play, decreaseRate, increaseRate, autoPlay);
 
@@ -103,7 +104,7 @@ public class Main extends Application {
         pane.setBottom(bottomPane);
         pane.setLeft(new Text("Left"));
         pane.setRight(new Text("Right"));
-        pane.setCenter(shapeHandler.getPane());
+        pane.setCenter(animationDashboard.getPane());
 
         Scene scene = new Scene(pane);
         stage.setScene(scene);

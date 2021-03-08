@@ -1,9 +1,9 @@
 package observer;
 
 import agent.Truck;
-import graphic.MyAnimation;
-import graphic.ShapeHandler;
-import graphic.TruckShape;
+import graphic.animation.MyAnimation;
+import graphic.dashboard.AnimationDashboard;
+import graphic.shape.TruckShape;
 import javafx.animation.PathTransition;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -16,12 +16,12 @@ import java.util.HashMap;
 public class TruckObserver implements Observer<Truck> {
 
     private final Configuration configuration;
-    private final ShapeHandler shapeHandler;
+    private final AnimationDashboard animationDashboard;
     private final HashMap<Integer, TruckShape> shapes;
 
-    public TruckObserver(Configuration configuration, ShapeHandler shapeHandler) {
+    public TruckObserver(Configuration configuration, AnimationDashboard animationDashboard) {
         this.configuration = configuration;
-        this.shapeHandler = shapeHandler;
+        this.animationDashboard = animationDashboard;
         this.shapes = new HashMap<>();
     }
 
@@ -33,13 +33,13 @@ public class TruckObserver implements Observer<Truck> {
                 configuration.dockWidth
         );
         this.shapes.put(truck.getId(), shape);
-        this.shapeHandler.add(shape);
+        this.animationDashboard.add(shape);
         return shape;
     }
 
     public void remove(Truck truck) {
         TruckShape shape = this.shapes.get(truck.getId());
-        this.shapeHandler.remove(shape);
+        this.animationDashboard.remove(shape);
         this.shapes.remove(truck.getId());
     }
 
@@ -69,7 +69,7 @@ public class TruckObserver implements Observer<Truck> {
                     truckShape.getShape()
             );
 
-            this.shapeHandler.add(new MyAnimation(truckShape, pathTransition));
+            this.animationDashboard.add(new MyAnimation(truckShape, pathTransition));
         }
     }
 

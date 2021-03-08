@@ -1,7 +1,9 @@
-package graphic;
+package graphic.dashboard;
 
 import agent.Dock;
 import agent.Mobile;
+import graphic.animation.MyAnimation;
+import graphic.shape.*;
 import javafx.animation.PauseTransition;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -17,7 +19,7 @@ import warehouse.Configuration;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class ShapeHandler {
+public class AnimationDashboard {
 
     private final LinkedList<MyShape> shapes;
     private final Pane pane;
@@ -28,7 +30,7 @@ public class ShapeHandler {
     private double rate;
     private boolean autoplay;
 
-    public ShapeHandler(Configuration configuration) {
+    public AnimationDashboard(Configuration configuration) {
         this.shapes = new LinkedList<>();
         this.group = new Group();
         this.pane = new Pane(group);

@@ -1,25 +1,23 @@
 package observer;
 
 import agent.Stock;
-import graphic.PalletShape;
-import graphic.ShapeHandler;
-import util.Pair;
+import graphic.shape.PalletShape;
+import graphic.dashboard.AnimationDashboard;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 public class StockObserver implements Observer<Stock> {
 
     private final Configuration configuration;
-    private final ShapeHandler shapeHandler;
+    private final AnimationDashboard animationDashboard;
     private final HashMap<Integer, PalletShape> shapes;
 
-    public StockObserver(Configuration configuration, ShapeHandler shapeHandler) {
+    public StockObserver(Configuration configuration, AnimationDashboard animationDashboard) {
         this.configuration = configuration;
-        this.shapeHandler = shapeHandler;
+        this.animationDashboard = animationDashboard;
         this.shapes = new HashMap<>();
     }
 
@@ -31,7 +29,7 @@ public class StockObserver implements Observer<Stock> {
                 pallet.getType()
         );
         this.shapes.put(this.configuration.stock.toInt(position), shape);
-        this.shapeHandler.add(shape);
+        this.animationDashboard.add(shape);
         return shape;
     }
 
