@@ -32,11 +32,11 @@ public class MobileMissionStartEventTest extends TestCase {
 
         for (int i=0; i<5; i++) {
             toLoad.add(new Pallet(i));
-            this.configuration.stock.add(new Position(5, i), new Pallet(i)); // add in stock
-            this.loadPalletPositions.add(new Position(5, i));
+            this.configuration.stock.add(new Position(0, i * this.configuration.palletSize), new Pallet(i)); // add in stock
+            this.loadPalletPositions.add(new Position(0, i * this.configuration.palletSize));
             toUnload.add(new Pallet(i));
-            this.configuration.stock.lock(new Position(7, i));
-            this.unloadPalletPositions.add(new Position(7, i));
+            this.configuration.stock.lock(new Position(3 * this.configuration.palletSize, i * this.configuration.palletSize));
+            this.unloadPalletPositions.add(new Position(3 * this.configuration.palletSize, i * this.configuration.palletSize));
         }
 
         this.truckLoad = new Truck(new Position(0, 0), toLoad, new ArrayList<>());

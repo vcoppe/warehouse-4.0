@@ -27,7 +27,7 @@ public class ProductionInitEventTest extends TestCase {
         ArrayList<Pair<Pallet,Integer>> out = new ArrayList<>();
         for (int i=0; i<3; i++) {
             in.add(new Pair<>(new Pallet(i), 1));
-            this.configuration.stock.add(new Position(4, i), new Pallet(i)); // add to stock
+            this.configuration.stock.add(new Position(0, i * this.configuration.palletSize), new Pallet(i)); // add to stock
             out.add(new Pair<>(new Pallet(3 + i), 1));
         }
 

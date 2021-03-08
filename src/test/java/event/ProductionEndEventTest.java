@@ -31,7 +31,7 @@ public class ProductionEndEventTest extends TestCase {
         for (int i=0; i<3; i++) {
             in.add(new Pair<>(new Pallet(i), 1));
             out.add(new Pair<>(new Pallet(3 + i), 1));
-            this.stock.add(new Position(3, i), Pallet.FREE);
+            this.stock.add(new Position(0, i * this.configuration.palletSize), Pallet.FREE);
         }
 
         this.production = new Production(in, out, 10, 1, 250);

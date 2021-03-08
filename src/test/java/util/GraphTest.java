@@ -15,7 +15,7 @@ public class GraphTest extends TestCase {
     }
 
     public void testAddEdges() {
-        int n = 2500;
+        int n = 25;
         Graph graph = new Graph();
 
         assertEquals(0, graph.getVertices().size());
@@ -39,8 +39,6 @@ public class GraphTest extends TestCase {
         for (int i = 0; i < 10; i++) {
             graph.addEdge(i, i + 1, 5);
         }
-
-        graph.computeAllPairsShortestPath();
 
         assertEquals(11, graph.getShortestPath(0, 10).size());
         assertEquals(0, graph.getShortestPath(10, 0).size());
