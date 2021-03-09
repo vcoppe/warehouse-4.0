@@ -39,4 +39,9 @@ public class PalletShape extends MyShape {
         }
     }
 
+    public void setBlack() {
+        this.shape.setFill(Color.DARKGREY);
+        this.shape.setStroke(Color.DARKGREY);
+    }
+
 }

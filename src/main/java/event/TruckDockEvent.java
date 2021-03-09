@@ -6,6 +6,7 @@ import agent.Stock;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
+import util.Pair;
 import warehouse.Mission;
 import warehouse.Pallet;
 import warehouse.Position;
@@ -39,7 +40,10 @@ public class TruckDockEvent extends Event {
 
         // scan pallets to load and unload
         // TODO add precedence constraint
-        for (Pallet pallet : this.truck.getToUnload()) {
+        for (Pair<Position, Pallet> pair : this.truck.getToUnload()) {
+            Position palletPosition = pair.first;
+            Pallet pallet = pair.second;
+
             ArrayList<Position> positions = this.stock.getEndPositions(pallet);
 
             if (positions.size() == 0) {
@@ -47,13 +51,17 @@ public class TruckDockEvent extends Event {
                 return;
             }
 
-            Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, this.truck.getPosition(), positions);
-            Mission mission = new Mission(this.time, pallet, this.truck, null, this.dock.getPosition(), endPosition);
+            Position startPosition = this.truck.getPosition().add(palletPosition);
+            Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, positions);
+            Mission mission = new Mission(this.time, pallet, this.truck, null, startPosition, endPosition);
             this.controller.add(mission);
             this.stock.lock(endPosition);
         }
 
-        for (Pallet pallet : this.truck.getToLoad()) {
+        for (Pair<Position, Pallet> pair : this.truck.getToLoad()) {
+            Position palletPosition = pair.first;
+            Pallet pallet = pair.second;
+
             ArrayList<Position> positions = this.stock.getStartPositions(pallet);
 
             if (positions.size() == 0) {
@@ -61,8 +69,9 @@ public class TruckDockEvent extends Event {
                 return;
             }
 
-            Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, this.truck.getPosition(), positions);
-            Mission mission = new Mission(this.time, pallet, null, this.truck, startPosition, this.dock.getPosition());
+            Position endPosition = this.truck.getPosition().add(palletPosition);
+            Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, positions);
+            Mission mission = new Mission(this.time, pallet, null, this.truck, startPosition, endPosition);
             this.controller.add(mission);
             this.stock.lock(startPosition);
         }

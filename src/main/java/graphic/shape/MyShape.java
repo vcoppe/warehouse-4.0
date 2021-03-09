@@ -1,11 +1,16 @@
 package graphic.shape;
 
+import javafx.scene.Node;
 import javafx.scene.shape.Shape;
 
 public abstract class MyShape {
 
     private static int SHAPE_ID = 0;
-    protected final int id, x, y, width, height;
+    protected final int id;
+    protected int x;
+    protected int y;
+    protected int width;
+    protected int height;
     protected Shape shape;
 
     public MyShape(int x, int y, int width, int height) {
@@ -28,7 +33,7 @@ public abstract class MyShape {
         return this.height;
     }
 
-    public Shape getShape() {
+    public Node getShape() {
         return this.shape;
     }
 

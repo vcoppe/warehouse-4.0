@@ -75,7 +75,7 @@ public class Configuration {
         }
 
         for (int x = 0; x < this.warehouse.getWidth(); x += this.palletSize) {
-            for (int y = 0; y <= this.warehouse.getDepth(); y += this.palletSize) {
+            for (int y = 0; y <= this.warehouse.getDepth() + this.dockWidth * 4; y += this.palletSize) {
                 Position position = new Position(x, y);
                 int type = (x / this.palletSize) % 4;
                 if (x >= this.warehouse.getWidth() - this.productionLine.getWidth() && y < this.productionLine.getDepth()) {

@@ -1,7 +1,6 @@
 package event;
 
 import agent.ProductionLine;
-import brain.NaiveSelector;
 import junit.framework.TestCase;
 import util.Pair;
 import warehouse.*;
@@ -19,7 +18,6 @@ public class ProductionInitEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        NaiveSelector selector = new NaiveSelector();
         this.configuration = new Configuration(1, 1);
         this.productionLine = this.configuration.productionLine;
 

@@ -1,6 +1,7 @@
 package agent;
 
 import observer.Observable;
+import util.Pair;
 import warehouse.Pallet;
 import warehouse.Position;
 
@@ -10,26 +11,23 @@ public class Truck extends Observable {
 
     private static int TRUCK_ID = 0;
     private final int id;
-    private double speed;
+    private static final double speed = 50;
     private Dock dock;
     private Position position, targetPosition;
-    private final ArrayList<Pallet> toLoad;
-    private final ArrayList<Pallet> toUnload;
-    private int countDone;
+    private final ArrayList<Pair<Position, Pallet>> toLoad, toUnload, currentLoad;
 
-    public Truck(Dock dock, Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
+    public Truck(Dock dock, Position position, ArrayList<Pair<Position, Pallet>> toLoad, ArrayList<Pair<Position, Pallet>> toUnload) {
         super();
         this.id = TRUCK_ID++;
-        this.speed = 20;
         this.dock = dock;
         this.position = position;
         this.targetPosition = position;
         this.toLoad = toLoad;
         this.toUnload = toUnload;
-        this.countDone = 0;
+        this.currentLoad = new ArrayList<>(toUnload);
     }
 
-    public Truck(Position position, ArrayList<Pallet> toLoad, ArrayList<Pallet> toUnload) {
+    public Truck(Position position, ArrayList<Pair<Position, Pallet>> toLoad, ArrayList<Pair<Position, Pallet>> toUnload) {
         this(null, position, toLoad, toUnload);
     }
 
@@ -37,16 +35,20 @@ public class Truck extends Observable {
         return this.id;
     }
 
-    public double getSpeed() {
-        return this.speed;
+    public static double getSpeed() {
+        return speed;
     }
 
-    public ArrayList<Pallet> getToLoad() {
+    public ArrayList<Pair<Position, Pallet>> getToLoad() {
         return this.toLoad;
     }
 
-    public ArrayList<Pallet> getToUnload() {
+    public ArrayList<Pair<Position, Pallet>> getToUnload() {
         return this.toUnload;
+    }
+
+    public ArrayList<Pair<Position, Pallet>> getCurrentLoad() {
+        return this.currentLoad;
     }
 
     public void setDock(Dock dock) {
@@ -76,18 +78,33 @@ public class Truck extends Observable {
         return this.targetPosition;
     }
 
-    public void add(Pallet pallet) {
-        this.countDone++;
+    public void add(Position position, Pallet pallet) {
+        for (int i = 0; i < this.toLoad.size(); i++) {
+            Pair<Position, Pallet> pair = this.toLoad.get(i);
+            if (position.equals(pair.first.add(this.position)) && pallet.getType() == pair.second.getType()) {
+                this.toLoad.remove(i);
+                this.currentLoad.add(pair);
+                break;
+            }
+        }
+
         this.changed();
     }
 
-    public void remove(Pallet pallet) {
-        this.countDone++;
+    public void remove(Position position, Pallet pallet) {
+        for (int i = 0; i < this.toUnload.size(); i++) {
+            Pair<Position, Pallet> pair = this.toUnload.get(i);
+            if (position.equals(pair.first.add(this.position)) && pallet.getType() == pair.second.getType()) {
+                this.toUnload.remove(i);
+                this.currentLoad.remove(pair);
+                break;
+            }
+        }
         this.changed();
     }
 
     public boolean done() {
-        return this.countDone == (this.toUnload.size() + this.toLoad.size());
+        return (this.toUnload.size() + this.toLoad.size()) == 0;
     }
 
 

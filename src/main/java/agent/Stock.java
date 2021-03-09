@@ -69,6 +69,7 @@ public class Stock extends Observable {
         this.lock.remove(this.toInt(position));
     }
 
+    // TODO remove production line start and end buffer from output
     public ArrayList<Position> getStartPositions(Pallet pallet) {
         ArrayList<Position> positions = new ArrayList<>();
         for (Integer position : this.pallets.keySet()) {
@@ -82,6 +83,7 @@ public class Stock extends Observable {
         return positions;
     }
 
+    // TODO remove production line start and end buffer from output
     public ArrayList<Position> getEndPositions(Pallet pallet) {
         ArrayList<Position> positions = new ArrayList<>();
         for (Integer position : this.pallets.keySet()) {

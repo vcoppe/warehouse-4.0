@@ -4,7 +4,6 @@ import agent.Controller;
 import agent.ProductionLine;
 import agent.Stock;
 import agent.Truck;
-import brain.NaiveSelector;
 import junit.framework.TestCase;
 import util.Pair;
 import warehouse.*;
@@ -25,7 +24,6 @@ public class ControllerEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        NaiveSelector selector = new NaiveSelector();
         this.configuration = new Configuration(2, 2);
         this.controller = this.configuration.controller;
         this.stock = this.configuration.stock;

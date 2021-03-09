@@ -40,7 +40,7 @@ public class MobileMissionPickUpEvent extends Event {
         // tell truck or stock that pallet has left the position
         if (this.mission.getStartTruck() != null) {
             Truck truck = this.mission.getStartTruck();
-            truck.remove(this.mission.getPallet());
+            truck.remove(this.mission.getStartPosition(), this.mission.getPallet());
             if (truck.done()) {
                 Event event = new TruckDoneEvent(this.simulation, this.time, this.controller, this.mission.getStartTruck().getDock(), this.mission.getStartTruck());
                 this.simulation.enqueueEvent(event);

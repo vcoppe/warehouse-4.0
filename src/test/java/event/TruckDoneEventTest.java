@@ -2,7 +2,6 @@ package event;
 
 import agent.Dock;
 import agent.Truck;
-import brain.NaiveSelector;
 import junit.framework.TestCase;
 import warehouse.Configuration;
 
@@ -18,7 +17,6 @@ public class TruckDoneEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        NaiveSelector selector = new NaiveSelector();
         this.configuration = new Configuration(1, 1);
         this.dock = this.configuration.docks.get(0);
         this.truck = new Truck(this.dock, this.dock.getPosition(), new ArrayList<>(), new ArrayList<>());

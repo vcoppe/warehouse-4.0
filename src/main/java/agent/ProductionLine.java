@@ -167,4 +167,5 @@ public class ProductionLine extends Observable {
     public int getDepth() {
         return this.depth;
     }
+
 }

@@ -33,7 +33,7 @@ public class AnimationDashboard {
     public AnimationDashboard(Configuration configuration) {
         this.shapes = new LinkedList<>();
         this.group = new Group();
-        this.pane = new Pane(group);
+        this.pane = new Pane(this.group);
         this.animations = new HashMap<>();
         this.rate = 1;
         this.autoplay = true;

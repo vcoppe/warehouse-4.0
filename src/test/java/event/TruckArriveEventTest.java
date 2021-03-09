@@ -1,8 +1,8 @@
 package event;
 
 import agent.Truck;
-import brain.NaiveSelector;
 import junit.framework.TestCase;
+import util.Pair;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
@@ -18,14 +18,16 @@ public class TruckArriveEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        NaiveSelector selector = new NaiveSelector();
         this.configuration = new Configuration(1, 1);
 
-        ArrayList<Pallet> toLoad = new ArrayList<>();
-        ArrayList<Pallet> toUnload = new ArrayList<>();
+        ArrayList<Pair<Position, Pallet>> toLoad = new ArrayList<>();
+        ArrayList<Pair<Position, Pallet>> toUnload = new ArrayList<>();
 
-        for (int i=0; i<5; i++) {
-            toUnload.add(new Pallet(i));
+        for (int i = 0; i < 5; i++) {
+            toUnload.add(new Pair<>(
+                    new Position(0, i * this.configuration.palletSize),
+                    new Pallet(i)
+            ));
         }
 
         this.truck = new Truck(new Position(0, 0), toLoad, toUnload);

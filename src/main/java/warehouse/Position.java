@@ -26,6 +26,10 @@ public class Position {
         return this.z;
     }
 
+    public Position add(Position position) {
+        return new Position(this.x + position.x, this.y + position.y, this.z + position.z);
+    }
+
     public double manhattanDistance2D(Position other) {
         return Math.abs(this.x - other.x) + Math.abs(this.y - other.y);
     }

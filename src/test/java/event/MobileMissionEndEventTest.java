@@ -2,8 +2,8 @@ package event;
 
 import agent.Mobile;
 import agent.Truck;
-import brain.NaiveSelector;
 import junit.framework.TestCase;
+import util.Pair;
 import warehouse.Configuration;
 import warehouse.Mission;
 import warehouse.Pallet;
@@ -21,31 +21,36 @@ public class MobileMissionEndEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        NaiveSelector selector = new NaiveSelector();
         this.configuration = new Configuration(1, 1);
         this.mobile = this.configuration.mobiles.get(0);
         this.configuration.controller.remove(this.mobile); //  mark as used
 
-        ArrayList<Pallet> toLoad = new ArrayList<>();
-        ArrayList<Pallet> toUnload = new ArrayList<>();
+        ArrayList<Pair<Position, Pallet>> toLoad = new ArrayList<>();
+        ArrayList<Pair<Position, Pallet>> toUnload = new ArrayList<>();
         this.loadPalletPositions = new ArrayList<>();
         this.unloadPalletPositions = new ArrayList<>();
 
-        for (int i=0; i<5; i++) {
-            toLoad.add(new Pallet(i));
-            this.configuration.stock.add(new Position(5, i), new Pallet(i)); // add in stock
-            this.loadPalletPositions.add(new Position(5, i));
-            toUnload.add(new Pallet(i));
-            this.configuration.stock.lock(new Position(7, i));
-            this.unloadPalletPositions.add(new Position(7, i));
+        for (int i = 0; i < 5; i++) {
+            toLoad.add(new Pair<>(
+                    new Position(0, i * this.configuration.palletSize),
+                    new Pallet(i)
+            ));
+            this.configuration.stock.add(new Position(0, i * this.configuration.palletSize), new Pallet(i)); // add in stock
+            this.loadPalletPositions.add(new Position(0, i * this.configuration.palletSize));
+            toUnload.add(new Pair<>(
+                    new Position(0, i * this.configuration.palletSize),
+                    new Pallet(i)
+            ));
+            this.configuration.stock.lock(new Position(3 * this.configuration.palletSize, i * this.configuration.palletSize));
+            this.unloadPalletPositions.add(new Position(3 * this.configuration.palletSize, i * this.configuration.palletSize));
         }
 
-        this.truckLoad = new Truck(new Position(0, 0), toLoad, new ArrayList<>());
-        this.truckUnload = new Truck(new Position(10, 0), new ArrayList<>(), toUnload);
+        this.truckLoad = new Truck(new Position(0, this.configuration.warehouse.getDepth()), toLoad, new ArrayList<>());
+        this.truckUnload = new Truck(new Position(this.configuration.dockWidth, this.configuration.warehouse.getDepth()), new ArrayList<>(), toUnload);
     }
 
     public void testSetPosition() {
-        Pallet pallet = this.truckLoad.getToLoad().get(0);
+        Pallet pallet = this.truckLoad.getToLoad().get(0).second;
         Position startPosition = this.loadPalletPositions.get(0);
         Position endPosition = this.truckLoad.getPosition();
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
@@ -57,7 +62,7 @@ public class MobileMissionEndEventTest extends TestCase {
     }
 
     public void testAddPalletToStock() {
-        Pallet pallet = this.truckUnload.getToUnload().get(0);
+        Pallet pallet = this.truckUnload.getToUnload().get(0).second;
         Position startPosition = this.truckUnload.getPosition();
         Position endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, truckUnload, null, startPosition, endPosition);
@@ -69,8 +74,23 @@ public class MobileMissionEndEventTest extends TestCase {
         assertEquals(pallet.getType(), this.configuration.stock.get(endPosition).getType());
     }
 
+    public void testAddPalletToTruck() {
+        Pallet pallet = this.truckLoad.getToLoad().get(0).second;
+        Position startPosition = this.loadPalletPositions.get(0);
+        Position endPosition = this.truckLoad.getToLoad().get(0).first.add(this.truckLoad.getPosition());
+        Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
+        MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
+
+        assertEquals(this.loadPalletPositions.size(), this.truckLoad.getToLoad().size());
+        assertEquals(0, this.truckLoad.getCurrentLoad().size());
+        event.run();
+        assertEquals(this.loadPalletPositions.size() - 1, this.truckLoad.getToLoad().size());
+        assertEquals(1, this.truckLoad.getCurrentLoad().size());
+    }
+
+
     public void testAddMobileToController() {
-        Pallet pallet = this.truckUnload.getToUnload().get(0);
+        Pallet pallet = this.truckUnload.getToUnload().get(0).second;
         Position startPosition = this.truckUnload.getPosition();
         Position endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, truckUnload, null, startPosition, endPosition);
@@ -83,15 +103,19 @@ public class MobileMissionEndEventTest extends TestCase {
     }
 
     public void testDoneWhenLoaded() {
-        for (int i=0; i<this.truckLoad.getToLoad().size(); i++) {
-            Pallet pallet = this.truckLoad.getToLoad().get(i);
+        int i = 0;
+        while (this.truckLoad.getToLoad().size() > 0) {
+            Pair<Position, Pallet> pair = this.truckLoad.getToLoad().get(0);
+            Pallet pallet = pair.second;
             Position startPosition = this.loadPalletPositions.get(i);
-            Position endPosition = this.truckLoad.getPosition();
+            Position endPosition = pair.first.add(this.truckLoad.getPosition());
             Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
             MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
 
             assertFalse(this.truckLoad.done());
             event.run();
+
+            i++;
         }
 
         assertTrue(this.truckLoad.done());
@@ -100,7 +124,7 @@ public class MobileMissionEndEventTest extends TestCase {
     }
 
     public void testTriggerControllerEvent() {
-        Pallet pallet = this.truckUnload.getToUnload().get(0);
+        Pallet pallet = this.truckUnload.getToUnload().get(0).second;
         Position startPosition = this.truckUnload.getPosition();
         Position endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, this.truckUnload, null, startPosition, endPosition);
