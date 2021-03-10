@@ -1,9 +1,11 @@
 package observer;
 
 import agent.Mobile;
+import graphic.shape.CompoundShape;
 import graphic.shape.MobileShape;
 import graphic.animation.MyAnimation;
 import graphic.dashboard.AnimationDashboard;
+import graphic.shape.PalletShape;
 import javafx.animation.PathTransition;
 import javafx.scene.Group;
 import javafx.scene.shape.LineTo;
@@ -11,6 +13,8 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
 import warehouse.Configuration;
+import warehouse.Mission;
+import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.HashMap;
@@ -20,22 +24,24 @@ public class MobileObserver implements Observer<Mobile> {
 
     private final Configuration configuration;
     private final AnimationDashboard animationDashboard;
-    private final HashMap<Integer,MobileShape> shapes;
+    private final HashMap<Integer, CompoundShape> shapes;
+    private final HashMap<Integer, PalletShape> palletShapes;
     private final Group group;
 
     public MobileObserver(Configuration configuration, AnimationDashboard animationDashboard) {
         this.configuration = configuration;
         this.animationDashboard = animationDashboard;
         this.shapes = new HashMap<>();
+        this.palletShapes = new HashMap<>();
         this.group = new Group();
     }
 
-    public MobileShape add(Mobile mobile) {
+    public CompoundShape add(Mobile mobile) {
         mobile.attach(this);
-        MobileShape shape = new MobileShape(
+        CompoundShape shape = new CompoundShape(
+                new MobileShape(0, 0, this.configuration.palletSize),
                 mobile.getPosition().getX(),
-                mobile.getPosition().getY(),
-                this.configuration.palletSize
+                mobile.getPosition().getY()
         );
         this.shapes.put(mobile.getId(), shape);
         this.group.getChildren().add(shape.getShape());
@@ -48,9 +54,21 @@ public class MobileObserver implements Observer<Mobile> {
 
     @Override
     public void update(Mobile mobile) {
-        MobileShape mobileShape = this.shapes.get(mobile.getId());
+        CompoundShape mobileShape = this.shapes.get(mobile.getId());
         if (mobileShape == null) {
             mobileShape = this.add(mobile);
+        }
+
+        Mission mission = mobile.getMission();
+        if (mission == null) {
+            mobileShape.remove(this.palletShapes.get(mobile.getId()));
+            this.palletShapes.remove(mobile.getId());
+        } else {
+            if (mobile.getPosition().equals(mission.getStartPosition())) {
+                PalletShape palletShape = new PalletShape(1, 1, this.configuration.palletSize-2, mission.getPallet().getType());
+                mobileShape.add(palletShape);
+                this.palletShapes.put(mobile.getId(), palletShape);
+            }
         }
 
         List<Position> positions = this.configuration.warehouse.getPath(

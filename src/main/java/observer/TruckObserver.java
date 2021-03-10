@@ -105,7 +105,7 @@ public class TruckObserver implements Observer<Truck> {
             ));
 
             PathTransition pathTransition = new PathTransition(
-                    Duration.seconds(truck.getPosition().manhattanDistance2D(truck.getTargetPosition()) / truck.getSpeed()),
+                    Duration.seconds(truck.getPosition().manhattanDistance2D(truck.getTargetPosition()) / Truck.getSpeed()),
                     path,
                     shape.getShape()
             );
