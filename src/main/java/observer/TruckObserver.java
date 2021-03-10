@@ -7,6 +7,8 @@ import graphic.shape.CompounedShape;
 import graphic.shape.PalletShape;
 import graphic.shape.TruckShape;
 import javafx.animation.PathTransition;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
@@ -24,12 +26,14 @@ public class TruckObserver implements Observer<Truck> {
     private final AnimationDashboard animationDashboard;
     private final HashMap<Integer, CompounedShape> shapes;
     private final HashMap<Integer, HashMap<Integer, PalletShape>> palletShapes;
+    private Group group;
 
     public TruckObserver(Configuration configuration, AnimationDashboard animationDashboard) {
         this.configuration = configuration;
         this.animationDashboard = animationDashboard;
         this.shapes = new HashMap<>();
         this.palletShapes = new HashMap<>();
+        this.group = new Group();
     }
 
     public CompounedShape add(Truck truck) {
@@ -51,12 +55,16 @@ public class TruckObserver implements Observer<Truck> {
             this.add(truck, position, pallet);
         }
 
-        this.animationDashboard.add(shape);
+        this.group.getChildren().add(shape.getShape());
 
         shape.getShape().setTranslateX(truck.getPosition().getX());
         shape.getShape().setTranslateY(truck.getPosition().getY());
 
         return shape;
+    }
+
+    public Group getGroup() {
+        return this.group;
     }
 
     public PalletShape add(Truck truck, Position position, Pallet pallet) {
@@ -75,7 +83,7 @@ public class TruckObserver implements Observer<Truck> {
 
     public void remove(Truck truck) {
         CompounedShape shape = this.shapes.get(truck.getId());
-        this.animationDashboard.remove(shape);
+        this.group.getChildren().remove(shape.getShape());
         this.shapes.remove(truck.getId());
         this.palletShapes.remove(truck.getId());
     }

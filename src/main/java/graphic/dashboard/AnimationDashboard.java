@@ -7,6 +7,7 @@ import graphic.shape.*;
 import javafx.animation.PauseTransition;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Scale;
 import javafx.util.Duration;
@@ -21,7 +22,6 @@ import java.util.LinkedList;
 
 public class AnimationDashboard {
 
-    private final LinkedList<MyShape> shapes;
     private final Pane pane;
     private final Group group;
     private final HashMap<Integer, MyAnimation> animations;
@@ -31,7 +31,6 @@ public class AnimationDashboard {
     private boolean autoplay;
 
     public AnimationDashboard(Configuration configuration) {
-        this.shapes = new LinkedList<>();
         this.group = new Group();
         this.pane = new Pane(this.group);
         this.animations = new HashMap<>();
@@ -53,17 +52,16 @@ public class AnimationDashboard {
         this.pane.setPrefSize(pixelWidth, pixelHeight);
 
         SiteShape siteShape = new SiteShape(width, height);
-        this.add(siteShape);
-
         WarehouseShape warehouseShape = new WarehouseShape(0, 0, configuration.warehouse.getWidth(), configuration.warehouse.getDepth());
-        this.add(warehouseShape);
-
         ProductionLineShape productionLineShape = new ProductionLineShape(
                 configuration.productionLine.getPosition().getX(),
                 configuration.productionLine.getPosition().getY(),
                 configuration.productionLine.getWidth(),
                 configuration.productionLine.getDepth());
-        this.add(productionLineShape);
+
+        this.add(siteShape.getShape());
+        this.add(warehouseShape.getShape());
+        this.add(productionLineShape.getShape());
 
         for (Dock dock : configuration.docks) {
             DockShape dockShape = new DockShape(
@@ -71,7 +69,7 @@ public class AnimationDashboard {
                     dock.getPosition().getY(),
                     configuration.dockWidth
             );
-            this.add(dockShape);
+            this.add(dockShape.getShape());
         }
 
         MobileObserver mobileObserver = new MobileObserver(configuration, this);
@@ -86,16 +84,18 @@ public class AnimationDashboard {
         TruckObserver truckObserver = new TruckObserver(configuration, this);
         ControllerObserver controllerObserver = new ControllerObserver(truckObserver);
         configuration.controller.attach(controllerObserver);
+
+        this.add(truckObserver.getGroup());
+        this.add(stockObserver.getGroup());
+        this.add(mobileObserver.getGroup());
     }
 
-    public void add(MyShape shape) {
-        this.shapes.add(shape);
-        this.group.getChildren().add(shape.getShape());
+    public void add(Node node) {
+        this.group.getChildren().add(node);
     }
 
-    public void remove(MyShape shape) {
-        this.shapes.remove(shape);
-        this.group.getChildren().remove(shape.getShape());
+    public void remove(Node node) {
+        this.group.getChildren().remove(node);
     }
 
     public void add(MyAnimation animation) {
