@@ -34,11 +34,11 @@ public class ControllerEventTest extends TestCase {
         this.missions = new ArrayList<>();
         this.trucks = new ArrayList<>();
         this.productions = new ArrayList<>();
-        for (int i=0; i<5; i++) {
+        for (int i = 0; i < 5; i++) {
             this.missions.add(new Mission(0, new Pallet(0), new Position(0, 0), new Position(0, 0)));
             this.trucks.add(new Truck(new Position(0, 0), new ArrayList<>(), new ArrayList<>()));
 
-            ArrayList<Pair<Pallet,Integer>> in = new ArrayList<>();
+            ArrayList<Pair<Pallet, Integer>> in = new ArrayList<>();
             in.add(new Pair<>(new Pallet(0), 1));
             this.productions.add(new Production(in, new ArrayList<>(), 10, 3, 200));
         }
@@ -136,13 +136,13 @@ public class ControllerEventTest extends TestCase {
         Production production1 = this.productions.get(0);
         Production production2 = this.productions.get(1);
         this.productionLine.add(production1);
-        for (Pair<Pallet,Integer> pair : production1.getIn()) {
+        for (Pair<Pallet, Integer> pair : production1.getIn()) {
             Pallet pallet = pair.first;
             Position position = this.productionLine.getStartBufferPosition();
             this.stock.add(position, pallet);
         }
         this.productionLine.add(production2);
-        for (Pair<Pallet,Integer> pair : production2.getIn()) {
+        for (Pair<Pallet, Integer> pair : production2.getIn()) {
             Pallet pallet = pair.first;
             Position position = this.productionLine.getStartBufferPosition();
             this.stock.add(position, pallet);
@@ -162,7 +162,7 @@ public class ControllerEventTest extends TestCase {
         Production production1 = this.productions.get(0);
         Production production2 = this.productions.get(1);
         this.productionLine.add(production1);
-        for (Pair<Pallet,Integer> pair : production1.getIn()) {
+        for (Pair<Pallet, Integer> pair : production1.getIn()) {
             Pallet pallet = pair.first;
             Position position = this.productionLine.getStartBufferPosition();
             this.stock.add(position, pallet);
@@ -182,7 +182,7 @@ public class ControllerEventTest extends TestCase {
     public void testStartProductionNotEnoughCapacity() {
         for (Production production : this.productions) {
             this.productionLine.add(production);
-            for (Pair<Pallet,Integer> pair : production.getIn()) {
+            for (Pair<Pallet, Integer> pair : production.getIn()) {
                 Pallet pallet = pair.first;
                 Position position = this.productionLine.getStartBufferPosition();
                 this.stock.add(position, pallet);

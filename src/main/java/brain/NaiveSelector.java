@@ -13,9 +13,9 @@ import java.util.ArrayList;
 public class NaiveSelector implements MobileMissionSelector, PalletPositionSelector, TruckDockSelector {
 
     @Override
-    public ArrayList<Pair<Mobile,Mission>> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions) {
-        ArrayList<Pair<Mobile,Mission>> pairs = new ArrayList<>();
-        for (int i=0; i<Math.min(mobiles.size(), missions.size()); i++) {
+    public ArrayList<Pair<Mobile, Mission>> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions) {
+        ArrayList<Pair<Mobile, Mission>> pairs = new ArrayList<>();
+        for (int i = 0; i < Math.min(mobiles.size(), missions.size()); i++) {
             pairs.add(new Pair<>(mobiles.get(i), missions.get(i)));
         }
         return pairs;
@@ -32,9 +32,9 @@ public class NaiveSelector implements MobileMissionSelector, PalletPositionSelec
     }
 
     @Override
-    public ArrayList<Pair<Truck,Dock>> matchTruckDock(ArrayList<Truck> trucks, ArrayList<Dock> docks) {
-        ArrayList<Pair<Truck,Dock>> pairs = new ArrayList<>();
-        for (int i=0; i<Math.min(trucks.size(), docks.size()); i++) {
+    public ArrayList<Pair<Truck, Dock>> matchTruckDock(ArrayList<Truck> trucks, ArrayList<Dock> docks) {
+        ArrayList<Pair<Truck, Dock>> pairs = new ArrayList<>();
+        for (int i = 0; i < Math.min(trucks.size(), docks.size()); i++) {
             pairs.add(new Pair<>(trucks.get(i), docks.get(i)));
         }
         return pairs;

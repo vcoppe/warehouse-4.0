@@ -8,6 +8,6 @@ import java.util.ArrayList;
 
 public interface TruckDockSelector {
 
-    ArrayList<Pair<Truck,Dock>> matchTruckDock(ArrayList<Truck> trucks, ArrayList<Dock> docks);
+    ArrayList<Pair<Truck, Dock>> matchTruckDock(ArrayList<Truck> trucks, ArrayList<Dock> docks);
 
 }

@@ -83,7 +83,7 @@ public class ProductionLine extends Observable {
             boolean startable = true;
             ArrayList<Integer> productionPallets = new ArrayList<>();
 
-            for (Pair<Pallet,Integer> pair : production.getIn()) {
+            for (Pair<Pallet, Integer> pair : production.getIn()) {
                 Pallet pallet = pair.first;
                 int quantity = pair.second;
 
@@ -118,7 +118,7 @@ public class ProductionLine extends Observable {
     }
 
     public void lockProductionPallets(Production production) {
-        for (Pair<Pallet,Integer> pair : production.getIn()) {
+        for (Pair<Pallet, Integer> pair : production.getIn()) {
             Pallet pallet = pair.first;
             int quantity = pair.second;
 

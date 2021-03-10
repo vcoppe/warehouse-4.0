@@ -27,9 +27,9 @@ public class ProductionStartEventTest extends TestCase {
         this.productionLine = this.configuration.productionLine;
         this.stock = this.configuration.stock;
 
-        ArrayList<Pair<Pallet,Integer>> in = new ArrayList<>();
-        ArrayList<Pair<Pallet,Integer>> out = new ArrayList<>();
-        for (int i=0; i<3; i++) {
+        ArrayList<Pair<Pallet, Integer>> in = new ArrayList<>();
+        ArrayList<Pair<Pallet, Integer>> out = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
             in.add(new Pair<>(new Pallet(i), 1));
             this.configuration.stock.add(this.productionLine.getStartBuffer().get(i), new Pallet(i)); // add to stock
             this.configuration.stock.lock(this.productionLine.getStartBuffer().get(i)); // lock for production
@@ -43,10 +43,10 @@ public class ProductionStartEventTest extends TestCase {
 
     public void testRemovePalletsFromBuffer() {
         ArrayList<Pallet> productionPallets = new ArrayList<>();
-        for (Pair<Pallet,Integer> pair : this.production.getIn()) {
+        for (Pair<Pallet, Integer> pair : this.production.getIn()) {
             Pallet pallet = pair.first;
             int quantity = pair.second;
-            for (int i=0; i<quantity; i++) {
+            for (int i = 0; i < quantity; i++) {
                 productionPallets.add(pallet);
             }
         }
@@ -63,7 +63,7 @@ public class ProductionStartEventTest extends TestCase {
         bufferPallets.sort(Comparator.comparingInt(Pallet::getType));
 
         // buffer contain the correct pallets
-        for (int i=0; i<productionPallets.size(); i++) {
+        for (int i = 0; i < productionPallets.size(); i++) {
             assertEquals(productionPallets.get(i).getType(), bufferPallets.get(i).getType());
         }
 

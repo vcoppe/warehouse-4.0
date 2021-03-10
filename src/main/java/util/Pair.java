@@ -1,6 +1,6 @@
 package util;
 
-public class Pair<A,B> {
+public class Pair<A, B> {
 
     public A first;
     public B second;

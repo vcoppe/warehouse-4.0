@@ -24,9 +24,9 @@ public class ProductionEndEventTest extends TestCase {
         this.productionLine = this.configuration.productionLine;
         this.stock = this.configuration.stock;
 
-        ArrayList<Pair<Pallet,Integer>> in = new ArrayList<>();
-        ArrayList<Pair<Pallet,Integer>> out = new ArrayList<>();
-        for (int i=0; i<3; i++) {
+        ArrayList<Pair<Pallet, Integer>> in = new ArrayList<>();
+        ArrayList<Pair<Pallet, Integer>> out = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
             in.add(new Pair<>(new Pallet(i), 1));
             out.add(new Pair<>(new Pallet(3 + i), 1));
             this.stock.add(new Position(0, i * this.configuration.palletSize), Pallet.FREE);
@@ -45,10 +45,10 @@ public class ProductionEndEventTest extends TestCase {
         this.event.run();
 
         ArrayList<Pallet> productionPallets = new ArrayList<>();
-        for (Pair<Pallet,Integer> pair : this.production.getOut()) {
+        for (Pair<Pallet, Integer> pair : this.production.getOut()) {
             Pallet pallet = pair.first;
             int quantity = pair.second;
-            for (int i=0; i<quantity; i++) {
+            for (int i = 0; i < quantity; i++) {
                 productionPallets.add(pallet);
             }
         }
@@ -65,13 +65,13 @@ public class ProductionEndEventTest extends TestCase {
         bufferPallets.sort(Comparator.comparingInt(Pallet::getType));
 
         // buffer contain the correct pallets
-        for (int i=0; i<productionPallets.size(); i++) {
+        for (int i = 0; i < productionPallets.size(); i++) {
             assertEquals(productionPallets.get(i).getType(), bufferPallets.get(i).getType());
         }
     }
 
     public void testFreeCapacity() {
-        assertEquals(this.productionLine.getCapacity()-this.production.getCapacity(), this.productionLine.getCurrentCapacity());
+        assertEquals(this.productionLine.getCapacity() - this.production.getCapacity(), this.productionLine.getCurrentCapacity());
         this.event.run();
         assertEquals(this.productionLine.getCapacity(), this.productionLine.getCurrentCapacity());
     }
@@ -82,10 +82,10 @@ public class ProductionEndEventTest extends TestCase {
         assertEquals(this.production.getOut().size(), this.configuration.controller.getMissions().size());
 
         ArrayList<Pallet> productionPallets = new ArrayList<>();
-        for (Pair<Pallet,Integer> pair : this.production.getOut()) {
+        for (Pair<Pallet, Integer> pair : this.production.getOut()) {
             Pallet pallet = pair.first;
             int quantity = pair.second;
-            for (int i=0; i<quantity; i++) {
+            for (int i = 0; i < quantity; i++) {
                 productionPallets.add(pallet);
             }
         }
@@ -105,7 +105,7 @@ public class ProductionEndEventTest extends TestCase {
         missionPallets.sort(Comparator.comparingInt(Pallet::getType));
 
         // missions contain the correct pallets
-        for (int i=0; i<productionPallets.size(); i++) {
+        for (int i = 0; i < productionPallets.size(); i++) {
             assertEquals(productionPallets.get(i).getType(), missionPallets.get(i).getType());
         }
     }

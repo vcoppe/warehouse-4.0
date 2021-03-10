@@ -8,6 +8,6 @@ import java.util.ArrayList;
 
 public interface MobileMissionSelector {
 
-    ArrayList<Pair<Mobile,Mission>> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions);
+    ArrayList<Pair<Mobile, Mission>> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions);
 
 }
