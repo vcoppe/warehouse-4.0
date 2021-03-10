@@ -31,7 +31,7 @@ public class MobileMissionEndEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        this.mobile.setPosition(this.mission.getEndPosition());
+        this.mobile.drop();
         this.controller.add(this.mobile);
 
         // tell truck or stock that pallet has arrived at position

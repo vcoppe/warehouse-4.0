@@ -33,7 +33,7 @@ public class MobileMissionStartEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        this.mobile.setTargetPosition(this.mission.getStartPosition());
+        this.mobile.start(this.mission);
 
         double missionPickUpTime = this.time + this.warehouse.getTravelTime(this.mobile.getPosition(), this.mission.getStartPosition(), this.mobile);
 

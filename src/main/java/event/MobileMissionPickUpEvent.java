@@ -34,8 +34,7 @@ public class MobileMissionPickUpEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        this.mobile.setPosition(this.mission.getStartPosition());
-        this.mobile.setTargetPosition(this.mission.getEndPosition());
+        this.mobile.pickUp();
 
         // tell truck or stock that pallet has left the position
         if (this.mission.getStartTruck() != null) {
