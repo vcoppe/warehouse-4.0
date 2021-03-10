@@ -21,6 +21,12 @@ public class CompounedShape extends MyShape {
         this.add(shape);
     }
 
+    public CompounedShape(MyShape shape, int x, int y) {
+        this(shape);
+        this.group.setTranslateX(x);
+        this.group.setTranslateY(y);
+    }
+
     public void add(MyShape shape) {
         if (this.shapes.size() == 0) {
             this.x = shape.x;

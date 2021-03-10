@@ -44,7 +44,7 @@ public class TruckObserver implements Observer<Truck> {
                 0,
                 this.configuration.dockWidth
         );
-        CompounedShape shape = new CompounedShape(truckShape);
+        CompounedShape shape = new CompounedShape(truckShape, truck.getPosition().getX(), truck.getPosition().getY());
 
         this.shapes.put(truck.getId(), shape);
         this.palletShapes.put(truck.getId(), new HashMap<>());
@@ -56,9 +56,6 @@ public class TruckObserver implements Observer<Truck> {
         }
 
         this.group.getChildren().add(shape.getShape());
-
-        shape.getShape().setTranslateX(truck.getPosition().getX());
-        shape.getShape().setTranslateY(truck.getPosition().getY());
 
         return shape;
     }
