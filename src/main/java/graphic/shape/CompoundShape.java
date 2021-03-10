@@ -5,23 +5,23 @@ import javafx.scene.Node;
 
 import java.util.ArrayList;
 
-public class CompounedShape extends MyShape {
+public class CompoundShape extends MyShape {
 
     private final ArrayList<MyShape> shapes;
     private final Group group;
 
-    public CompounedShape() {
+    public CompoundShape() {
         super(0, 0, 0, 0);
         this.shapes = new ArrayList<>();
         this.group = new Group();
     }
 
-    public CompounedShape(MyShape shape) {
+    public CompoundShape(MyShape shape) {
         this();
         this.add(shape);
     }
 
-    public CompounedShape(MyShape shape, int x, int y) {
+    public CompoundShape(MyShape shape, int x, int y) {
         this(shape);
         this.group.setTranslateX(x);
         this.group.setTranslateY(y);

@@ -3,12 +3,11 @@ package observer;
 import agent.Truck;
 import graphic.animation.MyAnimation;
 import graphic.dashboard.AnimationDashboard;
-import graphic.shape.CompounedShape;
+import graphic.shape.CompoundShape;
 import graphic.shape.PalletShape;
 import graphic.shape.TruckShape;
 import javafx.animation.PathTransition;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
@@ -24,7 +23,7 @@ public class TruckObserver implements Observer<Truck> {
 
     private final Configuration configuration;
     private final AnimationDashboard animationDashboard;
-    private final HashMap<Integer, CompounedShape> shapes;
+    private final HashMap<Integer, CompoundShape> shapes;
     private final HashMap<Integer, HashMap<Integer, PalletShape>> palletShapes;
     private Group group;
 
@@ -36,7 +35,7 @@ public class TruckObserver implements Observer<Truck> {
         this.group = new Group();
     }
 
-    public CompounedShape add(Truck truck) {
+    public CompoundShape add(Truck truck) {
         truck.attach(this);
 
         TruckShape truckShape = new TruckShape(
@@ -44,7 +43,7 @@ public class TruckObserver implements Observer<Truck> {
                 0,
                 this.configuration.dockWidth
         );
-        CompounedShape shape = new CompounedShape(truckShape, truck.getPosition().getX(), truck.getPosition().getY());
+        CompoundShape shape = new CompoundShape(truckShape, truck.getPosition().getX(), truck.getPosition().getY());
 
         this.shapes.put(truck.getId(), shape);
         this.palletShapes.put(truck.getId(), new HashMap<>());
@@ -79,7 +78,7 @@ public class TruckObserver implements Observer<Truck> {
     }
 
     public void remove(Truck truck) {
-        CompounedShape shape = this.shapes.get(truck.getId());
+        CompoundShape shape = this.shapes.get(truck.getId());
         this.group.getChildren().remove(shape.getShape());
         this.shapes.remove(truck.getId());
         this.palletShapes.remove(truck.getId());
@@ -87,7 +86,7 @@ public class TruckObserver implements Observer<Truck> {
 
     @Override
     public void update(Truck truck) {
-        CompounedShape shape = this.shapes.get(truck.getId());
+        CompoundShape shape = this.shapes.get(truck.getId());
         if (shape == null) {
             this.add(truck);
         }
