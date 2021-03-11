@@ -1,10 +1,10 @@
 package observer;
 
 import agent.Mobile;
-import graphic.shape.CompoundShape;
-import graphic.shape.MobileShape;
 import graphic.animation.MyAnimation;
 import graphic.dashboard.AnimationDashboard;
+import graphic.shape.CompoundShape;
+import graphic.shape.MobileShape;
 import graphic.shape.PalletShape;
 import javafx.animation.PathTransition;
 import javafx.scene.Group;
@@ -14,7 +14,6 @@ import javafx.scene.shape.Path;
 import javafx.util.Duration;
 import warehouse.Configuration;
 import warehouse.Mission;
-import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.HashMap;
@@ -60,14 +59,16 @@ public class MobileObserver implements Observer<Mobile> {
         }
 
         Mission mission = mobile.getMission();
+        PalletShape palletShape = this.palletShapes.get(mobile.getId());
         if (mission == null) {
-            mobileShape.remove(this.palletShapes.get(mobile.getId()));
-            this.palletShapes.remove(mobile.getId());
-        } else {
-            if (mobile.getPosition().equals(mission.getStartPosition())) {
-                PalletShape palletShape = new PalletShape(1, 1, this.configuration.palletSize-2, mission.getPallet().getType());
+            palletShape.setEmptyMobile();
+        } else if (mobile.getPosition().equals(mission.getStartPosition())) {
+            if (palletShape == null) {
+                palletShape = new PalletShape(1, 1, this.configuration.palletSize - 2, mission.getPallet().getType());
                 mobileShape.add(palletShape);
                 this.palletShapes.put(mobile.getId(), palletShape);
+            } else {
+                palletShape.setType(mission.getPallet().getType());
             }
         }
 

@@ -39,9 +39,14 @@ public class PalletShape extends MyShape {
         }
     }
 
-    public void setBlack() {
+    public void setEmptyTruck() {
         this.shape.setFill(Color.DARKGREY);
         this.shape.setStroke(Color.DARKGREY);
+    }
+
+    public void setEmptyMobile() {
+        this.shape.setFill(Color.BLACK);
+        this.shape.setStroke(Color.BLACK);
     }
 
 }

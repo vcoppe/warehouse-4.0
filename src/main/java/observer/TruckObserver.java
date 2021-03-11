@@ -114,7 +114,7 @@ public class TruckObserver implements Observer<Truck> {
         } else {
             // update current load
             for (PalletShape palletShape : this.palletShapes.get(truck.getId()).values()) {
-                palletShape.setBlack();
+                palletShape.setEmptyTruck();
             }
 
             for (Pair<Position, Pallet> pair : truck.getCurrentLoad()) {
