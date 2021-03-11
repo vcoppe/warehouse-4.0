@@ -52,4 +52,9 @@ public class TruckArriveEventTest extends TestCase {
         assertTrue(this.configuration.simulation.nextEvent() instanceof ControllerEvent);
     }
 
+    public void testSetArrivalTime() {
+        this.event.run();
+        assertEquals(this.event.getTime(), this.truck.getArrivalTime());
+    }
+
 }

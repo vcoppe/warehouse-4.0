@@ -15,6 +15,7 @@ public class Truck extends Observable {
     private Dock dock;
     private Position position, targetPosition;
     private final ArrayList<Pair<Position, Pallet>> toLoad, toUnload, currentLoad;
+    private double arrivalTime, departureTime;
 
     public Truck(Dock dock, Position position, ArrayList<Pair<Position, Pallet>> toLoad, ArrayList<Pair<Position, Pallet>> toUnload) {
         super();
@@ -107,5 +108,24 @@ public class Truck extends Observable {
         return (this.toUnload.size() + this.toLoad.size()) == 0;
     }
 
+    public double getArrivalTime() {
+        return this.arrivalTime;
+    }
+
+    public void setArrivalTime(double arrivalTime) {
+        this.arrivalTime = arrivalTime;
+    }
+
+    public double getDepartureTime() {
+        return this.departureTime;
+    }
+
+    public void setDepartureTime(double departureTime) {
+        this.departureTime = departureTime;
+    }
+
+    public double getWaitingTime() {
+        return this.departureTime - this.arrivalTime;
+    }
 
 }
