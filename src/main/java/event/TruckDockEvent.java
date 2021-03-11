@@ -36,7 +36,7 @@ public class TruckDockEvent extends Event {
                         this.truck.getId(),
                         this.dock.getId()));
 
-        this.truck.setPosition(this.dock.getPosition());
+        this.truck.dock();
 
         // scan pallets to load and unload
         // TODO add precedence constraint

@@ -23,7 +23,7 @@ public class TruckArriveEvent extends Event {
                         this.time,
                         this.truck.getId()));
 
-        this.truck.setArrivalTime(this.time);
+        this.truck.arrive(this.time);
         this.controller.add(this.truck);
         Event event = new ControllerEvent(this.simulation, this.time, this.controller);
         this.simulation.enqueueEvent(event);

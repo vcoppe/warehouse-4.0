@@ -52,8 +52,25 @@ public class Truck extends Observable {
         return this.currentLoad;
     }
 
-    public void setDock(Dock dock) {
+    public void arrive(double time) {
+        this.arrivalTime = time;
+    }
+
+    public void go(Dock dock) {
         this.dock = dock;
+        this.targetPosition = dock.getPosition();
+        this.changed();
+    }
+
+    public void dock() {
+        this.position = this.dock.getPosition();
+        this.changed();
+    }
+
+    public void leave(double time) {
+        this.dock = null;
+        this.targetPosition = null;
+        this.departureTime = time;
         this.changed();
     }
 
@@ -61,18 +78,8 @@ public class Truck extends Observable {
         return this.dock;
     }
 
-    public void setPosition(Position position) {
-        this.position = position;
-        this.changed();
-    }
-
     public Position getPosition() {
         return this.position;
-    }
-
-    public void setTargetPosition(Position position) {
-        this.targetPosition = position;
-        this.changed();
     }
 
     public Position getTargetPosition() {
@@ -112,16 +119,8 @@ public class Truck extends Observable {
         return this.arrivalTime;
     }
 
-    public void setArrivalTime(double arrivalTime) {
-        this.arrivalTime = arrivalTime;
-    }
-
     public double getDepartureTime() {
         return this.departureTime;
-    }
-
-    public void setDepartureTime(double departureTime) {
-        this.departureTime = departureTime;
     }
 
     public double getWaitingTime() {

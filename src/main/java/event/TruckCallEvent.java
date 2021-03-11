@@ -5,19 +5,16 @@ import agent.Dock;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
-import warehouse.Warehouse;
 
 public class TruckCallEvent extends Event {
 
     private final Controller controller;
-    private final Warehouse warehouse;
     private final Dock dock;
     private final Truck truck;
 
     public TruckCallEvent(Simulation simulation, double time, Controller controller, Dock dock, Truck truck) {
         super(simulation, time);
         this.controller = controller;
-        this.warehouse = controller.getWarehouse();
         this.dock = dock;
         this.truck = truck;
     }
@@ -30,10 +27,9 @@ public class TruckCallEvent extends Event {
                         this.truck.getId(),
                         this.dock.getId()));
 
-        this.truck.setDock(this.dock);
-        this.truck.setTargetPosition(this.dock.getPosition());
+        this.truck.go(this.dock);
 
-        double endTime = this.time + this.truck.getPosition().manhattanDistance2D(this.dock.getPosition()) / this.truck.getSpeed();
+        double endTime = this.time + this.truck.getPosition().manhattanDistance2D(this.dock.getPosition()) / Truck.getSpeed();
 
         Event event = new TruckDockEvent(this.simulation, endTime, this.controller, this.dock, this.truck);
         this.simulation.enqueueEvent(event);
