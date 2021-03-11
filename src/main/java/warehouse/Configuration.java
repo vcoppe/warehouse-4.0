@@ -23,6 +23,8 @@ public class Configuration {
 
     public int palletSize = 10;
     public int dockWidth = 30;
+    public int truckWidth = dockWidth;
+    public int truckHeight = 3 * truckWidth;
     public int productionLineWidth = 50;
 
     public Configuration(int width, int depth, int nDocks, int nMobiles, Level level) {

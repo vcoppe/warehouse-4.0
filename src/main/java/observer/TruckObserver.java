@@ -41,7 +41,8 @@ public class TruckObserver implements Observer<Truck> {
         TruckShape truckShape = new TruckShape(
                 0,
                 0,
-                this.configuration.dockWidth
+                this.configuration.truckWidth,
+                this.configuration.truckHeight
         );
         CompoundShape shape = new CompoundShape(truckShape, truck.getPosition().getX(), truck.getPosition().getY());
 
@@ -98,6 +99,14 @@ public class TruckObserver implements Observer<Truck> {
             path.getElements().add(new MoveTo(
                     truck.getPosition().getX() + 0.5 * shape.getWidth(),
                     truck.getPosition().getY() + 0.5 * shape.getHeight()
+            ));
+            path.getElements().add(new LineTo(
+                    truck.getPosition().getX() + 0.5 * shape.getWidth(),
+                    1.5 * this.configuration.warehouse.getDepth() + 0.5 * shape.getHeight()
+            ));
+            path.getElements().add(new LineTo(
+                    truck.getTargetPosition().getX() + 0.5 * shape.getWidth(),
+                    1.5 * this.configuration.warehouse.getDepth() + 0.5 * shape.getHeight()
             ));
             path.getElements().add(new LineTo(
                     truck.getTargetPosition().getX() + 0.5 * shape.getWidth(),

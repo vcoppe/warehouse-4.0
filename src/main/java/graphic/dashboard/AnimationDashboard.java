@@ -3,7 +3,10 @@ package graphic.dashboard;
 import agent.Dock;
 import agent.Mobile;
 import graphic.animation.MyAnimation;
-import graphic.shape.*;
+import graphic.shape.DockShape;
+import graphic.shape.ProductionLineShape;
+import graphic.shape.SiteShape;
+import graphic.shape.WarehouseShape;
 import javafx.animation.PauseTransition;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -18,7 +21,6 @@ import observer.TruckObserver;
 import warehouse.Configuration;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 public class AnimationDashboard {
 
@@ -38,7 +40,7 @@ public class AnimationDashboard {
         this.autoplay = true;
 
         int width = configuration.warehouse.getWidth();
-        int height = 3 * configuration.warehouse.getDepth() / 2;
+        int height = 2 * configuration.warehouse.getDepth();
         double ratio = (double) width / height;
 
         double pixelWidth = Math.min(600.0, ratio * 600.0);
