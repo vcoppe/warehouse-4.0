@@ -37,7 +37,7 @@ public class TruckGeneratorEvent extends Event {
         ArrayList<Pair<Position, Pallet>> toLoad = new ArrayList<>();
         ArrayList<Pair<Position, Pallet>> toUnload = new ArrayList<>();
 
-        int nPallets = 18 + random.nextInt(10);
+        int nPallets = 9 + random.nextInt(19);
         int nPalletsToLoad = random.nextInt(nPallets);
         int nPalletsToUnload = nPallets - nPalletsToLoad;
 
@@ -69,7 +69,7 @@ public class TruckGeneratorEvent extends Event {
         );
         this.simulation.enqueueEvent(new TruckGeneratorEvent(
                 this.simulation,
-                this.time + 100 + random.nextInt(50),
+                this.time + 100 + random.nextInt(100),
                 this.configuration,
                 this.random
         ));

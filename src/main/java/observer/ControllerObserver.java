@@ -5,9 +5,9 @@ import agent.Truck;
 
 public class ControllerObserver implements Observer<Controller> {
 
-    private final TruckObserver truckObserver;
+    private final Observer<Truck> truckObserver;
 
-    public ControllerObserver(TruckObserver truckObserver) {
+    public ControllerObserver(Observer<Truck> truckObserver) {
         this.truckObserver = truckObserver;
     }
 

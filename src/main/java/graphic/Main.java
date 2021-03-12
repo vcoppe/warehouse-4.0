@@ -3,6 +3,7 @@ package graphic;
 import event.ProductionInitEvent;
 import event.TruckGeneratorEvent;
 import graphic.dashboard.AnimationDashboard;
+import graphic.dashboard.KPIDashboard;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -23,52 +24,47 @@ import java.util.logging.Logger;
 
 public class Main extends Application {
 
-    @Override
-    public void start(Stage stage) throws Exception {
+    private final Configuration configuration;
+
+    public Main() {
+        super();
+        this.configuration = new Configuration(10, 5);
+
         // disable JavaFX logging
         Logger logger = Logger.getLogger("javafx");
         logger.setLevel(Level.OFF);
 
         // create scenario
-        Configuration configuration = new Configuration(10, 5);
-        Simulation simulation = configuration.simulation;
-
         Random random = new Random(0);
 
         for (int i = 0; i < 30 * 30; i++) {
             if (random.nextInt(100) < 70) {
                 Pallet pallet = new Pallet(random.nextInt(10));
-                configuration.stock.add(
+                this.configuration.stock.add(
                         new Position(
-                                (2 * (i / 30) + (i / 30) % 2) * configuration.palletSize,
-                                (i % 30) * configuration.palletSize
+                                (2 * (i / 30) + (i / 30) % 2) * this.configuration.palletSize,
+                                (i % 30) * this.configuration.palletSize
                         ),
                         pallet
                 );
             }
         }
 
-        Event event = new TruckGeneratorEvent(configuration.simulation, 0, configuration);
-        configuration.simulation.enqueueEvent(event);
+        Event event = new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration);
+        this.configuration.simulation.enqueueEvent(event);
+    }
 
-        ArrayList<Pair<Pallet, Integer>> in = new ArrayList<>();
-        ArrayList<Pair<Pallet, Integer>> out = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            in.add(new Pair<>(new Pallet(i), 1));
-            out.add(new Pair<>(new Pallet(3 + i), 1));
-        }
-        Production production = new Production(in, out, 30, 1, 500);
-        Event event2 = new ProductionInitEvent(configuration.simulation, 200, configuration.controller, production);
-        configuration.simulation.enqueueEvent(event2);
+    @Override
+    public void start(Stage stage) throws Exception {
 
-        // create all shapes and observers
-        AnimationDashboard animationDashboard = new AnimationDashboard(configuration);
+        AnimationDashboard animationDashboard = new AnimationDashboard(this.configuration);
+        KPIDashboard kpiDashboard = new KPIDashboard(this.configuration);
 
         BorderPane pane = new BorderPane();
         pane.setTop(new Group());
         pane.setBottom(new Group());
         pane.setLeft(new Group());
-        pane.setRight(new Group());
+        pane.setRight(kpiDashboard.getPane());
         pane.setCenter(animationDashboard.getPane());
 
         Scene scene = new Scene(pane);

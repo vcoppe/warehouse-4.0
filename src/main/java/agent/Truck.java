@@ -26,6 +26,8 @@ public class Truck extends Observable {
         this.toLoad = toLoad;
         this.toUnload = toUnload;
         this.currentLoad = new ArrayList<>(toUnload);
+        this.arrivalTime = -1;
+        this.departureTime = -1;
     }
 
     public Truck(Position position, ArrayList<Pair<Position, Pallet>> toLoad, ArrayList<Pair<Position, Pallet>> toUnload) {
@@ -113,6 +115,10 @@ public class Truck extends Observable {
 
     public boolean done() {
         return (this.toUnload.size() + this.toLoad.size()) == 0;
+    }
+
+    public boolean left() {
+        return this.departureTime != -1;
     }
 
     public double getArrivalTime() {

@@ -33,6 +33,10 @@ public class MobileObserver implements Observer<Mobile> {
         this.shapes = new HashMap<>();
         this.palletShapes = new HashMap<>();
         this.group = new Group();
+
+        for (Mobile mobile : configuration.mobiles) {
+            this.add(mobile);
+        }
     }
 
     public CompoundShape add(Mobile mobile) {

@@ -117,9 +117,6 @@ public class AnimationDashboard {
         }
 
         MobileObserver mobileObserver = new MobileObserver(configuration, this);
-        for (Mobile mobile : configuration.mobiles) {
-            mobileObserver.add(mobile);
-        }
 
         StockObserver stockObserver = new StockObserver(configuration, this);
         configuration.stock.attach(stockObserver);

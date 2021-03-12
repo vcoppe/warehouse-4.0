@@ -92,7 +92,7 @@ public class TruckObserver implements Observer<Truck> {
             this.add(truck);
         }
 
-        if (truck.getTargetPosition() == null) { // truck is done
+        if (truck.left()) {
             this.remove(truck);
         } else if (!truck.getPosition().equals(truck.getTargetPosition())) {
             Path path = new Path();
