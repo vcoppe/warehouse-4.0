@@ -39,20 +39,18 @@ public class ProductionInitEvent extends Event {
             Pallet pallet = pair.first;
             int quantity = pair.second;
 
-            ArrayList<Position> positions = this.stock.getStartPositions(pallet);
-
-            if (quantity > positions.size()) {
-                this.simulation.logger.warning("FAILURE! Missing pallets to launch production.");
-                return;
-            }
-
             for (int i=0; i<quantity; i++) {
                 Position endPosition = this.productionLine.getStartBufferPosition();
-                Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, positions);
-                positions.remove(startPosition);
 
                 if (endPosition == null) {
                     this.simulation.logger.warning("FAILURE! Start buffer of production line is full.");
+                    return;
+                }
+
+                Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
+
+                if (startPosition == null) {
+                    this.simulation.logger.warning("FAILURE! Missing pallets to launch production.");
                     return;
                 }
 

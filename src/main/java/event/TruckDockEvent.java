@@ -44,15 +44,14 @@ public class TruckDockEvent extends Event {
             Position palletPosition = pair.first;
             Pallet pallet = pair.second;
 
-            ArrayList<Position> positions = this.stock.getEndPositions(pallet);
+            Position startPosition = this.truck.getPosition().add(palletPosition);
+            Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock);
 
-            if (positions.size() == 0) {
+            if (endPosition == null) {
                 this.simulation.logger.warning("FAILURE! Warehouse is full, cannot handle more pallets.");
                 return;
             }
 
-            Position startPosition = this.truck.getPosition().add(palletPosition);
-            Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, positions);
             Mission mission = new Mission(this.time, pallet, this.truck, null, startPosition, endPosition);
             this.controller.add(mission);
             this.stock.lock(endPosition);
@@ -64,13 +63,14 @@ public class TruckDockEvent extends Event {
 
             ArrayList<Position> positions = this.stock.getStartPositions(pallet);
 
-            if (positions.size() == 0) {
+            Position endPosition = this.truck.getPosition().add(palletPosition);
+            Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
+
+            if (startPosition == null) {
                 this.simulation.logger.warning("FAILURE! Missing pallets to load truck.");
                 return;
             }
 
-            Position endPosition = this.truck.getPosition().add(palletPosition);
-            Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, positions);
             Mission mission = new Mission(this.time, pallet, null, this.truck, startPosition, endPosition);
             this.controller.add(mission);
             this.stock.lock(startPosition);

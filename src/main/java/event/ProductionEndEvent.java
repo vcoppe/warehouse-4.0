@@ -49,14 +49,13 @@ public class ProductionEndEvent extends Event {
 
                 this.stock.add(startPosition, pallet);
 
-                ArrayList<Position> positions = this.stock.getEndPositions(pallet);
+                Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock);
 
-                if (positions.size() == 0) {
+                if (endPosition == null) {
                     this.simulation.logger.warning("FAILURE! Warehouse is full, cannot handle more pallets.");
                     return;
                 }
 
-                Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, positions);
                 Mission mission = new Mission(this.time, pallet, startPosition, endPosition);
                 this.controller.add(mission);
                 this.stock.lock(endPosition);

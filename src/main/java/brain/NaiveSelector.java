@@ -2,6 +2,7 @@ package brain;
 
 import agent.Dock;
 import agent.Mobile;
+import agent.Stock;
 import agent.Truck;
 import util.Pair;
 import warehouse.Mission;
@@ -22,13 +23,13 @@ public class NaiveSelector implements MobileMissionSelector, PalletPositionSelec
     }
 
     @Override
-    public Position selectStartPosition(Pallet pallet, Position endPosition, ArrayList<Position> positions) {
-        return positions.get(0);
+    public Position selectStartPosition(Pallet pallet, Position endPosition, Stock stock) {
+        return stock.getStartPositions(pallet).get(0);
     }
 
     @Override
-    public Position selectEndPosition(Pallet pallet, Position startPosition, ArrayList<Position> positions) {
-        return positions.get(0);
+    public Position selectEndPosition(Pallet pallet, Position startPosition, Stock stock) {
+        return stock.getEndPositions(pallet).get(0);
     }
 
     @Override

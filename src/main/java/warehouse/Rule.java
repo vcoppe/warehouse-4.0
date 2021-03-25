@@ -12,6 +12,10 @@ public abstract class Rule implements Comparable<Rule> {
         this.blocking = blocking;
     }
 
+    public int getPriority() {
+        return this.priority;
+    }
+
     public abstract boolean matches(Pallet pallet);
 
     public abstract ArrayList<Position> positions();
