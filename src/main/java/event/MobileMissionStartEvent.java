@@ -5,8 +5,12 @@ import agent.Mobile;
 import agent.Stock;
 import simulation.Event;
 import simulation.Simulation;
+import util.Pair;
 import warehouse.Mission;
+import warehouse.Position;
 import warehouse.Warehouse;
+
+import java.util.ArrayList;
 
 public class MobileMissionStartEvent extends Event {
 
@@ -33,9 +37,10 @@ public class MobileMissionStartEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        this.mobile.start(this.mission);
+        ArrayList<Pair<Position, Double>> path = this.warehouse.getPath(this.mobile.getPosition(), this.mission.getStartPosition(), this.time, this.mobile);
+        double missionPickUpTime = path.get(path.size() - 1).second;
 
-        double missionPickUpTime = this.time + this.warehouse.getTravelTime(this.mobile.getPosition(), this.mission.getStartPosition(), this.mobile);
+        this.mobile.start(this.mission, path);
 
         Event event = new MobileMissionPickUpEvent(this.simulation, missionPickUpTime, this.controller, this.mobile, this.mission);
         this.simulation.enqueueEvent(event);

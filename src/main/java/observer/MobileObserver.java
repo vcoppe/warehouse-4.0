@@ -7,11 +7,13 @@ import graphic.shape.CompoundShape;
 import graphic.shape.MobileShape;
 import graphic.shape.PalletShape;
 import javafx.animation.PathTransition;
+import javafx.animation.SequentialTransition;
 import javafx.scene.Group;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
+import util.Pair;
 import warehouse.Configuration;
 import warehouse.Mission;
 import warehouse.Position;
@@ -76,39 +78,39 @@ public class MobileObserver implements Observer<Mobile> {
             }
         }
 
-        List<Position> positions = this.configuration.warehouse.getPath(
-                mobile.getPosition(),
-                mobile.getTargetPosition()
-        );
+        List<Pair<Position, Double>> path = mobile.getPath();
 
-        Path path = new Path();
-        boolean first = true;
-        for (Position position : positions) {
-            if (first) {
-                path.getElements().add(new MoveTo(
-                        position.getX() + 0.5 * mobileShape.getWidth(),
-                        position.getY() + 0.5 * mobileShape.getHeight()
-                ));
-                first = false;
-            } else {
-                path.getElements().add(new LineTo(
-                        position.getX() + 0.5 * mobileShape.getWidth(),
-                        position.getY() + 0.5 * mobileShape.getHeight()
-                ));
+        if (path != null) {
+            SequentialTransition transition = new SequentialTransition();
+            Position lastPosition = null;
+            double lastTime = 0;
+            boolean first = true;
+            for (Pair<Position, Double> pair : path) {
+                Position position = pair.first;
+                double time = pair.second;
+
+                if (first) {
+                    first = false;
+                } else {
+                    Path pathShape = new Path();
+                    pathShape.getElements().add(new MoveTo(
+                            lastPosition.getX() + 0.5 * mobileShape.getWidth(),
+                            lastPosition.getY() + 0.5 * mobileShape.getHeight()
+                    ));
+                    pathShape.getElements().add(new LineTo(
+                            position.getX() + 0.5 * mobileShape.getWidth(),
+                            position.getY() + 0.5 * mobileShape.getHeight()
+                    ));
+                    PathTransition pathTransition = new PathTransition(Duration.seconds(time - lastTime), pathShape, mobileShape.getShape());
+                    transition.getChildren().add(pathTransition);
+                }
+
+                lastPosition = position;
+                lastTime = time;
             }
+
+            this.animationDashboard.add(new MyAnimation(mobileShape, transition));
         }
-
-        PathTransition pathTransition = new PathTransition(
-                Duration.seconds(this.configuration.warehouse.getTravelTime(
-                        mobile.getPosition(),
-                        mobile.getTargetPosition(),
-                        mobile
-                )),
-                path,
-                mobileShape.getShape()
-        );
-
-        this.animationDashboard.add(new MyAnimation(mobileShape, pathTransition));
     }
 
 }

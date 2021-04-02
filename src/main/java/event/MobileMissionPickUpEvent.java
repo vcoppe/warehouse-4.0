@@ -6,8 +6,12 @@ import agent.Stock;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
+import util.Pair;
 import warehouse.Mission;
+import warehouse.Position;
 import warehouse.Warehouse;
+
+import java.util.ArrayList;
 
 public class MobileMissionPickUpEvent extends Event {
 
@@ -34,7 +38,10 @@ public class MobileMissionPickUpEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        this.mobile.pickUp();
+        ArrayList<Pair<Position, Double>> path = this.warehouse.getPath(this.mission.getStartPosition(), this.mission.getEndPosition(), this.time, this.mobile);
+        double missionEndTime = path.get(path.size() - 1).second;
+
+        this.mobile.pickUp(path);
 
         // tell truck or stock that pallet has left the position
         if (this.mission.getStartTruck() != null) {
@@ -47,8 +54,6 @@ public class MobileMissionPickUpEvent extends Event {
         } else {
             this.stock.remove(this.mission.getStartPosition(), this.mission.getPallet());
         }
-
-        double missionEndTime = this.time + this.warehouse.getTravelTime(this.mission.getStartPosition(), this.mission.getEndPosition(), this.mobile);
 
         Event event = new MobileMissionEndEvent(this.simulation, missionEndTime, this.controller, this.mobile, this.mission);
         this.simulation.enqueueEvent(event);

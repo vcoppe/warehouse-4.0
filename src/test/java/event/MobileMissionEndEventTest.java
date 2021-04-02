@@ -55,8 +55,8 @@ public class MobileMissionEndEventTest extends TestCase {
         Position endPosition = this.truckLoad.getPosition();
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
         MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission);
-        this.mobile.pickUp();
+        this.mobile.start(mission, null);
+        this.mobile.pickUp(null);
 
         assertFalse(endPosition.equals(this.mobile.getPosition()));
         event.run();
@@ -69,8 +69,8 @@ public class MobileMissionEndEventTest extends TestCase {
         Position endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, truckUnload, null, startPosition, endPosition);
         MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission);
-        this.mobile.pickUp();
+        this.mobile.start(mission, null);
+        this.mobile.pickUp(null);
 
         assertTrue(this.configuration.stock.isLocked(endPosition));
         event.run();
@@ -84,8 +84,8 @@ public class MobileMissionEndEventTest extends TestCase {
         Position endPosition = this.truckLoad.getToLoad().get(0).first.add(this.truckLoad.getPosition());
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
         MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission);
-        this.mobile.pickUp();
+        this.mobile.start(mission, null);
+        this.mobile.pickUp(null);
 
         assertEquals(this.loadPalletPositions.size(), this.truckLoad.getToLoad().size());
         assertEquals(0, this.truckLoad.getCurrentLoad().size());
@@ -101,8 +101,8 @@ public class MobileMissionEndEventTest extends TestCase {
         Position endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, truckUnload, null, startPosition, endPosition);
         MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission);
-        this.mobile.pickUp();
+        this.mobile.start(mission, null);
+        this.mobile.pickUp(null);
 
         assertEquals(0, this.configuration.controller.getMobiles().size());
         event.run();
@@ -119,8 +119,8 @@ public class MobileMissionEndEventTest extends TestCase {
             Position endPosition = pair.first.add(this.truckLoad.getPosition());
             Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
             MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-            this.mobile.start(mission);
-            this.mobile.pickUp();
+            this.mobile.start(mission, null);
+            this.mobile.pickUp(null);
 
             assertFalse(this.truckLoad.done());
             event.run();
@@ -139,8 +139,8 @@ public class MobileMissionEndEventTest extends TestCase {
         Position endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, this.truckUnload, null, startPosition, endPosition);
         MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission);
-        this.mobile.pickUp();
+        this.mobile.start(mission, null);
+        this.mobile.pickUp(null);
 
         assertEquals(0, this.configuration.simulation.queueSize());
         event.run();

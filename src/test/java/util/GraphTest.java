@@ -40,8 +40,7 @@ public class GraphTest extends TestCase {
             graph.addEdge(i, i + 1, 5);
         }
 
-        assertEquals(11, graph.getShortestPath(0, 10).size());
-        assertEquals(0, graph.getShortestPath(10, 0).size());
+        assertEquals(50.0, graph.getShortestPath(0, 10, null));
     }
 
 }

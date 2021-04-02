@@ -35,6 +35,10 @@ public class Graph {
     }
 
     public void dijkstra(int s, HashMap<Integer, Double> dist, HashMap<Integer, Integer> prev) {
+        this.dijkstra(s, null, null, dist, prev);
+    }
+
+    public void dijkstra(int s, Double time, Double speed, HashMap<Integer, Double> dist, HashMap<Integer, Integer> prev) {
         PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
 
         dist.put(s, 0.0);
@@ -61,6 +65,8 @@ public class Graph {
                     pq.add(new Edge(v, dist_u + w));
                 }
             }
+
+            // si données de temps, ajouter un mouvement "attendre" ici
         }
     }
 
@@ -70,63 +76,51 @@ public class Graph {
         this.dijkstra(s, this.dist.get(s), this.prev.get(s));
     }
 
-    public double getShortestDistance(int s, int t) {
+    public double getShortestPath(int s, int t, ArrayList<Integer> path) {
         if (!this.dist.containsKey(s)) {
             this.computeShortestPaths(s);
         }
-        try {
-            return this.dist.get(s).get(t);
-        } catch (Exception e) {
-            System.out.println(s + ", " + t);
-            e.printStackTrace();
+
+        if (!this.dist.get(s).containsKey(t)) {
+            System.out.println("No path between " + s + " and " + t);
             System.exit(0);
+        } else {
+            HashMap<Integer, Double> dist = this.dist.get(s);
+            HashMap<Integer, Integer> prev = this.prev.get(s);
+
+            if (path != null) {
+                int u = t;
+                path.add(u);
+                while (u != s) {
+                    u = prev.get(u);
+                    path.add(0, u);
+                }
+            }
+            return dist.get(t);
         }
+
         return 0;
     }
 
-    public ArrayList<Integer> getShortestPath(int s, int t) {
-        if (!this.dist.containsKey(s)) {
-            this.computeShortestPaths(s);
-        }
-
-        HashMap<Integer, Double> dist = this.dist.get(s);
-        HashMap<Integer, Integer> prev = this.prev.get(s);
-
-        ArrayList<Integer> path = new ArrayList<>();
+    public ArrayList<Pair<Integer, Double>> getShortestPath(int s, int t, double time, double speed) {
+        HashMap<Integer, Double> dist = new HashMap<>();
+        HashMap<Integer, Integer> prev = new HashMap<>();
+        this.dijkstra(s, time, speed, dist, prev);
+        ArrayList<Pair<Integer, Double>> path = new ArrayList<>();
 
         if (!dist.containsKey(t)) {
-            return path;
-        }
-
-        int u = t;
-        path.add(u);
-        while (u != s) {
-            u = prev.get(u);
-            path.add(0, u);
+            System.out.println("No path between " + s + " and " + t + " at time " + time);
+            System.exit(0);
+        } else {
+            int u = t;
+            path.add(new Pair<>(u, time + dist.get(u) / speed));
+            while (u != s) {
+                u = prev.get(u);
+                path.add(0, new Pair<>(u, time + dist.get(u) / speed));
+            }
         }
 
         return path;
-    }
-
-    static class Edge implements Comparable<Edge> {
-
-        int to;
-        double w;
-
-        public Edge(int to, double w) {
-            this.to = to;
-            this.w = w;
-        }
-
-        public double getWeight() {
-            return this.w;
-        }
-
-        @Override
-        public int compareTo(Edge other) {
-            return Integer.compare(this.to, other.to);
-        }
-
     }
 
 }
