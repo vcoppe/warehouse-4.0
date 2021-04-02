@@ -39,10 +39,11 @@ public class Graph {
     }
 
     public void dijkstra(int s, Double time, Double speed, HashMap<Integer, Double> dist, HashMap<Integer, Integer> prev) {
+        boolean timeDependent = time != null;
         PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
 
-        dist.put(s, 0.0);
-        pq.add(new Edge(s, 0));
+        dist.put(s, timeDependent ? time : 0.0);
+        pq.add(new Edge(s, timeDependent ? time : 0.0));
 
         while (!pq.isEmpty()) {
             Edge e1 = pq.poll();
@@ -57,16 +58,25 @@ public class Graph {
                 int v = e2.to;
                 double w = e2.w;
                 Double dist_v = dist.get(v);
+                double other_dist_v = dist_u;
+                if (timeDependent) {
+                    if (e2.isAvailable(dist_u)) {
+                        other_dist_v += w / speed;
+                    } else { // wait for the edge to be available
+                        double nextTime = e2.nextAvailability(dist_u);
+                        other_dist_v = nextTime + w / speed;
+                    }
+                } else {
+                    other_dist_v += w;
+                }
 
-                if (dist_v == null || dist_u + w < dist_v) {
-                    dist.put(v, dist_u + w);
+                if (dist_v == null || other_dist_v < dist_v) {
+                    dist.put(v, other_dist_v);
                     prev.put(v, u);
 
-                    pq.add(new Edge(v, dist_u + w));
+                    pq.add(new Edge(v, other_dist_v));
                 }
             }
-
-            // si données de temps, ajouter un mouvement "attendre" ici
         }
     }
 
@@ -105,7 +115,9 @@ public class Graph {
     public ArrayList<Pair<Integer, Double>> getShortestPath(int s, int t, double time, double speed) {
         HashMap<Integer, Double> dist = new HashMap<>();
         HashMap<Integer, Integer> prev = new HashMap<>();
+
         this.dijkstra(s, time, speed, dist, prev);
+
         ArrayList<Pair<Integer, Double>> path = new ArrayList<>();
 
         if (!dist.containsKey(t)) {
@@ -113,10 +125,25 @@ public class Graph {
             System.exit(0);
         } else {
             int u = t;
-            path.add(new Pair<>(u, time + dist.get(u) / speed));
+            path.add(new Pair<>(u, dist.get(u)));
             while (u != s) {
                 u = prev.get(u);
-                path.add(0, new Pair<>(u, time + dist.get(u) / speed));
+                path.add(0, new Pair<>(u, dist.get(u)));
+            }
+        }
+
+        for (int i = path.size() - 2; i >= 0; i--) {
+            int u = path.get(i).first;
+            double timeU = path.get(i).second;
+            int v = path.get(i + 1).first;
+            double timeV = path.get(i + 1).second;
+
+            Edge e = this.g.get(u).floor(new Edge(v, 0));
+            e.reserve(timeU, timeV);
+
+            if (timeV - timeU > e.w / speed) {
+                double waitingTime = timeV - timeU - e.w / speed;
+                path.add(i + 1, new Pair<>(u, timeU + waitingTime));
             }
         }
 

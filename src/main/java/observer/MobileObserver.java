@@ -7,6 +7,7 @@ import graphic.shape.CompoundShape;
 import graphic.shape.MobileShape;
 import graphic.shape.PalletShape;
 import javafx.animation.PathTransition;
+import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
 import javafx.scene.Group;
 import javafx.scene.shape.LineTo;
@@ -91,6 +92,8 @@ public class MobileObserver implements Observer<Mobile> {
 
                 if (first) {
                     first = false;
+                } else if (position.equals(lastPosition)) {
+                    transition.getChildren().add(new PauseTransition(Duration.seconds(time - lastTime)));
                 } else {
                     Path pathShape = new Path();
                     pathShape.getElements().add(new MoveTo(
