@@ -40,92 +40,95 @@ public class Graph {
         this.g.get(u).add(new Edge(v, w));
     }
 
-    public void reserve(Integer position, double time) {
-        this.reserveWithMargin(position, time - timeMargin, time + timeMargin);
+    public void reserve(Integer position, double time, int id) {
+        this.reserveWithMargin(position, time - timeMargin, time + timeMargin, id);
     }
 
-    public void reserve(Integer position, double start, double end) {
-        this.reserveWithMargin(position, start - timeMargin, end + timeMargin);
+    public void reserve(Integer position, double start, double end, int id) {
+        this.reserveWithMargin(position, start - timeMargin, end + timeMargin, id);
     }
 
-    private void reserveWithMargin(Integer position, double start, double end) {
-        Reservation reservation = new Reservation(start, end);
+    private void reserveWithMargin(Integer position, double start, double end, int id) {
+        Reservation reservation = new Reservation(start, end, id);
         this.reservations.get(position).add(reservation);
     }
 
-    public boolean isAvailable(Integer position, double time) {
-        return this.isAvailableWithMargin(position, time - timeMargin, time + timeMargin);
+    public boolean isAvailable(Integer position, double time, int id) {
+        return this.isAvailableWithMargin(position, time - timeMargin, time + timeMargin, id);
     }
 
-    public boolean isAvailable(Integer position, double start, double end) {
-        return this.isAvailableWithMargin(position, start - timeMargin, end + timeMargin);
+    public boolean isAvailable(Integer position, double start, double end, int id) {
+        return this.isAvailableWithMargin(position, start - timeMargin, end + timeMargin, id);
     }
 
-    private boolean isAvailableWithMargin(Integer position, double start, double end) {
-        Reservation key = new Reservation(start, end);
+    private boolean isAvailableWithMargin(Integer position, double start, double end, int id) {
+        Reservation key = new Reservation(start, end, id);
         Reservation before = this.reservations.get(position).floor(key);
         Reservation after = this.reservations.get(position).higher(key);
 
-        if (before != null && (before.start == start || before.end > start)) {
+        if (before != null && before.mobileId != id && (before.start == start || before.end > start)) {
             return false;
         }
 
-        if (after != null && after.start < end) {
+        if (after != null && after.mobileId != id && after.start < end) {
             return false;
         }
 
         return true;
     }
 
-    public double nextAvailability(Integer position, double time) {
-        double nextTime = this.nextAvailabilityWithMargin(position, time - timeMargin, 2 * timeMargin);
+    public double nextAvailability(Integer position, double time, int id) {
+        double nextTime = this.nextAvailabilityWithMargin(position, time - timeMargin, 2 * timeMargin, id);
         return nextTime + timeMargin;
     }
 
-    public double nextAvailability(Integer position, double from, double duration) {
-        double nextTime = this.nextAvailabilityWithMargin(position, from - timeMargin, duration + 2 * timeMargin);
+    public double nextAvailability(Integer position, double from, double duration, int id) {
+        double nextTime = this.nextAvailabilityWithMargin(position, from - timeMargin, duration + 2 * timeMargin, id);
         return nextTime + timeMargin;
     }
 
-    private double nextAvailabilityWithMargin(Integer position, double from, double duration) {
+    private double nextAvailabilityWithMargin(Integer position, double from, double duration, int id) {
         if (this.reservations.get(position).isEmpty()) {
             return from;
         }
 
-        Reservation key = new Reservation(from, from + duration);
-        while (true) {
-            Reservation before = this.reservations.get(position).floor(key);
-            Reservation after = this.reservations.get(position).higher(key);
+        Reservation key = new Reservation(from, from + duration, id);
 
-            if (before == null) {
-                if (after.start - from >= duration) {
+        Reservation before = this.reservations.get(position).floor(key);
+        Reservation after = this.reservations.get(position).higher(key);
+
+        while (true) {
+            while (after != null && after.mobileId == id) {
+                after = this.reservations.get(position).higher(after);
+            }
+
+            if (before == null || before.mobileId == id) {
+                if (after == null || after.start - from >= duration) {
                     return from;
                 }
-            } else if (after == null) {
-                return Math.max(before.end, from);
-            } else if (after.start - Math.max(before.end, from) >= duration) {
+            } else if (after == null || after.start - Math.max(before.end, from) >= duration) {
                 return Math.max(before.end, from);
             }
 
-            key = after;
+            before = after;
+            after = this.reservations.get(position).higher(after);
         }
     }
 
     public void dijkstra(int s, HashMap<Integer, Double> dist, HashMap<Integer, Integer> prev) {
-        this.dijkstra(s, null, null, dist, prev);
+        this.dijkstra(s, null, null, null, dist, prev);
     }
 
-    public void dijkstra(int s, Double time, Double speed, HashMap<Integer, Double> dist, HashMap<Integer, Integer> prev) {
+    public void dijkstra(int s, Double time, Double speed, Integer id, HashMap<Integer, Double> dist, HashMap<Integer, Integer> prev) {
         boolean timeDependent = time != null;
         PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
 
-
         if (timeDependent) {
-            if (this.isAvailable(s, time)) {
+            if (this.isAvailable(s, time, id)) {
                 dist.put(s, time);
                 pq.add(new Edge(s, time));
             } else { // wait for the edge to be available
-                double nextTime = this.nextAvailability(s, time);
+                double nextTime = this.nextAvailability(s, time, id);
                 dist.put(s, nextTime);
                 pq.add(new Edge(s, nextTime));
             }
@@ -149,8 +152,9 @@ public class Graph {
                 Double dist_v = dist.get(v);
                 double other_dist_v = dist_u + w / (timeDependent ? speed : 1);
 
-                if (timeDependent && !this.isAvailable(v, other_dist_v)) {
-                    other_dist_v = this.nextAvailability(v, other_dist_v);
+                if (timeDependent && !this.isAvailable(v, other_dist_v, id)) {
+                    other_dist_v = this.nextAvailability(v, other_dist_v, id);
+                    if (!this.isAvailable(u, dist_u, other_dist_v - w / speed, id)) continue;
                 }
 
                 if (dist_v == null || other_dist_v < dist_v) {
@@ -195,11 +199,11 @@ public class Graph {
         return 0;
     }
 
-    public ArrayList<Pair<Integer, Double>> getShortestPath(int s, int t, double time, double speed) {
+    public ArrayList<Pair<Integer, Double>> getShortestPath(int s, int t, double time, double speed, int id) {
         HashMap<Integer, Double> dist = new HashMap<>();
         HashMap<Integer, Integer> prev = new HashMap<>();
 
-        this.dijkstra(s, time, speed, dist, prev);
+        this.dijkstra(s, time, speed, id, dist, prev);
 
         ArrayList<Pair<Integer, Double>> path = new ArrayList<>();
 
@@ -227,12 +231,12 @@ public class Graph {
                 if (timeV - timeU > e.w / speed) {
                     double waitingTime = timeV - timeU - e.w / speed;
                     path.add(i + 1, new Pair<>(u, timeU + waitingTime));
-                    this.reserve(u, timeU, timeU + waitingTime);
+                    this.reserve(u, timeU, timeU + waitingTime, id);
                 } else {
-                    this.reserve(u, timeU);
+                    this.reserve(u, timeU, id);
                 }
             } else {
-                this.reserve(u, timeU);
+                this.reserve(u, timeU, Double.MAX_VALUE / 2, id); // reserve location until mobile is moved again
             }
         }
 

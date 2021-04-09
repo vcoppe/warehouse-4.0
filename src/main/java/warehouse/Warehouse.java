@@ -57,7 +57,7 @@ public class Warehouse {
     }
 
     public ArrayList<Pair<Position, Double>> getPath(Position p1, Position p2, double time, Mobile mobile) {
-        ArrayList<Pair<Integer, Double>> integerPath = this.graph.getShortestPath(this.toInt(p1), this.toInt(p2), time, mobile.getSpeed());
+        ArrayList<Pair<Integer, Double>> integerPath = this.graph.getShortestPath(this.toInt(p1), this.toInt(p2), time, mobile.getSpeed(), mobile.getId());
 
         ArrayList<Pair<Position, Double>> path = new ArrayList<>();
         for (Pair<Integer, Double> pair : integerPath) {

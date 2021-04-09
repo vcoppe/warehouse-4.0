@@ -48,23 +48,25 @@ public class GraphTest extends TestCase {
 
         graph.addEdge(0, 1, 1);
 
-        assertTrue(graph.isAvailable(0, 0));
-        assertEquals(0.0, graph.nextAvailability(0, 0));
+        assertTrue(graph.isAvailable(0, 0, 0));
+        assertEquals(0.0, graph.nextAvailability(0, 0, 0));
 
-        graph.reserve(0, 0);
+        graph.reserve(0, 0, 1);
 
-        assertFalse(graph.isAvailable(0, 0));
-        assertEquals(2 * Graph.timeMargin, graph.nextAvailability(0, 0));
+        assertTrue(graph.isAvailable(0, 0, 1));
+        assertEquals(0.0, graph.nextAvailability(0, 0, 1));
+        assertFalse(graph.isAvailable(0, 0, 0));
+        assertEquals(2 * Graph.timeMargin, graph.nextAvailability(0, 0, 0));
 
-        graph.reserve(0, 3 * Graph.timeMargin);
+        graph.reserve(0, 3 * Graph.timeMargin, 1);
 
-        assertFalse(graph.isAvailable(0, 2 * Graph.timeMargin));
-        assertEquals(5 * Graph.timeMargin, graph.nextAvailability(0, 0));
+        assertFalse(graph.isAvailable(0, 2 * Graph.timeMargin, 0));
+        assertEquals(5 * Graph.timeMargin, graph.nextAvailability(0, 0, 0));
 
-        graph.reserve(0, 7 * Graph.timeMargin);
+        graph.reserve(0, 7 * Graph.timeMargin, 1);
 
-        assertTrue(graph.isAvailable(0, 5 * Graph.timeMargin));
-        assertEquals(5 * Graph.timeMargin, graph.nextAvailability(0, 0));
+        assertTrue(graph.isAvailable(0, 5 * Graph.timeMargin, 0));
+        assertEquals(5 * Graph.timeMargin, graph.nextAvailability(0, 0, 0));
     }
 
 }

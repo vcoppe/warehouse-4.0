@@ -2,11 +2,13 @@ package util;
 
 public class Reservation implements Comparable<Reservation> {
 
+    int mobileId;
     double start, end;
 
-    public Reservation(double start, double end) {
+    public Reservation(double start, double end, int id) {
         this.start = start;
         this.end = end;
+        this.mobileId = id;
     }
 
     @Override
