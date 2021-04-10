@@ -1,10 +1,7 @@
 package warehouse;
 
 import agent.Mobile;
-import util.Graph;
-import util.Pair;
-
-import java.util.ArrayList;
+import pathfinding.Graph;
 
 public class Warehouse {
 
@@ -31,40 +28,20 @@ public class Warehouse {
         return this.height;
     }
 
-    public int toInt(Position position) {
-        return position.getX() + this.width *
-                (position.getZ() + this.height * position.getY());
-    }
-
-    public Position toPosition(int hash) {
-        return new Position(
-                hash % this.width,
-                hash / (this.width * this.height),
-                (hash / this.width) % this.height
-        );
+    public Graph getGraph() {
+        return this.graph;
     }
 
     public void addEdge(Position p1, Position p2) {
-        this.graph.addEdge(this.toInt(p1), this.toInt(p2), p1.manhattanDistance3D(p2));
+        this.graph.addEdge(p1, p2, p1.manhattanDistance3D(p2));
     }
 
     public double getDistance(Position p1, Position p2) {
-        return this.graph.getShortestPath(this.toInt(p1), this.toInt(p2), null);
+        return this.graph.getShortestPath(p1, p2);
     }
 
     public double getTravelTime(Position p1, Position p2, Mobile mobile) {
-        return this.graph.getShortestPath(this.toInt(p1), this.toInt(p2), null) / mobile.getSpeed();
-    }
-
-    public ArrayList<Pair<Position, Double>> getPath(Position p1, Position p2, double time, Mobile mobile) {
-        ArrayList<Pair<Integer, Double>> integerPath = this.graph.getShortestPath(this.toInt(p1), this.toInt(p2), time, mobile.getSpeed(), mobile.getId());
-
-        ArrayList<Pair<Position, Double>> path = new ArrayList<>();
-        for (Pair<Integer, Double> pair : integerPath) {
-            path.add(new Pair<>(this.toPosition(pair.first), pair.second));
-        }
-
-        return path;
+        return this.getDistance(p1, p2) / mobile.getSpeed();
     }
 
 }

@@ -45,13 +45,13 @@ public class ControllerEventTest extends TestCase {
     }
 
     public void testNothingToDo() {
-        assertEquals(2, this.controller.getMobiles().size());
+        assertEquals(2, this.controller.getAvailableMobiles().size());
         assertEquals(2, this.controller.getDocks().size());
         assertEquals(0, this.controller.getMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(2, this.controller.getMobiles().size());
+        assertEquals(2, this.controller.getAvailableMobiles().size());
         assertEquals(2, this.controller.getDocks().size());
         assertEquals(0, this.controller.getMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
@@ -62,13 +62,13 @@ public class ControllerEventTest extends TestCase {
         this.controller.add(this.missions.get(0));
         this.controller.add(this.missions.get(1));
 
-        assertEquals(2, this.controller.getMobiles().size());
+        assertEquals(2, this.controller.getAvailableMobiles().size());
         assertEquals(2, this.controller.getDocks().size());
         assertEquals(2, this.controller.getMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(0, this.controller.getMobiles().size());
+        assertEquals(0, this.controller.getAvailableMobiles().size());
         assertEquals(2, this.controller.getDocks().size());
         assertEquals(0, this.controller.getMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
@@ -81,13 +81,13 @@ public class ControllerEventTest extends TestCase {
             this.controller.add(mission);
         }
 
-        assertEquals(2, this.controller.getMobiles().size());
+        assertEquals(2, this.controller.getAvailableMobiles().size());
         assertEquals(2, this.controller.getDocks().size());
         assertEquals(5, this.controller.getMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(0, this.controller.getMobiles().size());
+        assertEquals(0, this.controller.getAvailableMobiles().size());
         assertEquals(2, this.controller.getDocks().size());
         assertEquals(3, this.controller.getMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
@@ -99,13 +99,13 @@ public class ControllerEventTest extends TestCase {
         this.controller.add(this.trucks.get(0));
         this.controller.add(this.trucks.get(1));
 
-        assertEquals(2, this.controller.getMobiles().size());
+        assertEquals(2, this.controller.getAvailableMobiles().size());
         assertEquals(2, this.controller.getDocks().size());
         assertEquals(0, this.controller.getMissions().size());
         assertEquals(2, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(2, this.controller.getMobiles().size());
+        assertEquals(2, this.controller.getAvailableMobiles().size());
         assertEquals(0, this.controller.getDocks().size());
         assertEquals(0, this.controller.getMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
@@ -118,13 +118,13 @@ public class ControllerEventTest extends TestCase {
             this.controller.add(truck);
         }
 
-        assertEquals(2, this.controller.getMobiles().size());
+        assertEquals(2, this.controller.getAvailableMobiles().size());
         assertEquals(2, this.controller.getDocks().size());
         assertEquals(0, this.controller.getMissions().size());
         assertEquals(5, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(2, this.controller.getMobiles().size());
+        assertEquals(2, this.controller.getAvailableMobiles().size());
         assertEquals(0, this.controller.getDocks().size());
         assertEquals(0, this.controller.getMissions().size());
         assertEquals(3, this.controller.getTrucks().size());

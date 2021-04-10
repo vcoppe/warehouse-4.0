@@ -6,6 +6,7 @@ import graphic.dashboard.AnimationDashboard;
 import graphic.shape.CompoundShape;
 import graphic.shape.MobileShape;
 import graphic.shape.PalletShape;
+import javafx.animation.Interpolator;
 import javafx.animation.PathTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
@@ -69,13 +70,17 @@ public class MobileObserver implements Observer<Mobile> {
         PalletShape palletShape = this.palletShapes.get(mobile.getId());
         if (mission == null) {
             palletShape.setEmptyMobile();
-        } else if (mobile.getPosition().equals(mission.getStartPosition())) {
+        } else {
             if (palletShape == null) {
-                palletShape = new PalletShape(1, 1, this.configuration.palletSize - 2, mission.getPallet().getType());
+                palletShape = new PalletShape(1, 1, this.configuration.palletSize - 2, 0);
                 mobileShape.add(palletShape);
                 this.palletShapes.put(mobile.getId(), palletShape);
-            } else {
+            }
+
+            if (mobile.getPosition().equals(mission.getStartPosition())) {
                 palletShape.setType(mission.getPallet().getType());
+            } else {
+                palletShape.setEmptyMobile();
             }
         }
 
@@ -83,12 +88,17 @@ public class MobileObserver implements Observer<Mobile> {
 
         if (path != null) {
             SequentialTransition transition = new SequentialTransition();
+            //transition.interpolatorProperty().setValue(Interpolator.LINEAR);
             Position lastPosition = null;
             double lastTime = 0;
             boolean first = true;
             for (Pair<Position, Double> pair : path) {
                 Position position = pair.first;
                 double time = pair.second;
+
+                if (first && !position.equals(mobile.getCurrentPosition())) {
+                    continue;
+                }
 
                 if (first) {
                     first = false;
@@ -105,11 +115,16 @@ public class MobileObserver implements Observer<Mobile> {
                             position.getY() + 0.5 * mobileShape.getHeight()
                     ));
                     PathTransition pathTransition = new PathTransition(Duration.seconds(time - lastTime), pathShape, mobileShape.getShape());
+                    pathTransition.interpolatorProperty().setValue(Interpolator.LINEAR);
                     transition.getChildren().add(pathTransition);
                 }
 
                 lastPosition = position;
                 lastTime = time;
+            }
+
+            if (lastPosition != null) {
+                transition.getChildren().add(new PauseTransition(Duration.seconds(1))); // fix glitch
             }
 
             this.animationDashboard.add(new MyAnimation(mobileShape, transition));

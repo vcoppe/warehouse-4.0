@@ -6,6 +6,7 @@ import graphic.dashboard.AnimationDashboard;
 import graphic.shape.CompoundShape;
 import graphic.shape.PalletShape;
 import graphic.shape.TruckShape;
+import javafx.animation.Interpolator;
 import javafx.animation.PathTransition;
 import javafx.scene.Group;
 import javafx.scene.shape.LineTo;
@@ -24,7 +25,7 @@ public class TruckObserver implements Observer<Truck> {
     private final Configuration configuration;
     private final AnimationDashboard animationDashboard;
     private final HashMap<Integer, CompoundShape> shapes;
-    private final HashMap<Integer, HashMap<Integer, PalletShape>> palletShapes;
+    private final HashMap<Integer, HashMap<Position, PalletShape>> palletShapes;
     private Group group;
 
     public TruckObserver(Configuration configuration, AnimationDashboard animationDashboard) {
@@ -73,7 +74,7 @@ public class TruckObserver implements Observer<Truck> {
         );
 
         this.shapes.get(truck.getId()).add(shape);
-        this.palletShapes.get(truck.getId()).put(this.configuration.warehouse.toInt(position), shape);
+        this.palletShapes.get(truck.getId()).put(position, shape);
 
         return shape;
     }
@@ -130,7 +131,7 @@ public class TruckObserver implements Observer<Truck> {
                 Position position = pair.first;
                 Pallet pallet = pair.second;
 
-                PalletShape palletShape = this.palletShapes.get(truck.getId()).get(this.configuration.warehouse.toInt(position));
+                PalletShape palletShape = this.palletShapes.get(truck.getId()).get(position);
                 if (palletShape != null) {
                     palletShape.setType(pallet.getType());
                 } else {

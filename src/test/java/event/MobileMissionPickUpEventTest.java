@@ -53,8 +53,10 @@ public class MobileMissionPickUpEventTest extends TestCase {
         Position startPosition = this.loadPalletPositions.get(0);
         Position endPosition = this.truckLoad.getPosition();
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
-        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission, null);
+
+        this.mobile.start(mission);
+
+        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile);
 
         assertFalse(startPosition.equals(this.mobile.getPosition()));
         event.run();
@@ -66,8 +68,10 @@ public class MobileMissionPickUpEventTest extends TestCase {
         Position startPosition = this.loadPalletPositions.get(0);
         Position endPosition = this.truckLoad.getPosition();
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
-        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission, null);
+
+        this.mobile.start(mission);
+
+        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile);
 
         assertFalse(endPosition.equals(this.mobile.getTargetPosition()));
         event.run();
@@ -79,8 +83,10 @@ public class MobileMissionPickUpEventTest extends TestCase {
         Position startPosition = this.loadPalletPositions.get(0);
         Position endPosition = this.truckLoad.getPosition();
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
-        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission, null);
+
+        this.mobile.start(mission);
+
+        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile);
 
         assertEquals(pallet.getType(), this.configuration.stock.get(startPosition).getType());
         event.run();
@@ -92,8 +98,10 @@ public class MobileMissionPickUpEventTest extends TestCase {
         Position startPosition = this.truckUnload.getToUnload().get(0).first.add(this.truckUnload.getPosition());
         Position endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, this.truckUnload, null, startPosition, endPosition);
-        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission, null);
+
+        this.mobile.start(mission);
+
+        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile);
 
         assertEquals(this.unloadPalletPositions.size(), this.truckUnload.getToUnload().size());
         assertEquals(this.unloadPalletPositions.size(), this.truckUnload.getCurrentLoad().size());
@@ -103,40 +111,48 @@ public class MobileMissionPickUpEventTest extends TestCase {
     }
 
     public void testDoneWhenUnloaded() {
-        int i = 0;
+        int i = 0, total = this.truckUnload.getToUnload().size();
         while (this.truckUnload.getToUnload().size() > 0) {
             Pair<Position, Pallet> pair = this.truckUnload.getToUnload().get(0);
             Pallet pallet = pair.second;
             Position startPosition = pair.first.add(this.truckUnload.getPosition());
             Position endPosition = this.unloadPalletPositions.get(i);
             Mission mission = new Mission(0, pallet, this.truckUnload, null, startPosition, endPosition);
-            MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-            this.mobile.start(mission, null);
+
+            this.mobile.start(mission);
+
+            MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile);
 
             assertFalse(this.truckUnload.done());
-            assertEquals(i, this.configuration.simulation.queueSize()); // one MobileMissionEndEvent for each previous start event
             event.run();
 
             i++;
-        }
 
-        assertTrue(this.truckUnload.done());
-        assertEquals(this.unloadPalletPositions.size() + 1, this.configuration.simulation.queueSize());
-        assertTrue(this.configuration.simulation.nextEvent() instanceof TruckDoneEvent);
+            if (i == total) {
+                assertTrue(this.truckUnload.done());
+                assertEquals(2, this.configuration.simulation.queueSize());
+                assertTrue(this.configuration.simulation.nextEvent() instanceof TruckDoneEvent);
+            } else {
+                assertEquals(1, this.configuration.simulation.queueSize());
+                assertTrue(this.configuration.simulation.nextEvent() instanceof PathFinderEvent);
+            }
+        }
     }
 
-    public void testTriggerMobileMissionEndEvent() {
+    public void testTriggerPathFinderEvent() {
         Pallet pallet = this.truckUnload.getToUnload().get(0).second;
         Position startPosition = this.truckUnload.getPosition();
         Position endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, this.truckUnload, null, startPosition, endPosition);
-        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile, mission);
-        this.mobile.start(mission, null);
+
+        this.mobile.start(mission);
+
+        MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile);
 
         assertEquals(0, this.configuration.simulation.queueSize());
         event.run();
         assertEquals(1, this.configuration.simulation.queueSize());
-        assertTrue(this.configuration.simulation.nextEvent() instanceof MobileMissionEndEvent);
+        assertTrue(this.configuration.simulation.nextEvent() instanceof PathFinderEvent);
     }
 
 }

@@ -4,6 +4,7 @@ import brain.MobileMissionSelector;
 import brain.PalletPositionSelector;
 import brain.TruckDockSelector;
 import observer.Observable;
+import pathfinding.WHCAStar;
 import warehouse.Mission;
 import warehouse.Warehouse;
 
@@ -17,12 +18,14 @@ public class Controller extends Observable {
     private final Warehouse warehouse;
     private final Stock stock;
     private final ProductionLine productionLine;
+    private final WHCAStar pathFinder;
     private final ArrayList<Dock> docks;
     private final ArrayList<Truck> trucks;
-    private final ArrayList<Mobile> mobiles;
+    private final ArrayList<Mobile> allMobiles;
+    private final ArrayList<Mobile> availableMobiles;
     private final ArrayList<Mission> missions;
 
-    public Controller(Warehouse warehouse, Stock stock, ProductionLine productionLine, ArrayList<Dock> docks, ArrayList<Mobile> mobiles, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
+    public Controller(Warehouse warehouse, Stock stock, ProductionLine productionLine, WHCAStar pathFinder, ArrayList<Dock> docks, ArrayList<Mobile> mobiles, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
         super();
         this.mobileMissionSelector = mobileMissionSelector;
         this.truckDockSelector = truckDockSelector;
@@ -30,8 +33,10 @@ public class Controller extends Observable {
         this.warehouse = warehouse;
         this.stock = stock;
         this.productionLine = productionLine;
+        this.pathFinder = pathFinder;
         this.docks = docks;
-        this.mobiles = mobiles;
+        this.allMobiles = mobiles;
+        this.availableMobiles = new ArrayList<>(mobiles);
         this.trucks = new ArrayList<>();
         this.missions = new ArrayList<>();
     }
@@ -46,6 +51,10 @@ public class Controller extends Observable {
 
     public ProductionLine getProductionLine() {
         return this.productionLine;
+    }
+
+    public WHCAStar getPathFinder() {
+        return this.pathFinder;
     }
 
     public ArrayList<Dock> getDocks() {
@@ -76,17 +85,21 @@ public class Controller extends Observable {
         this.changed();
     }
 
-    public ArrayList<Mobile> getMobiles() {
-        return this.mobiles;
+    public ArrayList<Mobile> getAllMobiles() {
+        return this.allMobiles;
+    }
+
+    public ArrayList<Mobile> getAvailableMobiles() {
+        return this.availableMobiles;
     }
 
     public void add(Mobile mobile) {
-        this.mobiles.add(mobile);
+        this.availableMobiles.add(mobile);
         this.changed();
     }
 
     public void remove(Mobile mobile) {
-        this.mobiles.remove(mobile);
+        this.availableMobiles.remove(mobile);
         this.changed();
     }
 

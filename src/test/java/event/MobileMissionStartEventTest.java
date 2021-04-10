@@ -72,7 +72,7 @@ public class MobileMissionStartEventTest extends TestCase {
         assertEquals(mission, this.mobile.getMission());
     }
 
-    public void testTriggerMobileMissionPickUpEvent() {
+    public void testTriggerPathFinderEvent() {
         Pallet pallet = this.truckUnload.getToUnload().get(0).second;
         Position startPosition = this.truckUnload.getPosition();
         Position endPosition = this.unloadPalletPositions.get(0);
@@ -82,7 +82,7 @@ public class MobileMissionStartEventTest extends TestCase {
         assertEquals(0, this.configuration.simulation.queueSize());
         event.run();
         assertEquals(1, this.configuration.simulation.queueSize());
-        assertTrue(this.configuration.simulation.nextEvent() instanceof MobileMissionPickUpEvent);
+        assertTrue(this.configuration.simulation.nextEvent() instanceof PathFinderEvent);
     }
 
 }

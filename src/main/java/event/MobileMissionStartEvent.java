@@ -37,12 +37,9 @@ public class MobileMissionStartEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        ArrayList<Pair<Position, Double>> path = this.warehouse.getPath(this.mobile.getPosition(), this.mission.getStartPosition(), this.time, this.mobile);
-        double missionPickUpTime = path.get(path.size() - 1).second;
+        this.mobile.start(this.mission);
 
-        this.mobile.start(this.mission, path);
-
-        Event event = new MobileMissionPickUpEvent(this.simulation, missionPickUpTime, this.controller, this.mobile, this.mission);
+        Event event = new PathFinderEvent(this.simulation, this.time, this.controller);
         this.simulation.enqueueEvent(event);
     }
 

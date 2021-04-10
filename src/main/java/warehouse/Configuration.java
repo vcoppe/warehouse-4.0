@@ -2,6 +2,7 @@ package warehouse;
 
 import agent.*;
 import brain.*;
+import pathfinding.WHCAStar;
 import simulation.Simulation;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class Configuration {
         this.simulation = new Simulation(level);
 
         this.warehouse = new Warehouse(width, depth);
-        this.stock = new Stock(this.warehouse);
+        this.stock = new Stock();
 
         this.productionLine = new ProductionLine(this.stock, new Position(width - productionLineWidth, 0), productionLineWidth, 10 * (depth / 20), 10, new ArrayList<>(), new ArrayList<>());
         this.docks = new ArrayList<>();
@@ -46,7 +47,7 @@ public class Configuration {
         this.palletPositionSelector = new ClosestPositionSelector(this.warehouse);
         this.truckDockSelector = new NaiveSelector();
 
-        this.controller = new Controller(this.warehouse, this.stock, this.productionLine, this.docks, this.mobiles, this.mobileMissionSelector, this.truckDockSelector, this.palletPositionSelector);
+        this.controller = new Controller(this.warehouse, this.stock, this.productionLine, new WHCAStar(), this.docks, this.mobiles, this.mobileMissionSelector, this.truckDockSelector, this.palletPositionSelector);
     }
 
     public Configuration(int width, int height, int nDocks, int nMobiles) {
@@ -77,21 +78,25 @@ public class Configuration {
         }
 
         for (int x = 0; x < this.warehouse.getWidth(); x += this.palletSize) {
-            for (int y = 0; y <= this.warehouse.getDepth() + this.dockWidth * 4; y += this.palletSize) {
+            for (int y = 0; y < this.warehouse.getDepth() + this.truckHeight; y += this.palletSize) {
                 Position position = new Position(x, y);
                 int type = (x / this.palletSize) % 4;
                 if (x >= this.warehouse.getWidth() - this.productionLine.getWidth() && y < this.productionLine.getDepth()) {
                     continue;
                 } else if (y >= nSlotsPerAisle * this.palletSize) {
                     if (x - this.palletSize >= 0
-                            && (y == nSlotsPerAisle * this.palletSize || y == this.warehouse.getDepth() - 2 * this.palletSize)) {
+                            && (y == nSlotsPerAisle * this.palletSize ||
+                                y == this.warehouse.getDepth() - 2 * this.palletSize ||
+                                (y >= this.warehouse.getDepth() && (x / this.palletSize) % (this.dockWidth / this.palletSize) > 0))) {
                         this.warehouse.addEdge(
                                 position,
                                 new Position(x - this.palletSize, y)
                         );
                     }
                     if (x + this.palletSize < this.warehouse.getWidth()
-                            && (y == (nSlotsPerAisle + 1) * this.palletSize || y == this.warehouse.getDepth() - this.palletSize)) {
+                            && (y == (nSlotsPerAisle + 1) * this.palletSize ||
+                                y == this.warehouse.getDepth() - this.palletSize ||
+                                (y >= this.warehouse.getDepth() && (x / this.palletSize) % (this.dockWidth / this.palletSize) < (this.dockWidth / this.palletSize - 1)))) {
                         this.warehouse.addEdge(
                                 position,
                                 new Position(x + this.palletSize, y)
@@ -103,10 +108,12 @@ public class Configuration {
                                 new Position(x, y - this.palletSize)
                         );
                     }
-                    this.warehouse.addEdge(
-                            position,
-                            new Position(x, y + this.palletSize)
-                    );
+                    if (y + this.palletSize < this.warehouse.getDepth() + this.truckHeight) {
+                        this.warehouse.addEdge(
+                                position,
+                                new Position(x, y + this.palletSize)
+                        );
+                    }
                 } else if (x < 2 * nAisles * this.palletSize) {
                     if (type == 0) {
                         this.warehouse.addEdge(
@@ -150,11 +157,15 @@ public class Configuration {
                                 new Position(x - this.palletSize, y)
                         );
                     }
-                    this.warehouse.addEdge(
-                            position,
-                            new Position(x + this.palletSize, y)
-                    );
-                    if (y - this.palletSize >= 0) {
+                    if (x + this.palletSize < this.warehouse.getWidth() - this.productionLine.getWidth() ||
+                            (x + this.palletSize < this.warehouse.getWidth() && y >= this.productionLine.getDepth())) {
+                        this.warehouse.addEdge(
+                                position,
+                                new Position(x + this.palletSize, y)
+                        );
+                    }
+                    if (y - this.palletSize >= this.productionLine.getDepth() ||
+                            (y - this.palletSize >= 0 && x < this.warehouse.getWidth() - this.productionLine.getWidth())) {
                         this.warehouse.addEdge(
                                 position,
                                 new Position(x, y - this.palletSize)

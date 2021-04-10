@@ -15,12 +15,12 @@ public class MobileMissionEndEvent extends Event {
     private final Mobile mobile;
     private final Mission mission;
 
-    public MobileMissionEndEvent(Simulation simulation, double time, Controller controller, Mobile mobile, Mission mission) {
+    public MobileMissionEndEvent(Simulation simulation, double time, Controller controller, Mobile mobile) {
         super(simulation, time);
         this.controller = controller;
         this.stock = controller.getStock();
         this.mobile = mobile;
-        this.mission = mission;
+        this.mission = mobile.getMission();
     }
 
     @Override

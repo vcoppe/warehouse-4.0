@@ -1,6 +1,8 @@
 package warehouse;
 
-public class Position {
+import java.util.Objects;
+
+public class Position implements Comparable<Position> {
 
     private final int x, y, z;
 
@@ -38,8 +40,29 @@ public class Position {
         return Math.abs(this.x - other.x) + Math.abs(this.y - other.y) + Math.abs(this.z - other.z);
     }
 
-    public boolean equals(Position other) {
-        return this.x == other.x && this.y == other.y && this.z == other.z;
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Position position = (Position) o;
+        return x == position.x &&
+                y == position.y &&
+                z == position.z;
+    }
+
+    @Override
+    public int compareTo(Position other) {
+        if (this.x == other.x) {
+            if (this.y == other.y) {
+                return Integer.compare(this.z, other.z);
+            }
+            return Integer.compare(this.y, other.y);
+        }
+        return Integer.compare(this.x, other.x);
+    }
 }

@@ -1,11 +1,13 @@
-package util;
+package pathfinding;
+
+import warehouse.Position;
 
 public class Edge implements Comparable<Edge> {
 
-    int to;
+    Position to;
     double w;
 
-    public Edge(int to, double w) {
+    public Edge(Position to, double w) {
         this.to = to;
         this.w = w;
     }
@@ -16,7 +18,7 @@ public class Edge implements Comparable<Edge> {
 
     @Override
     public int compareTo(Edge other) {
-        return Integer.compare(this.to, other.to);
+        return this.to.compareTo(other.to);
     }
 
 }

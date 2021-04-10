@@ -14,7 +14,7 @@ public class StockObserver implements Observer<Stock> {
 
     private final Configuration configuration;
     private final AnimationDashboard animationDashboard;
-    private final HashMap<Integer, PalletShape> shapes;
+    private final HashMap<Position, PalletShape> shapes;
     private final Group group;
 
     public StockObserver(Configuration configuration, AnimationDashboard animationDashboard) {
@@ -31,7 +31,7 @@ public class StockObserver implements Observer<Stock> {
                 this.configuration.palletSize,
                 pallet.getType()
         );
-        this.shapes.put(this.configuration.stock.toInt(position), shape);
+        this.shapes.put(position, shape);
         this.group.getChildren().add(shape.getShape());
         return shape;
     }
@@ -46,7 +46,7 @@ public class StockObserver implements Observer<Stock> {
         for (Position position : stock.getAllPositions()) {
             Pallet pallet = stock.get(position);
 
-            PalletShape palletShape = this.shapes.get(stock.toInt(position));
+            PalletShape palletShape = this.shapes.get(position);
             if (palletShape == null) {
                 palletShape = this.add(position, pallet);
             }

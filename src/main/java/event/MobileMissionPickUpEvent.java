@@ -21,13 +21,13 @@ public class MobileMissionPickUpEvent extends Event {
     private final Mobile mobile;
     private final Mission mission;
 
-    public MobileMissionPickUpEvent(Simulation simulation, double time, Controller controller, Mobile mobile, Mission mission) {
+    public MobileMissionPickUpEvent(Simulation simulation, double time, Controller controller, Mobile mobile) {
         super(simulation, time);
         this.controller = controller;
         this.warehouse = controller.getWarehouse();
         this.stock = controller.getStock();
         this.mobile = mobile;
-        this.mission = mission;
+        this.mission = mobile.getMission();
     }
 
     @Override
@@ -38,10 +38,7 @@ public class MobileMissionPickUpEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        ArrayList<Pair<Position, Double>> path = this.warehouse.getPath(this.mission.getStartPosition(), this.mission.getEndPosition(), this.time, this.mobile);
-        double missionEndTime = path.get(path.size() - 1).second;
-
-        this.mobile.pickUp(path);
+        this.mobile.pickUp();
 
         // tell truck or stock that pallet has left the position
         if (this.mission.getStartTruck() != null) {
@@ -55,7 +52,7 @@ public class MobileMissionPickUpEvent extends Event {
             this.stock.remove(this.mission.getStartPosition(), this.mission.getPallet());
         }
 
-        Event event = new MobileMissionEndEvent(this.simulation, missionEndTime, this.controller, this.mobile, this.mission);
+        Event event = new PathFinderEvent(this.simulation, this.time, this.controller);
         this.simulation.enqueueEvent(event);
     }
 

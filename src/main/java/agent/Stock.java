@@ -14,39 +14,29 @@ import java.util.stream.Collectors;
 // need to add all possible positions with Pallet.FREE at the start
 public class Stock extends Observable {
 
-    private final Warehouse warehouse;
-    private final HashMap<Integer, Pallet> pallets;
-    private final HashSet<Integer> lock;
+    private final HashMap<Position, Pallet> pallets;
+    private final HashSet<Position> lock;
 
-    public Stock(Warehouse warehouse) {
+    public Stock() {
         super();
-        this.warehouse = warehouse;
         this.pallets = new HashMap<>();
         this.lock = new HashSet<>();
     }
 
-    public int toInt(Position position) {
-        return this.warehouse.toInt(position);
-    }
-
-    public Position toPosition(int hash) {
-        return this.warehouse.toPosition(hash);
-    }
-
     public void add(Position position, Pallet pallet) {
-        this.pallets.put(this.toInt(position), pallet);
+        this.pallets.put(position, pallet);
         this.unlock(position);
         this.changed();
     }
 
     public void remove(Position position, Pallet pallet) {
-        this.pallets.put(this.toInt(position), Pallet.FREE);
+        this.pallets.put(position, Pallet.FREE);
         this.unlock(position);
         this.changed();
     }
 
     public Pallet get(Position position) {
-        return this.pallets.get(this.toInt(position));
+        return this.pallets.get(position);
     }
 
     public boolean isFree(Position position) {
@@ -54,30 +44,26 @@ public class Stock extends Observable {
     }
 
     public boolean isLocked(Position position) {
-        return this.lock.contains(this.toInt(position));
-    }
-
-    public boolean isLocked(Integer position) {
         return this.lock.contains(position);
     }
 
     public void lock(Position position) {
-        this.lock.add(this.toInt(position));
+        this.lock.add(position);
     }
 
     public void unlock(Position position) {
-        this.lock.remove(this.toInt(position));
+        this.lock.remove(position);
     }
 
     // TODO remove production line start and end buffer from output
     public ArrayList<Position> getStartPositions(Pallet pallet) {
         ArrayList<Position> positions = new ArrayList<>();
-        for (Integer position : this.pallets.keySet()) {
+        for (Position position : this.pallets.keySet()) {
             Pallet stockPallet = this.pallets.get(position);
             if (stockPallet != null
                     && !this.isLocked(position)
                     && stockPallet.getType() == pallet.getType()) {
-                positions.add(this.toPosition(position));
+                positions.add(position);
             }
         }
         return positions;
@@ -86,17 +72,17 @@ public class Stock extends Observable {
     // TODO remove production line start and end buffer from output
     public ArrayList<Position> getEndPositions(Pallet pallet) {
         ArrayList<Position> positions = new ArrayList<>();
-        for (Integer position : this.pallets.keySet()) {
+        for (Position position : this.pallets.keySet()) {
             Pallet stockPallet = this.pallets.get(position);
             if (stockPallet == Pallet.FREE && !this.lock.contains(position)) {
-                positions.add(this.toPosition(position));
+                positions.add(position);
             }
         }
         return positions;
     }
 
     public List<Position> getAllPositions() {
-        return this.pallets.keySet().stream().map(this::toPosition).collect(Collectors.toList());
+        return new ArrayList<>(this.pallets.keySet());
     }
 
 }

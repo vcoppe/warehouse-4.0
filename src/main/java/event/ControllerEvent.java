@@ -15,7 +15,7 @@ public class ControllerEvent extends Event {
     private final ProductionLine productionLine;
 
     public ControllerEvent(Simulation simulation, double time, Controller controller) {
-        super(simulation, time, Integer.MAX_VALUE); // set large id to have ControllerEvents at the end of each timestep
+        super(simulation, time, Integer.MAX_VALUE-1); // set large id to have ControllerEvents at the end of each timestep
         this.controller = controller;
         this.productionLine = this.controller.getProductionLine();
     }
@@ -25,7 +25,7 @@ public class ControllerEvent extends Event {
         this.simulation.logger.info(
                 String.format("Simulation time %f: ControllerEvent\n\t%d available mobiles\n\t%d waiting missions\n\t%d available docks\n\t%d waiting trucks\n\t%d waiting productions",
                         this.time,
-                        this.controller.getMobiles().size(),
+                        this.controller.getAvailableMobiles().size(),
                         this.controller.getMissions().size(),
                         this.controller.getDocks().size(),
                         this.controller.getTrucks().size(),
@@ -33,7 +33,7 @@ public class ControllerEvent extends Event {
 
         // match available mobiles with waiting missions
         ArrayList<Pair<Mobile,Mission>> mobileMissionPairs = this.controller.mobileMissionSelector.matchMobileMission(
-                this.controller.getMobiles(),
+                this.controller.getAvailableMobiles(),
                 this.controller.getMissions()
         );
 
