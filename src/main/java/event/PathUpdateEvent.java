@@ -2,19 +2,28 @@ package event;
 
 import agent.Controller;
 import agent.Mobile;
-import pathfinding.WHCAStar;
 import simulation.Event;
 import simulation.Simulation;
 
 public class PathUpdateEvent extends Event {
 
-    private Controller controller;
-    private WHCAStar pathFinder;
+    private static PathUpdateEvent instance;
 
-    public PathUpdateEvent(Simulation simulation, double time, Controller controller) {
+    private Controller controller;
+
+    private PathUpdateEvent(Simulation simulation, double time, Controller controller) {
         super(simulation, time, Integer.MIN_VALUE);
         this.controller = controller;
-        this.pathFinder = controller.getPathFinder();
+    }
+
+    public static void enqueue(Simulation simulation, double time, Controller controller) {
+        if (instance == null) {
+            instance = new PathUpdateEvent(simulation, Double.MAX_VALUE, controller);
+        }
+
+        instance.simulation.removeEvent(instance);
+        instance.time = time;
+        instance.simulation.enqueueEvent(instance);
     }
 
     @Override
@@ -24,7 +33,7 @@ public class PathUpdateEvent extends Event {
         // check if some mobiles are done
         for (Mobile mobile : this.controller.getAllMobiles()) {
             if (!mobile.isAvailable()) {
-                mobile.forward(this.pathFinder.getWindow());
+                mobile.forward(this.time - PathFinderEvent.getLastEventTime());
                 if (mobile.atPickUp()) {
                     Event event = new MobileMissionPickUpEvent(this.simulation, this.time, this.controller, mobile);
                     this.simulation.enqueueEvent(event);
@@ -35,7 +44,6 @@ public class PathUpdateEvent extends Event {
             }
         }
 
-        Event event = new PathFinderEvent(this.simulation, this.time, this.controller);
-        this.simulation.enqueueEvent(event);
+        PathFinderEvent.enqueue(this.simulation, this.time, this.controller);
     }
 }

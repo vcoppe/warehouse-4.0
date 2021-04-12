@@ -39,6 +39,10 @@ public class Simulation {
         this.eventQueue.add(event);
     }
 
+    public void removeEvent(Event event) {
+        this.eventQueue.remove(event);
+    }
+
     public double getCurrentTime() {
         return this.currentTime;
     }

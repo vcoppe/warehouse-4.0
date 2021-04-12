@@ -5,7 +5,6 @@ import util.Pair;
 import warehouse.Position;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class WHCAStar {
 
@@ -18,6 +17,7 @@ public class WHCAStar {
     private final HashMap<Integer, HashMap<Position, Double>> resumableDist;
     private final HashMap<Integer, PriorityQueue<Edge>> resumablePq;
     private final HashMap<Integer, HashSet<Position>> resumableClosed;
+    private final Random random;
 
     public WHCAStar() {
         this.table = new ReservationTable();
@@ -25,6 +25,7 @@ public class WHCAStar {
         this.resumableDist = new HashMap<>();
         this.resumablePq = new HashMap<>();
         this.resumableClosed = new HashMap<>();
+        this.random = new Random(0);
     }
 
     public double getWindow() {
@@ -36,29 +37,37 @@ public class WHCAStar {
      * with their respective position and target position, and speed
      */
     public void computePaths(ArrayList<Mobile> mobiles, Graph graph) {
-        this.window = W;
-        this.graph = graph;
-        this.table.clear();
-
-        /*for (Mobile mobile : mobiles) { // reserve current position
-            this.table.reserve(mobile.getCurrentPosition(), 0, mobile.getId());
-        }*/
-
         //System.out.println("WHCA*: asking paths for " + mobiles.size() + " mobiles");
 
-        ArrayList<Mobile> orderedMobiles = this.orderMobiles(mobiles);
+        boolean solution = false;
 
-        for (Mobile mobile : orderedMobiles) {
-            if (!this.computePath(mobile)) {
-                System.out.println("No path was found");
-                System.exit(0);
+        while (!solution) {
+            solution = true;
+
+            this.window = W;
+            this.graph = graph;
+            this.table.clear();
+
+            for (Mobile mobile : mobiles) { // reserve current position
+                this.table.reserve(mobile.getCurrentPosition(), 0, mobile.getId());
+            }
+
+            ArrayList<Mobile> orderedMobiles = this.orderMobiles(mobiles);
+
+            for (Mobile mobile : orderedMobiles) {
+                if (!this.computePath(mobile)) {
+                    System.out.println("No path was found");
+                    solution = false;
+                    break;
+                    //System.exit(0);
+                }
             }
         }
 
     }
 
     private ArrayList<Mobile> orderMobiles(ArrayList<Mobile> mobiles) {
-        ArrayList<Pair<Mobile,Integer>> orderedMobiles = new ArrayList<>();
+        /*ArrayList<Pair<Mobile,Integer>> orderedMobiles = new ArrayList<>();
 
         for (Mobile mobile : mobiles) {
             orderedMobiles.add(new Pair<>(mobile, -mobile.getCurrentPosition().getY()));
@@ -66,7 +75,11 @@ public class WHCAStar {
 
         orderedMobiles.sort(Comparator.comparing(Pair::getSecond));
 
-        return (ArrayList<Mobile>) orderedMobiles.stream().map(p -> p.first).collect(Collectors.toList());
+        return (ArrayList<Mobile>) orderedMobiles.stream().map(p -> p.first).collect(Collectors.toList());*/
+
+        ArrayList<Mobile> orderedMobiles = new ArrayList<>(mobiles);
+        Collections.shuffle(orderedMobiles, this.random);
+        return orderedMobiles;
     }
 
     /**

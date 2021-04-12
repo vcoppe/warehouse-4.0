@@ -52,8 +52,7 @@ public class MobileMissionPickUpEvent extends Event {
             this.stock.remove(this.mission.getStartPosition(), this.mission.getPallet());
         }
 
-        Event event = new PathFinderEvent(this.simulation, this.time, this.controller);
-        this.simulation.enqueueEvent(event);
+        PathFinderEvent.enqueue(this.simulation, this.time, this.controller);
     }
 
 }

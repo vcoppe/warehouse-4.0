@@ -39,8 +39,7 @@ public class MobileMissionStartEvent extends Event {
 
         this.mobile.start(this.mission);
 
-        Event event = new PathFinderEvent(this.simulation, this.time, this.controller);
-        this.simulation.enqueueEvent(event);
+        PathFinderEvent.enqueue(this.simulation, this.time, this.controller);
     }
 
 }

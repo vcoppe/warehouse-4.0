@@ -8,6 +8,8 @@ import graphic.shape.PalletShape;
 import graphic.shape.TruckShape;
 import javafx.animation.Interpolator;
 import javafx.animation.PathTransition;
+import javafx.animation.PauseTransition;
+import javafx.animation.SequentialTransition;
 import javafx.scene.Group;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -120,7 +122,11 @@ public class TruckObserver implements Observer<Truck> {
                     shape.getShape()
             );
 
-            this.animationDashboard.add(new MyAnimation(shape, pathTransition));
+            SequentialTransition transition = new SequentialTransition();
+            transition.getChildren().add(pathTransition);
+            transition.getChildren().add(new PauseTransition(Duration.seconds(1)));
+
+            this.animationDashboard.add(new MyAnimation(shape, transition));
         } else {
             // update current load
             for (PalletShape palletShape : this.palletShapes.get(truck.getId()).values()) {

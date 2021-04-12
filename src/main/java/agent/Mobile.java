@@ -106,6 +106,7 @@ public class Mobile extends Observable {
         this.position = this.mission.getEndPosition();
         this.mission = null;
         this.path = null;
+        this.changed();
     }
 
     public void setPath(ArrayList<Pair<Position,Double>> path) {
