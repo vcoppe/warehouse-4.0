@@ -8,12 +8,12 @@ public class MyAnimation {
 
     private final MyShape shape;
     private final Animation animation;
-    private Double start;
+    private Duration progress;
 
     public MyAnimation(MyShape shape, Animation animation) {
         this.shape = shape;
         this.animation = animation;
-        this.start = null;
+        this.progress = Duration.ZERO;
     }
 
     public MyShape getShape() {
@@ -25,22 +25,14 @@ public class MyAnimation {
     }
 
     public void play() {
-        if (this.animation.currentTimeProperty().get().lessThan(this.animation.getTotalDuration())) {
-            this.animation.play();
-        }
-    }
-
-    public void play(double time) {
-        if (this.start == null) {
-            this.start = time;
-        }
-        if (this.animation.currentTimeProperty().get().lessThan(this.animation.getTotalDuration())) {
-            this.animation.playFrom(Duration.seconds(time - this.start));
+        if (this.progress.lessThan(this.animation.getTotalDuration())) {
+            this.animation.playFrom(this.progress);
         }
     }
 
     public void pause() {
-        this.animation.pause();
+        this.progress = this.animation.currentTimeProperty().get();
+        this.animation.stop();
     }
 
 }

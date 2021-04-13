@@ -24,6 +24,7 @@ import observer.StockObserver;
 import observer.TruckObserver;
 import warehouse.Configuration;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -150,7 +151,7 @@ public class AnimationDashboard {
     private void playAnimations(double start) {
         for (MyAnimation animation : this.animations.values()) {
             animation.getAnimation().setRate(this.rate);
-            animation.play(start);
+            animation.play();
         }
     }
 

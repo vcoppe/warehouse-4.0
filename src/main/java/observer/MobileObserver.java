@@ -6,10 +6,7 @@ import graphic.dashboard.AnimationDashboard;
 import graphic.shape.CompoundShape;
 import graphic.shape.MobileShape;
 import graphic.shape.PalletShape;
-import javafx.animation.Interpolator;
-import javafx.animation.PathTransition;
-import javafx.animation.PauseTransition;
-import javafx.animation.SequentialTransition;
+import javafx.animation.*;
 import javafx.scene.Group;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -77,7 +74,7 @@ public class MobileObserver implements Observer<Mobile> {
                 this.palletShapes.put(mobile.getId(), palletShape);
             }
 
-            if (mobile.getPosition().equals(mission.getStartPosition())) {
+            if (mobile.getPosition().equals(mission.getStartPosition()) && mission.getPallet() != null) {
                 palletShape.setType(mission.getPallet().getType());
             } else {
                 palletShape.setEmptyMobile();
@@ -87,11 +84,16 @@ public class MobileObserver implements Observer<Mobile> {
         List<Pair<Position, Double>> path = mobile.getPath();
 
         if (path != null) {
-            SequentialTransition transition = new SequentialTransition();
-            //transition.interpolatorProperty().setValue(Interpolator.LINEAR);
             Position lastPosition = null;
-            double lastTime = 0;
             boolean first = true;
+            double lastTime = 0;
+
+            SequentialTransition transition = new SequentialTransition();
+            transition.interpolatorProperty().setValue(Interpolator.LINEAR);
+
+            Path currentPath = null;
+            double cumulTime = 0;
+
             for (Pair<Position, Double> pair : path) {
                 Position position = pair.first;
                 double time = pair.second;
@@ -103,28 +105,40 @@ public class MobileObserver implements Observer<Mobile> {
                 if (first) {
                     first = false;
                 } else if (position.equals(lastPosition)) {
+                    if (currentPath != null) {
+                        PathTransition pathTransition = new PathTransition(Duration.seconds(cumulTime), currentPath, mobileShape.getShape());
+                        pathTransition.interpolatorProperty().setValue(Interpolator.LINEAR);
+                        transition.getChildren().add(pathTransition);
+                        cumulTime = 0;
+                        currentPath = null;
+                    }
                     transition.getChildren().add(new PauseTransition(Duration.seconds(time - lastTime)));
                 } else {
-                    Path pathShape = new Path();
-                    pathShape.getElements().add(new MoveTo(
-                            lastPosition.getX() + 0.5 * mobileShape.getWidth(),
-                            lastPosition.getY() + 0.5 * mobileShape.getHeight()
-                    ));
-                    pathShape.getElements().add(new LineTo(
+                    if (currentPath == null) {
+                        currentPath = new Path();
+
+                        currentPath.getElements().add(new MoveTo(
+                                lastPosition.getX() + 0.5 * mobileShape.getWidth(),
+                                lastPosition.getY() + 0.5 * mobileShape.getHeight()
+                        ));
+                    }
+
+                    currentPath.getElements().add(new LineTo(
                             position.getX() + 0.5 * mobileShape.getWidth(),
                             position.getY() + 0.5 * mobileShape.getHeight()
                     ));
-                    PathTransition pathTransition = new PathTransition(Duration.seconds(time - lastTime), pathShape, mobileShape.getShape());
-                    pathTransition.interpolatorProperty().setValue(Interpolator.LINEAR);
-                    transition.getChildren().add(pathTransition);
+
+                    cumulTime += time - lastTime;
                 }
 
                 lastPosition = position;
                 lastTime = time;
             }
 
-            if (lastPosition != null) {
-                transition.getChildren().add(new PauseTransition(Duration.seconds(1))); // fix glitch
+            if (currentPath != null) {
+                PathTransition pathTransition = new PathTransition(Duration.seconds(cumulTime), currentPath, mobileShape.getShape());
+                pathTransition.interpolatorProperty().setValue(Interpolator.LINEAR);
+                transition.getChildren().add(pathTransition);
             }
 
             this.animationDashboard.add(new MyAnimation(mobileShape, transition));

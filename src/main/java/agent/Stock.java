@@ -24,12 +24,18 @@ public class Stock extends Observable {
     }
 
     public void add(Position position, Pallet pallet) {
+        if (pallet == null) {
+            return;
+        }
         this.pallets.put(position, pallet);
         this.unlock(position);
         this.changed();
     }
 
     public void remove(Position position, Pallet pallet) {
+        if (pallet == null) {
+            return;
+        }
         this.pallets.put(position, Pallet.FREE);
         this.unlock(position);
         this.changed();
