@@ -61,8 +61,6 @@ public class TruckDockEvent extends Event {
             Position palletPosition = pair.first;
             Pallet pallet = pair.second;
 
-            ArrayList<Position> positions = this.stock.getStartPositions(pallet);
-
             Position endPosition = this.truck.getPosition().add(palletPosition);
             Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
 

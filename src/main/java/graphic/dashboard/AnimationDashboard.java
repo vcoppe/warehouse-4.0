@@ -151,7 +151,7 @@ public class AnimationDashboard {
     private void playAnimations(double start) {
         for (MyAnimation animation : this.animations.values()) {
             animation.getAnimation().setRate(this.rate);
-            animation.play();
+            animation.play(start);
         }
     }
 

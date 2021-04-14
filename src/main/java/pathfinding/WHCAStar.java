@@ -1,6 +1,7 @@
 package pathfinding;
 
 import agent.Mobile;
+import util.DoublePrecisionConstraint;
 import util.Pair;
 import warehouse.Position;
 
@@ -47,7 +48,13 @@ public class WHCAStar {
             this.table.clear();
 
             for (Mobile mobile : mobiles) { // reserve current position
-                this.table.reserve(mobile.getCurrentPosition(), 0, mobile.getId());
+                Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getCurrentPositions();
+                if (pair.first.first.equals(pair.second.first)) {
+                    this.table.reserve(pair.first.first, pair.first.second, pair.second.second, mobile.getId());
+                } else {
+                    this.table.reserve(pair.first.first, pair.first.second, mobile.getId());
+                    this.table.reserve(pair.second.first, pair.second.second, mobile.getId());
+                }
             }
 
             ArrayList<Mobile> orderedMobiles = this.orderMobiles(mobiles);
@@ -89,9 +96,7 @@ public class WHCAStar {
     private boolean computePath(Mobile mobile) {
         this.initReverseResumableAStar(mobile);
 
-        // TODO adapt if mobile is between 2 positions
         Position startPosition = mobile.getPosition();
-        Position currentPosition = mobile.getCurrentPosition();
         Position endPosition = mobile.getTargetPosition();
 
         HashMap<Position, Double> dist = new HashMap<>();
@@ -100,9 +105,14 @@ public class WHCAStar {
 
         PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
 
-        dist.put(currentPosition, 0.0);
-        h.put(currentPosition, this.reverseResumableAStar(mobile, currentPosition, startPosition) / mobile.getSpeed());
-        pq.add(new Edge(currentPosition, dist.get(currentPosition) + h.get(currentPosition)));
+        Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getCurrentPositions();
+        this.table.reserve(pair.first.first, pair.first.second, mobile.getId());
+        this.table.reserve(pair.second.first, pair.second.second, mobile.getId());
+
+        dist.put(pair.second.first, pair.second.second);
+        prev.put(pair.second.first, pair.first.first);
+        h.put(pair.second.first, this.reverseResumableAStar(mobile, pair.second.first, startPosition) / mobile.getSpeed());
+        pq.add(new Edge(pair.second.first, h.get(pair.second.first)));
 
         while (!pq.isEmpty()) {
             Edge e = pq.poll();
@@ -123,18 +133,18 @@ public class WHCAStar {
                 Position v = edge.to;
                 double w = edge.w;
 
-                double otherDist = dist.get(u) + w / mobile.getSpeed();
+                double otherDist = DoublePrecisionConstraint.round(dist.get(u) + w / mobile.getSpeed());
                 if (otherDist < W) { // check for collisions only within the time window
                     if (!this.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
                         otherDist = this.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
-                        if (!this.table.isAvailable(u, dist.get(u), otherDist - w / mobile.getSpeed(), mobile.getId())) {
+                        if (!this.table.isAvailable(u, dist.get(u), DoublePrecisionConstraint.round(otherDist - w / mobile.getSpeed()), mobile.getId())) {
                             continue; // mobile cannot wait until in current position the next position is available
                         }
                     }
                 }
 
                 if (!dist.containsKey(v) || otherDist < dist.get(v)) {
-                    double estimateV = otherDist + this.reverseResumableAStar(mobile, v, startPosition) / mobile.getSpeed();
+                    double estimateV = DoublePrecisionConstraint.round(otherDist + this.reverseResumableAStar(mobile, v, startPosition) / mobile.getSpeed());
                     dist.put(v, otherDist);
                     h.put(v, estimateV);
                     prev.put(v, u);
@@ -172,16 +182,21 @@ public class WHCAStar {
     }
 
     private void setPath(Mobile mobile, HashMap<Position, Double> dist, HashMap<Position, Position> prev) {
-        Position currentPosition = mobile.getCurrentPosition();
+        Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getCurrentPositions();
+        Position startPosition = pair.second.first;
         Position endPosition = mobile.getTargetPosition();
 
         ArrayList<Pair<Position,Double>> path = new ArrayList<>();
 
         Position u = endPosition;
         path.add(new Pair<>(u, dist.get(u)));
-        while (!u.equals(currentPosition)) {
+        while (!u.equals(startPosition)) {
             u = prev.get(u);
             path.add(0, new Pair<>(u, dist.get(u)));
+        }
+
+        if (!pair.first.first.equals(startPosition)) {
+            path.add(0, new Pair<>(pair.first.first, pair.first.second));
         }
 
         // reserve path in table
@@ -194,15 +209,15 @@ public class WHCAStar {
                 double w = this.graph.getWeight(u, v);
 
                 if (timeV - timeU > w / mobile.getSpeed()) {
-                    double waitingTime = timeV - timeU - w / mobile.getSpeed();
-                    path.add(i + 1, new Pair<>(u, timeU + waitingTime));
-                    this.table.reserve(u, timeU, timeU + waitingTime, mobile.getId());
+                    double waitingTime = DoublePrecisionConstraint.round(timeV - timeU - w / mobile.getSpeed());
+                    path.add(i + 1, new Pair<>(u, DoublePrecisionConstraint.round(timeU + waitingTime)));
+                    this.table.reserve(u, timeU, DoublePrecisionConstraint.round(timeU + waitingTime), mobile.getId());
                 } else {
                     this.table.reserve(u, timeU, mobile.getId());
                 }
             } else {
                 if (timeU > 0) this.window = Math.min(this.window, timeU); // shrink window to the earliest finished mission
-                this.table.reserve(u, timeU, timeU+W, mobile.getId());
+                this.table.reserve(u, timeU, timeU + W, mobile.getId());
             }
         }
 
@@ -250,7 +265,7 @@ public class WHCAStar {
 
         Position startPosition = null;
         for (Map.Entry<Position, Double> entry : dist.entrySet()) {
-            if (entry.getValue() == 0) {
+            if (entry.getValue() <= 0) {
                 startPosition = entry.getKey();
                 break;
             }

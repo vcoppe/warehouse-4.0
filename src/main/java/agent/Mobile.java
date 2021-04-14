@@ -1,6 +1,7 @@
 package agent;
 
 import observer.Observable;
+import util.DoublePrecisionConstraint;
 import util.Pair;
 import warehouse.Mission;
 import warehouse.Position;
@@ -50,18 +51,47 @@ public class Mobile extends Observable {
         return this.path;
     }
 
+    public double getPathTime() {
+        return this.pathTime;
+    }
+
     public Position getCurrentPosition() {
-        Position position = this.position;
-        if (this.path != null) {
-            for (Pair<Position, Double> pair : this.path) {
-                if (this.pathTime >= pair.second) {
-                    position = pair.first;
-                } else {
-                    break;
+        Pair<Pair<Position,Double>,Pair<Position,Double>> pair = this.getCurrentPositions();
+
+        double alpha = pair.second.second / (pair.second.second - pair.first.second);
+        return new Position(
+                (int) (alpha * pair.first.first.getX() + (1 - alpha) * pair.second.first.getX()),
+                (int) (alpha * pair.first.first.getY() + (1 - alpha) * pair.second.first.getY()),
+                (int) (alpha * pair.first.first.getZ() + (1 - alpha) * pair.second.first.getZ())
+        );
+    }
+
+    public Pair<Pair<Position,Double>, Pair<Position,Double>> getCurrentPositions() {
+        if (this.path == null || this.path.size() == 1) {
+            return new Pair<>(
+                    new Pair<>(this.position, -1.0),
+                    new Pair<>(this.position, 0.0)
+            );
+        }
+
+        for (int i=0; i<this.path.size(); i++) {
+            Pair<Position,Double> current = this.path.get(i);
+            if (this.pathTime <= current.second) {
+                if (i == 0) {
+                    return new Pair<>(
+                            new Pair<>(current.first, -1.0),
+                            new Pair<>(current.first, 0.0)
+                    );
                 }
+                Pair<Position,Double> previous = this.path.get(i-1);
+                return new Pair<>(
+                        new Pair<>(previous.first, DoublePrecisionConstraint.round(previous.second - this.pathTime)),
+                        new Pair<>(current.first, DoublePrecisionConstraint.round(current.second - this.pathTime))
+                );
             }
         }
-        return position;
+
+        return null;
     }
 
     public Mission getMission() {
@@ -69,7 +99,7 @@ public class Mobile extends Observable {
     }
 
     public void forward(double delta) {
-        this.pathTime += delta;
+        this.pathTime = DoublePrecisionConstraint.round(this.pathTime + delta);
     }
 
     public void start(Mission mission) {

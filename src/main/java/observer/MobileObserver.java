@@ -84,31 +84,35 @@ public class MobileObserver implements Observer<Mobile> {
         List<Pair<Position, Double>> path = mobile.getPath();
 
         if (path != null) {
-            Position lastPosition = null;
-            boolean first = true;
-            double lastTime = 0;
-
             SequentialTransition transition = new SequentialTransition();
             transition.interpolatorProperty().setValue(Interpolator.LINEAR);
 
-            Path currentPath = null;
-            double cumulTime = 0;
+            Path currentPath = new Path();
+
+            Position currentPosition = mobile.getCurrentPosition();
+            currentPath.getElements().add(new MoveTo(
+                    currentPosition.getX() + 0.5 * mobileShape.getWidth(),
+                    currentPosition.getY() + 0.5 * mobileShape.getHeight()
+            ));
+
+            Position lastPosition = currentPosition;
+            double cumulTime = 0, lastTime = mobile.getPathTime();
 
             for (Pair<Position, Double> pair : path) {
                 Position position = pair.first;
                 double time = pair.second;
 
-                if (first && !position.equals(mobile.getCurrentPosition())) {
+                if (time <= lastTime) {
                     continue;
                 }
 
-                if (first) {
-                    first = false;
-                } else if (position.equals(lastPosition)) {
+                if (position.equals(lastPosition)) {
                     if (currentPath != null) {
-                        PathTransition pathTransition = new PathTransition(Duration.seconds(cumulTime), currentPath, mobileShape.getShape());
-                        pathTransition.interpolatorProperty().setValue(Interpolator.LINEAR);
-                        transition.getChildren().add(pathTransition);
+                        if (currentPath.getElements().size() > 1) {
+                            PathTransition pathTransition = new PathTransition(Duration.seconds(cumulTime), currentPath, mobileShape.getShape());
+                            pathTransition.interpolatorProperty().setValue(Interpolator.LINEAR);
+                            transition.getChildren().add(pathTransition);
+                        }
                         cumulTime = 0;
                         currentPath = null;
                     }
