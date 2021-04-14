@@ -37,8 +37,6 @@ public class WHCAStar {
      * with their respective position and target position, and speed
      */
     public void computePaths(ArrayList<Mobile> mobiles, Graph graph) {
-        //System.out.println("WHCA*: asking paths for " + mobiles.size() + " mobiles");
-
         boolean solution = false;
 
         while (!solution) {
@@ -59,7 +57,6 @@ public class WHCAStar {
                     System.out.println("No path was found");
                     solution = false;
                     break;
-                    //System.exit(0);
                 }
             }
         }
@@ -67,16 +64,6 @@ public class WHCAStar {
     }
 
     private ArrayList<Mobile> orderMobiles(ArrayList<Mobile> mobiles) {
-        /*ArrayList<Pair<Mobile,Integer>> orderedMobiles = new ArrayList<>();
-
-        for (Mobile mobile : mobiles) {
-            orderedMobiles.add(new Pair<>(mobile, -mobile.getCurrentPosition().getY()));
-        }
-
-        orderedMobiles.sort(Comparator.comparing(Pair::getSecond));
-
-        return (ArrayList<Mobile>) orderedMobiles.stream().map(p -> p.first).collect(Collectors.toList());*/
-
         ArrayList<Mobile> orderedMobiles = new ArrayList<>(mobiles);
         Collections.shuffle(orderedMobiles, this.random);
         return orderedMobiles;
@@ -88,8 +75,6 @@ public class WHCAStar {
      */
     private boolean computePath(Mobile mobile) {
         this.initReverseResumableAStar(mobile);
-
-        //System.out.println("WHCA*: compute path for mobile " + mobile.getId());
 
         // TODO adapt if mobile is between 2 positions
         Position startPosition = mobile.getPosition();
@@ -112,8 +97,6 @@ public class WHCAStar {
             Position u = e.to;
             double estimateU = e.w;
 
-            //System.out.println("WHCA*: position " + u.getX() + "," + u.getY() + " at dist " + dist.get(u));
-
             if (estimateU > h.get(u)) { // not the shortest path anymore
                 continue;
             }
@@ -128,7 +111,7 @@ public class WHCAStar {
                 double w = edge.w;
 
                 double otherDist = dist.get(u) + w / mobile.getSpeed();
-                if (otherDist < W/*this.window*/) { // check for collisions only within the time window
+                if (otherDist < W) { // check for collisions only within the time window
                     if (!this.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
                         otherDist = this.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
                         if (!this.table.isAvailable(u, dist.get(u), otherDist - w / mobile.getSpeed(), mobile.getId())) {
@@ -154,19 +137,12 @@ public class WHCAStar {
         Position startPosition = mobile.getPosition();
         Position endPosition = mobile.getTargetPosition();
 
-        //System.out.println("init RRA* for mobile " + mobile.getId());
-
-        if (this.resumableDist.containsKey(mobile.getId())) {
+        if (this.lastRoute.containsKey(mobile.getId())) {
             Pair<Position, Position> route = this.lastRoute.get(mobile.getId());
             if (startPosition.equals(route.first) && endPosition.equals(route.second)) {
-                //System.out.println("\tsame path as last time");
                 return;
             }
         }
-
-        this.resumableDist.clear();
-        this.resumablePq.clear();
-        this.resumableClosed.clear();
 
         HashMap<Position, Double> dist = new HashMap<>();
         PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
@@ -225,10 +201,7 @@ public class WHCAStar {
         PriorityQueue<Edge> pq = this.resumablePq.get(mobile.getId());
         HashSet<Position> closed = this.resumableClosed.get(mobile.getId());
 
-        //System.out.println("RRA*: asking for " + endPosition.getX() + "," + endPosition.getY());
-
         if (closed.contains(endPosition)) {
-            //System.out.println("\talready computed : " + dist.get(endPosition));
             return dist.get(endPosition);
         }
 
@@ -237,16 +210,12 @@ public class WHCAStar {
             Position u = e.to;
             double estimateU = e.w;
 
-            //System.out.println("RRA*: position " + u.getX() + "," + u.getY() + " at dist " + dist.get(u));
-
             if (estimateU - u.manhattanDistance3D(finalPosition) > dist.get(u)) { // not the shortest path anymore
                 pq.poll();
-                //System.out.println("\tignored");
                 continue;
             }
 
             if (u.equals(endPosition)) {
-                //System.out.println("RRA*: found dist " + dist.get(endPosition) + " for " + endPosition.getX() + "," + endPosition.getY());
                 return dist.get(endPosition);
             }
 
