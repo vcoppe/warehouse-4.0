@@ -64,9 +64,22 @@ public class WHCAStar {
     }
 
     private ArrayList<Mobile> orderMobiles(ArrayList<Mobile> mobiles) {
-        ArrayList<Mobile> orderedMobiles = new ArrayList<>(mobiles);
-        Collections.shuffle(orderedMobiles, this.random);
-        return orderedMobiles;
+        ArrayList<Mobile> staticMobiles = new ArrayList<>();
+        ArrayList<Mobile> otherMobiles = new ArrayList<>();
+
+        for (Mobile mobile : mobiles) {
+            if (mobile.getCurrentPosition().equals(mobile.getTargetPosition())) {
+                staticMobiles.add(mobile);
+            } else {
+                otherMobiles.add(mobile);
+            }
+        }
+
+        Collections.shuffle(otherMobiles, this.random);
+
+        staticMobiles.addAll(otherMobiles); // first plan static mobiles
+
+        return staticMobiles;
     }
 
     /**
