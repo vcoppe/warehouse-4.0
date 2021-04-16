@@ -16,7 +16,6 @@ import java.util.ArrayList;
 public class MobileMissionPickUpEvent extends Event {
 
     private final Controller controller;
-    private final Warehouse warehouse;
     private final Stock stock;
     private final Mobile mobile;
     private final Mission mission;
@@ -24,7 +23,6 @@ public class MobileMissionPickUpEvent extends Event {
     public MobileMissionPickUpEvent(Simulation simulation, double time, Controller controller, Mobile mobile) {
         super(simulation, time);
         this.controller = controller;
-        this.warehouse = controller.getWarehouse();
         this.stock = controller.getStock();
         this.mobile = mobile;
         this.mission = mobile.getMission();

@@ -41,7 +41,7 @@ public class Warehouse {
     }
 
     public double getTravelTime(Position p1, Position p2, Mobile mobile) {
-        return this.getDistance(p1, p2) / mobile.getSpeed();
+        return this.getDistance(p1, p2) * mobile.getSpeed();
     }
 
 }

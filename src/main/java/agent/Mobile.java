@@ -7,6 +7,7 @@ import warehouse.Mission;
 import warehouse.Position;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Mobile extends Observable {
 
@@ -16,7 +17,8 @@ public class Mobile extends Observable {
     private ArrayList<Pair<Position, Double>> path;
     private double pathTime;
     private Mission mission;
-    private final double speed;
+    private final double speed; // in s/m
+    private static final Random random = new Random(0);
 
     public Mobile(Position position) {
         super();
@@ -24,7 +26,7 @@ public class Mobile extends Observable {
         this.position = position;
         this.targetPosition = position;
         this.mission = null;
-        this.speed = 10;
+        this.speed = DoublePrecisionConstraint.round(0.05 + 0.01 * random.nextInt(10));
     }
 
     public int getId() {
@@ -141,7 +143,7 @@ public class Mobile extends Observable {
 
     public void setPath(ArrayList<Pair<Position,Double>> path) {
         this.path = path;
-        this.pathTime = 0;
+        this.pathTime = 0.0;
         this.changed();
     }
 

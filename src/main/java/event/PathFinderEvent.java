@@ -43,6 +43,14 @@ public class PathFinderEvent extends Event {
         }
     }
 
+    public static PathFinderEvent getInstance() {
+        return instance;
+    }
+
+    public static void reset() {
+        instance = null;
+    }
+
     @Override
     public void run() {
         this.simulation.logger.info(String.format("Simulation time %f: PathFinderEvent", this.time));

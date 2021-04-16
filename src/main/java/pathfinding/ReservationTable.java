@@ -1,5 +1,6 @@
 package pathfinding;
 
+import util.DoublePrecisionConstraint;
 import warehouse.Position;
 
 import java.util.HashMap;
@@ -7,7 +8,7 @@ import java.util.TreeSet;
 
 public class ReservationTable {
 
-    public final static double timeMargin = 2;
+    public final static double timeMargin = 1.5;
 
     private final HashMap<Position, TreeSet<Reservation>> reservations;
 
@@ -20,11 +21,11 @@ public class ReservationTable {
     }
 
     public void reserve(Position position, double time, int id) {
-        this.reserveWithMargin(position, time - timeMargin, time + timeMargin, id);
+        this.reserveWithMargin(position, DoublePrecisionConstraint.round(time - timeMargin), DoublePrecisionConstraint.round(time + timeMargin), id);
     }
 
     public void reserve(Position position, double start, double end, int id) {
-        this.reserveWithMargin(position, start - timeMargin, end + timeMargin, id);
+        this.reserveWithMargin(position, DoublePrecisionConstraint.round(start - timeMargin), DoublePrecisionConstraint.round(end + timeMargin), id);
     }
 
     private void reserveWithMargin(Position position, double start, double end, int id) {
@@ -36,11 +37,11 @@ public class ReservationTable {
     }
 
     public boolean isAvailable(Position position, double time, int id) {
-        return this.isAvailableWithMargin(position, time - timeMargin, time + timeMargin, id);
+        return this.isAvailableWithMargin(position, DoublePrecisionConstraint.round(time - timeMargin), DoublePrecisionConstraint.round(time + timeMargin), id);
     }
 
     public boolean isAvailable(Position position, double start, double end, int id) {
-        return this.isAvailableWithMargin(position, start - timeMargin, end + timeMargin, id);
+        return this.isAvailableWithMargin(position, DoublePrecisionConstraint.round(start - timeMargin), DoublePrecisionConstraint.round(end + timeMargin), id);
     }
 
     private boolean isAvailableWithMargin(Position position, double start, double end, int id) {
@@ -64,13 +65,13 @@ public class ReservationTable {
     }
 
     public double nextAvailability(Position position, double time, int id) {
-        double nextTime = this.nextAvailabilityWithMargin(position, time - timeMargin, 2 * timeMargin, id);
-        return nextTime + timeMargin;
+        double nextTime = this.nextAvailabilityWithMargin(position, DoublePrecisionConstraint.round(time - timeMargin), DoublePrecisionConstraint.round(2 * timeMargin), id);
+        return DoublePrecisionConstraint.round(nextTime + timeMargin);
     }
 
     public double nextAvailability(Position position, double from, double duration, int id) {
-        double nextTime = this.nextAvailabilityWithMargin(position, from - timeMargin, duration + 2 * timeMargin, id);
-        return nextTime + timeMargin;
+        double nextTime = this.nextAvailabilityWithMargin(position, DoublePrecisionConstraint.round(from - timeMargin), DoublePrecisionConstraint.round(duration + 2 * timeMargin), id);
+        return DoublePrecisionConstraint.round(nextTime + timeMargin);
     }
 
     private double nextAvailabilityWithMargin(Position position, double from, double duration, int id) {

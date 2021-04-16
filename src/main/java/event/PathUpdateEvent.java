@@ -26,6 +26,10 @@ public class PathUpdateEvent extends Event {
         instance.simulation.enqueueEvent(instance);
     }
 
+    public static void reset() {
+        instance = null;
+    }
+
     @Override
     public void run() {
         this.simulation.logger.info(String.format("Simulation time %f: PathUpdateEvent", this.time));

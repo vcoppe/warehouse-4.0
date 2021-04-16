@@ -21,6 +21,8 @@ public class MobileMissionStartEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
+        PathFinderEvent.reset();
+
         this.configuration = new Configuration(1, 1);
         this.mobile = this.configuration.mobiles.get(0);
 

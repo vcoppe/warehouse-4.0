@@ -1,9 +1,11 @@
 package util;
 
 public class DoublePrecisionConstraint {
+    
+    private static double precision = 100;
 
     public static double round(double value) {
-        return Math.round(100 * value) / 100.0;
+        return Math.round(precision * value) / precision;
     }
 
 }

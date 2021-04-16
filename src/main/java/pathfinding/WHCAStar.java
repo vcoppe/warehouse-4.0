@@ -111,7 +111,7 @@ public class WHCAStar {
 
         dist.put(pair.second.first, pair.second.second);
         prev.put(pair.second.first, pair.first.first);
-        h.put(pair.second.first, this.reverseResumableAStar(mobile, pair.second.first, startPosition) / mobile.getSpeed());
+        h.put(pair.second.first, DoublePrecisionConstraint.round(this.reverseResumableAStar(mobile, pair.second.first, startPosition) * mobile.getSpeed()));
         pq.add(new Edge(pair.second.first, h.get(pair.second.first)));
 
         while (!pq.isEmpty()) {
@@ -133,18 +133,19 @@ public class WHCAStar {
                 Position v = edge.to;
                 double w = edge.w;
 
-                double otherDist = DoublePrecisionConstraint.round(dist.get(u) + w / mobile.getSpeed());
+                double otherDist = DoublePrecisionConstraint.round(dist.get(u) + w * mobile.getSpeed());
+
                 if (otherDist < W) { // check for collisions only within the time window
                     if (!this.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
                         otherDist = this.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
-                        if (!this.table.isAvailable(u, dist.get(u), DoublePrecisionConstraint.round(otherDist - w / mobile.getSpeed()), mobile.getId())) {
+                        if (!this.table.isAvailable(u, dist.get(u), DoublePrecisionConstraint.round(otherDist - w * mobile.getSpeed()), mobile.getId())) {
                             continue; // mobile cannot wait until in current position the next position is available
                         }
                     }
                 }
 
                 if (!dist.containsKey(v) || otherDist < dist.get(v)) {
-                    double estimateV = DoublePrecisionConstraint.round(otherDist + this.reverseResumableAStar(mobile, v, startPosition) / mobile.getSpeed());
+                    double estimateV = DoublePrecisionConstraint.round(otherDist + this.reverseResumableAStar(mobile, v, startPosition) * mobile.getSpeed());
                     dist.put(v, otherDist);
                     h.put(v, estimateV);
                     prev.put(v, u);
@@ -154,31 +155,6 @@ public class WHCAStar {
         }
 
         return false; // no path was found
-    }
-
-    private void initReverseResumableAStar(Mobile mobile) {
-        Position startPosition = mobile.getPosition();
-        Position endPosition = mobile.getTargetPosition();
-
-        if (this.lastRoute.containsKey(mobile.getId())) {
-            Pair<Position, Position> route = this.lastRoute.get(mobile.getId());
-            if (startPosition.equals(route.first) && endPosition.equals(route.second)) {
-                return;
-            }
-        }
-
-        HashMap<Position, Double> dist = new HashMap<>();
-        PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
-        HashSet<Position> closed = new HashSet<>();
-
-        dist.put(endPosition, 0.0);
-        pq.add(new Edge(endPosition, dist.get(endPosition) + startPosition.manhattanDistance3D(endPosition)));
-
-        this.resumableDist.put(mobile.getId(), dist);
-        this.resumablePq.put(mobile.getId(), pq);
-        this.resumableClosed.put(mobile.getId(), closed);
-
-        this.lastRoute.put(mobile.getId(), new Pair<>(startPosition, endPosition));
     }
 
     private void setPath(Mobile mobile, HashMap<Position, Double> dist, HashMap<Position, Position> prev) {
@@ -208,10 +184,10 @@ public class WHCAStar {
                 double timeV = path.get(i + 1).second;
                 double w = this.graph.getWeight(u, v);
 
-                if (timeV - timeU > w / mobile.getSpeed()) {
-                    double waitingTime = DoublePrecisionConstraint.round(timeV - timeU - w / mobile.getSpeed());
-                    path.add(i + 1, new Pair<>(u, DoublePrecisionConstraint.round(timeU + waitingTime)));
-                    this.table.reserve(u, timeU, DoublePrecisionConstraint.round(timeU + waitingTime), mobile.getId());
+                if (DoublePrecisionConstraint.round(timeV - timeU - w * mobile.getSpeed()) > 0) {
+                    double timeLeaveU = DoublePrecisionConstraint.round(timeV - w * mobile.getSpeed());
+                    path.add(i + 1, new Pair<>(u, timeLeaveU));
+                    this.table.reserve(u, timeU, timeLeaveU, mobile.getId());
                 } else {
                     this.table.reserve(u, timeU, mobile.getId());
                 }
@@ -222,6 +198,31 @@ public class WHCAStar {
         }
 
         mobile.setPath(path);
+    }
+
+    private void initReverseResumableAStar(Mobile mobile) {
+        Position startPosition = mobile.getPosition();
+        Position endPosition = mobile.getTargetPosition();
+
+        if (this.lastRoute.containsKey(mobile.getId())) {
+            Pair<Position, Position> route = this.lastRoute.get(mobile.getId());
+            if (startPosition.equals(route.first) && endPosition.equals(route.second)) {
+                return;
+            }
+        }
+
+        HashMap<Position, Double> dist = new HashMap<>();
+        PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
+        HashSet<Position> closed = new HashSet<>();
+
+        dist.put(endPosition, 0.0);
+        pq.add(new Edge(endPosition, dist.get(endPosition) + startPosition.manhattanDistance3D(endPosition)));
+
+        this.resumableDist.put(mobile.getId(), dist);
+        this.resumablePq.put(mobile.getId(), pq);
+        this.resumableClosed.put(mobile.getId(), closed);
+
+        this.lastRoute.put(mobile.getId(), new Pair<>(startPosition, endPosition));
     }
 
     private double reverseResumableAStar(Mobile mobile, Position endPosition, Position finalPosition) {
@@ -255,6 +256,7 @@ public class WHCAStar {
                 double w = edge.w;
 
                 double otherDist = dist.get(u) + w;
+
                 if (!dist.containsKey(v) || otherDist < dist.get(v)) {
                     dist.put(v, otherDist);
                     double estimateV = otherDist + v.manhattanDistance3D(finalPosition);

@@ -43,6 +43,6 @@ public class WHCAStarTest extends TestCase {
 
         ArrayList<Pair<Position,Double>> path = this.mobile.getPath();
 
-        assertEquals(50 / this.mobile.getSpeed(), path.get(path.size()-1).second);
+        assertEquals(50 * this.mobile.getSpeed(), path.get(path.size()-1).second);
     }
 }
