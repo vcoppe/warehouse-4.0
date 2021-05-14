@@ -75,6 +75,14 @@ public class Configuration {
                     ),
                     Pallet.FREE
             );
+            this.stock.add(
+                    new Position(
+                            (2 * (i / nSlotsPerAisle) + (i / nSlotsPerAisle) % 2) * this.palletSize,
+                            (i % nSlotsPerAisle) * this.palletSize,
+                            this.palletSize
+                    ),
+                    Pallet.FREE
+            );
         }
 
         for (int x = 0; x < this.warehouse.getWidth(); x += this.palletSize) {
@@ -120,6 +128,14 @@ public class Configuration {
                                 position,
                                 new Position(x + this.palletSize, y)
                         );
+                        this.warehouse.addEdge(
+                                position,
+                                new Position(x, y, this.palletSize)
+                        );
+                        this.warehouse.addEdge(
+                                new Position(x, y, this.palletSize),
+                                position
+                        );
                     } else if (type == 1) {
                         this.warehouse.addEdge(
                                 position,
@@ -148,6 +164,14 @@ public class Configuration {
                         this.warehouse.addEdge(
                                 position,
                                 new Position(x - this.palletSize, y)
+                        );
+                        this.warehouse.addEdge(
+                                position,
+                                new Position(x, y, this.palletSize)
+                        );
+                        this.warehouse.addEdge(
+                                new Position(x, y, this.palletSize),
+                                position
                         );
                     }
                 } else {

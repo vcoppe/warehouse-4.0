@@ -24,6 +24,11 @@ public class StockObserver implements Observer<Stock> {
         this.group = new Group();
     }
 
+    public void remove(Position position, PalletShape shape) {
+        this.shapes.remove(position);
+        this.group.getChildren().remove(shape.getShape());
+    }
+
     public PalletShape add(Position position, Pallet pallet) {
         PalletShape shape = new PalletShape(
                 position.getX(),
@@ -45,13 +50,18 @@ public class StockObserver implements Observer<Stock> {
         // add new slots/pallets
         for (Position position : stock.getAllPositions()) {
             Pallet pallet = stock.get(position);
-
             PalletShape palletShape = this.shapes.get(position);
-            if (palletShape == null) {
-                palletShape = this.add(position, pallet);
-            }
 
-            palletShape.setType(pallet.getType());
+            if (position.getZ() == this.animationDashboard.getLevel()) {
+
+                if (palletShape == null) {
+                    palletShape = this.add(position, pallet);
+                }
+
+                palletShape.setType(pallet.getType());
+            } else if (palletShape != null) {
+                this.remove(position, palletShape);
+            }
         }
 
     }

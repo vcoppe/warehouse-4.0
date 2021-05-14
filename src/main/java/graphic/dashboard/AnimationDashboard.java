@@ -13,9 +13,12 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.scene.transform.Scale;
 import javafx.util.Duration;
 import observer.ControllerObserver;
@@ -30,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AnimationDashboard {
 
+    private final Configuration configuration;
     private final Pane pane;
     private final Group group;
     private final HashMap<Integer, MyAnimation> animations;
@@ -37,64 +41,14 @@ public class AnimationDashboard {
     private PauseTransition pauseTransition;
     private double rate;
     private boolean autoplay;
+    private int level;
 
     public AnimationDashboard(Configuration configuration) {
-        this.callback = e -> {
-            if (configuration.simulation.hasNextEvent()) {
-                double currentTime = configuration.simulation.nextEvent().getTime();
-                configuration.simulation.run(currentTime);
-                double delta = configuration.simulation.nextEvent().getTime() - currentTime;
-                this.playAnimations(currentTime, delta);
-            }
-        };
-
-        Button play = new Button("Play");
-        AtomicBoolean playing = new AtomicBoolean(false);
-        play.setOnMouseClicked(e -> {
-            if (playing.get()) {
-                this.pauseAnimation();
-                playing.set(false);
-                play.setText("Play");
-            } else {
-                this.resumeAnimation();
-                if (this.isAutoplay()) {
-                    playing.set(true);
-                    play.setText("Pause");
-                }
-            }
-        });
-
-        Button decreaseRate = new Button("/2");
-        decreaseRate.setOnMouseClicked(e -> this.setRate(this.getRate() / 2));
-
-        Button increaseRate = new Button("x2");
-        increaseRate.setOnMouseClicked(e -> this.setRate(this.getRate() * 2));
-
-        CheckBox autoPlay = new CheckBox("Play automatically");
-        autoPlay.setSelected(true);
-        autoPlay.setOnMouseClicked(e -> this.setAutoplay(autoPlay.isSelected()));
-
-        this.group = new Group();
-        Pane animationPane = new Pane(this.group);
-        Pane toolbar = new HBox(play, decreaseRate, increaseRate, autoPlay);
-        this.pane = new VBox(animationPane, toolbar);
-        this.animations = new HashMap<>();
-        this.rate = 8;
-        this.autoplay = true;
-
+        this.configuration = configuration;
         int width = configuration.warehouse.getWidth();
         int height = 2 * configuration.warehouse.getDepth();
-        double ratio = (double) width / height;
 
-        double pixelWidth = Math.min(600.0, ratio * 600.0);
-        double pixelHeight = Math.min(600.0, 600.0 / ratio);
-
-        Scale scale = new Scale(
-                pixelWidth / width,
-                pixelHeight / height
-        );
-        animationPane.getTransforms().add(scale);
-        animationPane.setPrefSize(pixelWidth, pixelHeight);
+        this.group = new Group();
 
         SiteShape siteShape = new SiteShape(width, height);
         WarehouseShape warehouseShape = new WarehouseShape(0, 0, configuration.warehouse.getWidth(), configuration.warehouse.getDepth());
@@ -130,6 +84,68 @@ public class AnimationDashboard {
         this.add(truckObserver.getGroup());
         this.add(stockObserver.getGroup());
         this.add(mobileObserver.getGroup());
+
+        this.callback = e -> {
+            if (configuration.simulation.hasNextEvent()) {
+                double currentTime = configuration.simulation.nextEvent().getTime();
+                configuration.simulation.run(currentTime);
+                double delta = configuration.simulation.nextEvent().getTime() - currentTime;
+                this.playAnimations(currentTime, delta);
+            }
+        };
+
+        Button play = new Button("Play");
+        AtomicBoolean playing = new AtomicBoolean(false);
+        play.setOnMouseClicked(e -> {
+            if (playing.get()) {
+                this.pauseAnimation();
+                playing.set(false);
+                play.setText("Play");
+            } else {
+                this.resumeAnimation();
+                if (this.isAutoplay()) {
+                    playing.set(true);
+                    play.setText("Pause");
+                }
+            }
+        });
+
+        Button decreaseRate = new Button("/2");
+        decreaseRate.setOnMouseClicked(e -> this.setRate(this.getRate() / 2));
+
+        Button increaseRate = new Button("x2");
+        increaseRate.setOnMouseClicked(e -> this.setRate(this.getRate() * 2));
+
+        CheckBox autoPlay = new CheckBox("Play automatically");
+        autoPlay.setSelected(true);
+        autoPlay.setOnMouseClicked(e -> this.setAutoplay(autoPlay.isSelected()));
+
+        this.level = 0;
+        Text levelText = new Text("Level");
+        Spinner<Integer> spinner = new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 1, this.level));
+        spinner.valueProperty().addListener((o,v,v2) -> {
+            this.level = v2;
+            stockObserver.update(configuration.stock);
+        });
+
+        Pane animationPane = new Pane(this.group);
+        Pane toolbar = new HBox(play, decreaseRate, increaseRate, autoPlay, levelText, spinner);
+        this.pane = new VBox(animationPane, toolbar);
+        this.animations = new HashMap<>();
+        this.rate = 8;
+        this.autoplay = true;
+
+        double ratio = (double) width / height;
+
+        double pixelWidth = Math.min(600.0, ratio * 600.0);
+        double pixelHeight = Math.min(600.0, 600.0 / ratio);
+
+        Scale scale = new Scale(
+                pixelWidth / width,
+                pixelHeight / height
+        );
+        animationPane.getTransforms().add(scale);
+        animationPane.setPrefSize(pixelWidth, pixelHeight);
     }
 
     public void add(Node node) {
@@ -217,5 +233,9 @@ public class AnimationDashboard {
 
     public void setAutoplay(boolean autoplay) {
         this.autoplay = autoplay;
+    }
+
+    public int getLevel() {
+        return this.level * this.configuration.palletSize;
     }
 }
