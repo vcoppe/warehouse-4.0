@@ -1,14 +1,13 @@
 package graphic.dashboard;
 
 import agent.Dock;
-import agent.Mobile;
-import graphic.animation.MyAnimation;
-import graphic.shape.DockShape;
-import graphic.shape.ProductionLineShape;
-import graphic.shape.SiteShape;
-import graphic.shape.WarehouseShape;
+import graphic.animation.MobileAnimation;
+import graphic.animation.StockAnimation;
+import graphic.animation.TruckAnimation;
+import graphic.shape.*;
+import javafx.animation.Animation;
+import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -21,34 +20,37 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Scale;
 import javafx.util.Duration;
-import observer.ControllerObserver;
-import observer.MobileObserver;
-import observer.StockObserver;
-import observer.TruckObserver;
 import warehouse.Configuration;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AnimationDashboard {
 
     private final Configuration configuration;
     private final Pane pane;
     private final Group group;
-    private final HashMap<Integer, MyAnimation> animations;
-    private EventHandler callback;
-    private PauseTransition pauseTransition;
+    private final LinkedList<Animation> animations;
     private double rate;
     private boolean autoplay;
-    private int level;
+    private Animation animation;
+
+    private final StockAnimation stockAnimation;
+    private final TruckAnimation truckAnimation;
+    private final MobileAnimation mobileAnimation;
 
     public AnimationDashboard(Configuration configuration) {
         this.configuration = configuration;
+        this.rate = 8;
+        this.autoplay = true;
+        this.group = new Group();
+        this.animations = new LinkedList<>();
+        this.animation = null;
+
         int width = configuration.warehouse.getWidth();
         int height = 2 * configuration.warehouse.getDepth();
-
-        this.group = new Group();
 
         SiteShape siteShape = new SiteShape(width, height);
         WarehouseShape warehouseShape = new WarehouseShape(0, 0, configuration.warehouse.getWidth(), configuration.warehouse.getDepth());
@@ -58,9 +60,9 @@ public class AnimationDashboard {
                 configuration.productionLine.getWidth(),
                 configuration.productionLine.getDepth());
 
-        this.add(siteShape.getShape());
-        this.add(warehouseShape.getShape());
-        this.add(productionLineShape.getShape());
+        this.add(siteShape);
+        this.add(warehouseShape);
+        this.add(productionLineShape);
 
         for (Dock dock : configuration.docks) {
             DockShape dockShape = new DockShape(
@@ -68,45 +70,30 @@ public class AnimationDashboard {
                     dock.getPosition().getY(),
                     configuration.dockWidth
             );
-            this.add(dockShape.getShape());
+            this.add(dockShape);
         }
 
-        MobileObserver mobileObserver = new MobileObserver(configuration, this);
+        this.stockAnimation = new StockAnimation(this.configuration);
+        this.truckAnimation = new TruckAnimation(this.configuration);
+        this.mobileAnimation = new MobileAnimation(this.configuration);
 
-        StockObserver stockObserver = new StockObserver(configuration, this);
-        configuration.stock.attach(stockObserver);
-        stockObserver.update(configuration.stock);
+        this.stockAnimation.update(this.configuration.stock);
 
-        TruckObserver truckObserver = new TruckObserver(configuration, this);
-        ControllerObserver controllerObserver = new ControllerObserver(truckObserver);
-        configuration.controller.attach(controllerObserver);
-
-        this.add(truckObserver.getGroup());
-        this.add(stockObserver.getGroup());
-        this.add(mobileObserver.getGroup());
-
-        this.callback = e -> {
-            if (configuration.simulation.hasNextEvent()) {
-                double currentTime = configuration.simulation.nextEvent().getTime();
-                configuration.simulation.run(currentTime);
-                double delta = configuration.simulation.nextEvent().getTime() - currentTime;
-                this.playAnimations(currentTime, delta);
-            }
-        };
+        this.add(this.stockAnimation.getGroup());
+        this.add(this.truckAnimation.getGroup());
+        this.add(this.mobileAnimation.getGroup());
 
         Button play = new Button("Play");
         AtomicBoolean playing = new AtomicBoolean(false);
         play.setOnMouseClicked(e -> {
             if (playing.get()) {
-                this.pauseAnimation();
+                this.pause();
                 playing.set(false);
                 play.setText("Play");
             } else {
-                this.resumeAnimation();
-                if (this.isAutoplay()) {
-                    playing.set(true);
-                    play.setText("Pause");
-                }
+                this.play();
+                playing.set(true);
+                play.setText("Pause");
             }
         });
 
@@ -120,20 +107,16 @@ public class AnimationDashboard {
         autoPlay.setSelected(true);
         autoPlay.setOnMouseClicked(e -> this.setAutoplay(autoPlay.isSelected()));
 
-        this.level = 0;
         Text levelText = new Text("Level");
-        Spinner<Integer> spinner = new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 1, this.level));
+        Spinner<Integer> spinner = new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 1, 0));
         spinner.valueProperty().addListener((o,v,v2) -> {
-            this.level = v2;
-            stockObserver.update(configuration.stock);
+            this.stockAnimation.setLevel(v2);
         });
 
         Pane animationPane = new Pane(this.group);
         Pane toolbar = new HBox(play, decreaseRate, increaseRate, autoPlay, levelText, spinner);
+
         this.pane = new VBox(animationPane, toolbar);
-        this.animations = new HashMap<>();
-        this.rate = 8;
-        this.autoplay = true;
 
         double ratio = (double) width / height;
 
@@ -148,6 +131,18 @@ public class AnimationDashboard {
         animationPane.setPrefSize(pixelWidth, pixelHeight);
     }
 
+    public Pane getPane() {
+        return this.pane;
+    }
+
+    public void add(MyShape shape) {
+        this.add(shape.getShape());
+    }
+
+    public void remove(MyShape shape) {
+        this.remove(shape.getShape());
+    }
+
     public void add(Node node) {
         this.group.getChildren().add(node);
     }
@@ -156,60 +151,41 @@ public class AnimationDashboard {
         this.group.getChildren().remove(node);
     }
 
-    public void add(MyAnimation animation) {
-        this.animations.put(animation.getShape().getId(), animation);
-    }
+    private void play() {
+        if (this.animation == null) {
+            if (this.configuration.simulation.hasNextEvent()) {
+                double currentTime = this.configuration.simulation.nextEvent().getTime();
+                this.configuration.simulation.run(currentTime);
+                double delta = this.configuration.simulation.nextEvent().getTime() - currentTime;
+                this.createAnimations(currentTime, delta);
 
-    public Pane getPane() {
-        return this.pane;
-    }
-
-    private void playAnimations(double start) {
-        for (MyAnimation animation : this.animations.values()) {
-            animation.getAnimation().setRate(this.rate);
-            animation.play(start);
-        }
-    }
-
-    private void pauseAnimations() {
-        for (MyAnimation animation : this.animations.values()) {
-            animation.pause();
-        }
-    }
-
-    public void playAnimations(double start, double delta) {
-        if (this.pauseTransition != null) {
-            this.resumeAnimation();
-        } else {
-            this.pauseTransition = new PauseTransition(Duration.seconds(delta));
-            this.pauseTransition.setRate(this.rate);
-            this.pauseTransition.setOnFinished((event) -> {
-                this.pauseAnimations();
-                this.pauseTransition = null;
-                if (this.autoplay) {
-                    this.callback.handle(event);
+                if (this.animations.isEmpty()) {
+                    this.animation = new PauseTransition(Duration.seconds(delta));
+                } else {
+                    ParallelTransition transition = new ParallelTransition();
+                    transition.getChildren().addAll(this.animations);
+                    this.animation = transition;
                 }
-            });
-            this.pauseTransition.play();
-            this.playAnimations(start);
-        }
-    }
 
-    public void pauseAnimation() {
-        this.pauseAnimations();
-        if (this.pauseTransition != null) {
-            this.pauseTransition.pause();
-        }
-    }
+                this.animation.setRate(this.rate);
+                this.animation.play();
 
-    public void resumeAnimation() {
-        if (this.pauseTransition != null) {
-            for (MyAnimation animation : this.animations.values()) {
-                animation.play();
+                this.animation.setOnFinished((event) -> {
+                    this.animation = null;
+                    this.animations.clear();
+                    if (this.autoplay) {
+                        this.play();
+                    }
+                });
             }
-            this.pauseTransition.play();
         } else {
-            this.callback.handle(null);
+            this.animation.play();
+        }
+    }
+
+    private void pause() {
+        if (this.animation != null) {
+            this.animation.pause();
         }
     }
 
@@ -219,11 +195,8 @@ public class AnimationDashboard {
 
     public void setRate(double rate) {
         this.rate = rate;
-        if (this.pauseTransition != null) {
-            this.pauseTransition.setRate(rate);
-        }
-        for (MyAnimation animation : this.animations.values()) {
-            animation.getAnimation().setRate(rate);
+        if (this.animation != null) {
+            this.animation.setRate(this.rate);
         }
     }
 
@@ -235,7 +208,10 @@ public class AnimationDashboard {
         this.autoplay = autoplay;
     }
 
-    public int getLevel() {
-        return this.level * this.configuration.palletSize;
+    private void createAnimations(double time, double delta) {
+        this.stockAnimation.update(this.configuration.stock);
+        this.animations.addAll(this.mobileAnimation.getAnimations(time, delta));
+        this.animations.addAll(this.truckAnimation.getAnimations(time, delta));
     }
+
 }

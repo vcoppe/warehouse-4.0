@@ -1,8 +1,7 @@
-package observer;
+package graphic.animation;
 
 import agent.Stock;
 import graphic.shape.PalletShape;
-import graphic.dashboard.AnimationDashboard;
 import javafx.scene.Group;
 import warehouse.Configuration;
 import warehouse.Pallet;
@@ -10,18 +9,18 @@ import warehouse.Position;
 
 import java.util.HashMap;
 
-public class StockObserver implements Observer<Stock> {
+public class StockAnimation {
 
     private final Configuration configuration;
-    private final AnimationDashboard animationDashboard;
     private final HashMap<Position, PalletShape> shapes;
     private final Group group;
+    private int level;
 
-    public StockObserver(Configuration configuration, AnimationDashboard animationDashboard) {
+    public StockAnimation(Configuration configuration) {
         this.configuration = configuration;
-        this.animationDashboard = animationDashboard;
         this.shapes = new HashMap<>();
         this.group = new Group();
+        this.level = 0;
     }
 
     public void remove(Position position, PalletShape shape) {
@@ -45,14 +44,18 @@ public class StockObserver implements Observer<Stock> {
         return this.group;
     }
 
-    @Override
+    public void setLevel(int level) {
+        this.level = level;
+        this.update(this.configuration.stock);
+    }
+
     public void update(Stock stock) {
         // add new slots/pallets
         for (Position position : stock.getAllPositions()) {
             Pallet pallet = stock.get(position);
             PalletShape palletShape = this.shapes.get(position);
 
-            if (position.getZ() == this.animationDashboard.getLevel()) {
+            if (position.getZ() == this.level * this.configuration.palletSize) {
 
                 if (palletShape == null) {
                     palletShape = this.add(position, pallet);

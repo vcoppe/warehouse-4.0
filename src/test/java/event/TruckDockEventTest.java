@@ -42,7 +42,7 @@ public class TruckDockEventTest extends TestCase {
         this.truck = new Truck(new Position(0, this.configuration.warehouse.getDepth() + 10), toLoad, toUnload);
         this.event = new TruckDockEvent(this.configuration.simulation, 1, this.configuration.controller, this.dock, this.truck);
 
-        this.truck.go(this.dock);
+        this.truck.go(1, this.dock);
     }
 
     public void testSetPosition() {

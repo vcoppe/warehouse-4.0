@@ -35,14 +35,6 @@ public class PathFinderEvent extends Event {
         }
     }
 
-    public static double getLastEventTime() {
-        if (instance == null) {
-            return 0;
-        } else {
-            return instance.lastEventTime;
-        }
-    }
-
     public static PathFinderEvent getInstance() {
         return instance;
     }
@@ -58,10 +50,13 @@ public class PathFinderEvent extends Event {
         this.lastEventTime = this.time;
 
         if (this.controller.getAvailableMobiles().size() == this.controller.getAllMobiles().size()) {
+            for (Mobile mobile : this.controller.getAllMobiles()) {
+                mobile.setPath(this.time, null);
+            }
             return;
         }
 
-        this.pathFinder.computePaths(this.controller.getAllMobiles(), this.warehouse.getGraph());
+        this.pathFinder.computePaths(this.time, this.controller.getAllMobiles(), this.warehouse.getGraph());
 
         // update paths at the end of the window
         PathUpdateEvent.enqueue(this.simulation, this.time + this.pathFinder.getWindow(), this.controller);

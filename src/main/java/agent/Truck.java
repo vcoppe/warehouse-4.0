@@ -15,7 +15,7 @@ public class Truck extends Observable {
     private Dock dock;
     private Position position, targetPosition;
     private final ArrayList<Pair<Position, Pallet>> toLoad, toUnload, currentLoad;
-    private double arrivalTime, departureTime;
+    private double arrivalTime, calledTime, departureTime;
 
     public Truck(Dock dock, Position position, ArrayList<Pair<Position, Pallet>> toLoad, ArrayList<Pair<Position, Pallet>> toUnload) {
         super();
@@ -27,6 +27,7 @@ public class Truck extends Observable {
         this.toUnload = toUnload;
         this.currentLoad = new ArrayList<>(toUnload);
         this.arrivalTime = -1;
+        this.calledTime = -1;
         this.departureTime = -1;
     }
 
@@ -58,7 +59,8 @@ public class Truck extends Observable {
         this.arrivalTime = time;
     }
 
-    public void go(Dock dock) {
+    public void go(double time, Dock dock) {
+        this.calledTime = time;
         this.dock = dock;
         this.targetPosition = dock.getPosition();
         this.changed();
@@ -123,6 +125,10 @@ public class Truck extends Observable {
 
     public double getArrivalTime() {
         return this.arrivalTime;
+    }
+
+    public double getCalledTime() {
+        return this.calledTime;
     }
 
     public double getDepartureTime() {

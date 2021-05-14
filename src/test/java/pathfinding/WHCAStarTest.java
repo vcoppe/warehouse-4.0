@@ -39,7 +39,7 @@ public class WHCAStarTest extends TestCase {
         ArrayList<Mobile> mobiles = new ArrayList<>();
         mobiles.add(this.mobile);
 
-        pathFinder.computePaths(mobiles, graph);
+        pathFinder.computePaths(0, mobiles, graph);
 
         ArrayList<Pair<Position,Double>> path = this.mobile.getPath();
 

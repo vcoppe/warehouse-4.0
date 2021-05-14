@@ -29,7 +29,7 @@ public class PathUpdateEventTest extends TestCase {
         this.controller = this.configuration.controller;
         this.mobile = this.configuration.mobiles.get(0);
 
-        PathUpdateEvent.enqueue(this.configuration.simulation, 0, this.configuration.controller);
+        PathUpdateEvent.enqueue(this.configuration.simulation, 10, this.configuration.controller);
     }
 
     public void testTriggerPathFinderEvent() {
@@ -46,8 +46,7 @@ public class PathUpdateEventTest extends TestCase {
         ArrayList<Pair<Position,Double>> path = new ArrayList<>();
         path.add(new Pair<>(this.mobile.getCurrentPosition(), 0.0));
         path.add(new Pair<>(this.mobile.getTargetPosition(), 10.0));
-        this.mobile.setPath(path);
-        this.mobile.forward(10.0);
+        this.mobile.setPath(0, path);
 
         assertEquals(1, this.configuration.simulation.queueSize());
         this.simulation.nextEvent().run();
@@ -63,7 +62,7 @@ public class PathUpdateEventTest extends TestCase {
         ArrayList<Pair<Position,Double>> path = new ArrayList<>();
         path.add(new Pair<>(this.mobile.getCurrentPosition(), 0.0));
         path.add(new Pair<>(this.mobile.getTargetPosition(), 10.0));
-        this.mobile.setPath(path);
+        this.mobile.setPath(0, path);
         this.mobile.forward(10.0);
 
         assertEquals(1, this.configuration.simulation.queueSize());

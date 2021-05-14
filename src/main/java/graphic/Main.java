@@ -1,23 +1,18 @@
 package graphic;
 
-import event.ProductionInitEvent;
 import event.TruckGeneratorEvent;
-import graphic.dashboard.AnimationDashboard;
 import graphic.dashboard.KPIDashboard;
+import graphic.dashboard.AnimationDashboard;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import simulation.Event;
-import simulation.Simulation;
-import util.Pair;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
-import warehouse.Production;
 
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +52,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-        AnimationDashboard animationDashboard = new AnimationDashboard(this.configuration);
+        AnimationDashboard animation = new AnimationDashboard(this.configuration);
         KPIDashboard kpiDashboard = new KPIDashboard(this.configuration);
 
         BorderPane pane = new BorderPane();
@@ -65,12 +60,11 @@ public class Main extends Application {
         pane.setBottom(new Group());
         pane.setLeft(new Group());
         pane.setRight(kpiDashboard.getPane());
-        pane.setCenter(animationDashboard.getPane());
+        pane.setCenter(animation.getPane());
 
         Scene scene = new Scene(pane);
         stage.setScene(scene);
         stage.show();
 
     }
-
 }

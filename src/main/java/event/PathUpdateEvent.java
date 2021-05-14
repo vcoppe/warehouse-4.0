@@ -37,7 +37,7 @@ public class PathUpdateEvent extends Event {
         // check if some mobiles are done
         for (Mobile mobile : this.controller.getAllMobiles()) {
             if (!mobile.isAvailable()) {
-                mobile.forward(this.time - PathFinderEvent.getLastEventTime());
+                mobile.forward(this.time);
                 if (mobile.atPickUp()) {
                     Event event = new MobileMissionPickUpEvent(this.simulation, this.time, this.controller, mobile);
                     this.simulation.enqueueEvent(event);

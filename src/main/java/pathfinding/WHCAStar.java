@@ -37,7 +37,7 @@ public class WHCAStar {
      * computes non-colliding paths for the given mobiles
      * with their respective position and target position, and speed
      */
-    public void computePaths(ArrayList<Mobile> mobiles, Graph graph) {
+    public void computePaths(double time, ArrayList<Mobile> mobiles, Graph graph) {
         boolean solution = false;
 
         while (!solution) {
@@ -48,7 +48,7 @@ public class WHCAStar {
             this.table.clear();
 
             for (Mobile mobile : mobiles) { // reserve current position
-                Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getCurrentPositions();
+                Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getPositionsAt(time);
                 if (pair.first.first.equals(pair.second.first)) {
                     this.table.reserve(pair.first.first, pair.first.second, pair.second.second, mobile.getId());
                 } else {
@@ -57,10 +57,10 @@ public class WHCAStar {
                 }
             }
 
-            ArrayList<Mobile> orderedMobiles = this.orderMobiles(mobiles);
+            ArrayList<Mobile> orderedMobiles = this.orderMobiles(time, mobiles);
 
             for (Mobile mobile : orderedMobiles) {
-                if (!this.computePath(mobile)) {
+                if (!this.computePath(time, mobile)) {
                     System.out.println("No path was found");
                     solution = false;
                     break;
@@ -70,12 +70,12 @@ public class WHCAStar {
 
     }
 
-    private ArrayList<Mobile> orderMobiles(ArrayList<Mobile> mobiles) {
+    private ArrayList<Mobile> orderMobiles(double time, ArrayList<Mobile> mobiles) {
         ArrayList<Mobile> staticMobiles = new ArrayList<>();
         ArrayList<Mobile> otherMobiles = new ArrayList<>();
 
         for (Mobile mobile : mobiles) {
-            if (mobile.getCurrentPosition().equals(mobile.getTargetPosition())) {
+            if (mobile.getPositionAt(time).equals(mobile.getTargetPosition())) {
                 staticMobiles.add(mobile);
             } else {
                 otherMobiles.add(mobile);
@@ -93,7 +93,7 @@ public class WHCAStar {
      * computes the shortest path from the current position to the target position
      * while avoiding other mobiles for which the path has already been computed
      */
-    private boolean computePath(Mobile mobile) {
+    private boolean computePath(double time, Mobile mobile) {
         this.initReverseResumableAStar(mobile);
 
         Position startPosition = mobile.getPosition();
@@ -105,13 +105,11 @@ public class WHCAStar {
 
         PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
 
-        Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getCurrentPositions();
-        this.table.reserve(pair.first.first, pair.first.second, mobile.getId());
-        this.table.reserve(pair.second.first, pair.second.second, mobile.getId());
+        Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getPositionsAt(time);
 
         dist.put(pair.second.first, pair.second.second);
         prev.put(pair.second.first, pair.first.first);
-        h.put(pair.second.first, DoublePrecisionConstraint.round(this.reverseResumableAStar(mobile, pair.second.first, startPosition) * mobile.getSpeed()));
+        h.put(pair.second.first, DoublePrecisionConstraint.round(pair.second.second + this.reverseResumableAStar(mobile, pair.second.first, startPosition) * mobile.getSpeed()));
         pq.add(new Edge(pair.second.first, h.get(pair.second.first)));
 
         while (!pq.isEmpty()) {
@@ -125,7 +123,7 @@ public class WHCAStar {
             }
 
             if (u.equals(endPosition)) {
-                this.setPath(mobile, dist, prev);
+                this.setPath(time, mobile, dist, prev);
                 return true;
             }
 
@@ -135,7 +133,7 @@ public class WHCAStar {
 
                 double otherDist = DoublePrecisionConstraint.round(dist.get(u) + w * mobile.getSpeed());
 
-                if (otherDist < W) { // check for collisions only within the time window
+                if (otherDist < time + W) { // check for collisions only within the time window
                     if (!this.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
                         otherDist = this.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
                         if (!this.table.isAvailable(u, dist.get(u), DoublePrecisionConstraint.round(otherDist - w * mobile.getSpeed()), mobile.getId())) {
@@ -157,8 +155,8 @@ public class WHCAStar {
         return false; // no path was found
     }
 
-    private void setPath(Mobile mobile, HashMap<Position, Double> dist, HashMap<Position, Position> prev) {
-        Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getCurrentPositions();
+    private void setPath(double time, Mobile mobile, HashMap<Position, Double> dist, HashMap<Position, Position> prev) {
+        Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getPositionsAt(time);
         Position startPosition = pair.second.first;
         Position endPosition = mobile.getTargetPosition();
 
@@ -192,12 +190,12 @@ public class WHCAStar {
                     this.table.reserve(u, timeU, mobile.getId());
                 }
             } else {
-                if (timeU > 0) this.window = Math.min(this.window, timeU); // shrink window to the earliest finished mission
+                if (timeU - time > 0) this.window = Math.min(this.window, timeU - time); // shrink window to the earliest finished mission
                 this.table.reserve(u, timeU, timeU + W, mobile.getId());
             }
         }
 
-        mobile.setPath(path);
+        mobile.setPath(time, path);
     }
 
     private void initReverseResumableAStar(Mobile mobile) {

@@ -27,7 +27,7 @@ public class TruckCallEvent extends Event {
                         this.truck.getId(),
                         this.dock.getId()));
 
-        this.truck.go(this.dock);
+        this.truck.go(this.time, this.dock);
 
         double endTime = this.time + this.truck.getPosition().manhattanDistance2D(this.dock.getPosition()) / Truck.getSpeed();
 
