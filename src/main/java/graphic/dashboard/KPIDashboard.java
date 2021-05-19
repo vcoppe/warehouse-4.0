@@ -11,6 +11,7 @@ import observer.Observer;
 import warehouse.Configuration;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 public class KPIDashboard implements Observer<Controller> {
@@ -19,11 +20,13 @@ public class KPIDashboard implements Observer<Controller> {
     private int countTrucks;
     private final Series<Number,Number> series;
     private final HashMap<Integer,Truck> trucks;
+    private final TruckObserver truckObserver;
 
     public KPIDashboard(Configuration configuration) {
         this.pane = new VBox();
         this.countTrucks = 0;
         this.trucks = new HashMap<>();
+        this.truckObserver = new TruckObserver(this);
         this.series = new Series<>();
 
         NumberAxis xAxis = new NumberAxis();
@@ -37,6 +40,7 @@ public class KPIDashboard implements Observer<Controller> {
         lineChart.getData().add(this.series);
 
         this.pane.getChildren().add(lineChart);
+        configuration.controller.attach(this);
     }
 
     public Pane getPane() {
@@ -48,25 +52,38 @@ public class KPIDashboard implements Observer<Controller> {
         this.series.getData().add(new Data<>(departureTime, waitingTime));
     }
 
+    private void add(Truck truck) {
+        this.trucks.put(truck.getId(), truck);
+        truck.attach(this.truckObserver);
+    }
+
+    private void remove(Truck truck) {
+        this.trucks.remove(truck.getId());
+    }
+
     @Override
     public void update(Controller controller) {
         for (Truck truck : controller.getTrucks()) {
             if (!this.trucks.containsKey(truck.getId())) {
-                this.trucks.put(truck.getId(), truck);
+                this.add(truck);
             }
         }
+    }
 
+    class TruckObserver implements Observer<Truck> {
 
-        LinkedList<Truck> doneTrucks = new LinkedList<>();
-        for (Truck truck : this.trucks.values()) {
+        private final KPIDashboard kpiDashboard;
+
+        public TruckObserver(KPIDashboard kpiDashboard) {
+            this.kpiDashboard = kpiDashboard;
+        }
+
+        @Override
+        public void update(Truck truck) {
             if (truck.left()) {
-                doneTrucks.add(truck);
-                this.addDataPoint(truck.getDepartureTime(), truck.getWaitingTime());
+                this.kpiDashboard.addDataPoint(truck.getDepartureTime(), truck.getWaitingTime());
+                this.kpiDashboard.remove(truck);
             }
-        }
-
-        for (Truck truck : doneTrucks) {
-            this.trucks.remove(truck.getId());
         }
     }
 }
