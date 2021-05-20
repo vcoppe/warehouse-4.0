@@ -2,7 +2,6 @@ package warehouse;
 
 import agent.*;
 import brain.*;
-import pathfinding.WHCAStar;
 import simulation.Simulation;
 
 import java.util.ArrayList;
@@ -43,11 +42,11 @@ public class Configuration {
             this.mobiles.add(new Mobile(new Position(dockWidth * i, depth - palletSize)));
 
 
-        this.mobileMissionSelector = new ClosestUrgentMissionSelector(this.warehouse);
+        this.mobileMissionSelector = new MobileMissionMatchingSelector(this.warehouse);
         this.palletPositionSelector = new ClosestPositionSelector(this.warehouse);
         this.truckDockSelector = new NaiveSelector();
 
-        this.controller = new Controller(this.warehouse, this.stock, this.productionLine, new WHCAStar(), this.docks, this.mobiles, this.mobileMissionSelector, this.truckDockSelector, this.palletPositionSelector);
+        this.controller = new Controller(this, this.mobileMissionSelector, this.truckDockSelector, this.palletPositionSelector);
     }
 
     public Configuration(int width, int height, int nDocks, int nMobiles) {

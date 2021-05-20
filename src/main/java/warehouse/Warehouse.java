@@ -1,7 +1,7 @@
 package warehouse;
 
 import agent.Mobile;
-import pathfinding.Graph;
+import graph.Graph;
 
 public class Warehouse {
 

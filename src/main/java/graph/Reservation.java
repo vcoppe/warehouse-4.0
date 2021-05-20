@@ -1,4 +1,4 @@
-package pathfinding;
+package graph;
 
 public class Reservation implements Comparable<Reservation> {
 

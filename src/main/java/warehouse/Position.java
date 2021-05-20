@@ -32,6 +32,10 @@ public class Position implements Comparable<Position> {
         return new Position(this.x + position.x, this.y + position.y, this.z + position.z);
     }
 
+    public Position subtract(Position position) {
+        return new Position(this.x - position.x, this.y - position.y, this.z - position.z);
+    }
+
     public double manhattanDistance2D(Position other) {
         return Math.abs(this.x - other.x) + Math.abs(this.y - other.y);
     }
@@ -65,4 +69,14 @@ public class Position implements Comparable<Position> {
         }
         return Integer.compare(this.x, other.x);
     }
+
+    @Override
+    public String toString() {
+        return "Position{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                '}';
+    }
+
 }

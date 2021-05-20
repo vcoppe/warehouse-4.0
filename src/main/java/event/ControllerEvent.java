@@ -5,7 +5,6 @@ import simulation.Event;
 import simulation.Simulation;
 import util.Pair;
 import warehouse.Mission;
-import warehouse.Position;
 import warehouse.Production;
 
 import java.util.ArrayList;
@@ -27,15 +26,20 @@ public class ControllerEvent extends Event {
                 String.format("Simulation time %f: ControllerEvent\n\t%d available mobiles\n\t%d waiting missions\n\t%d available docks\n\t%d waiting trucks\n\t%d waiting productions",
                         this.time,
                         this.controller.getAvailableMobiles().size(),
-                        this.controller.getMissions().size(),
+                        this.controller.getAllMissions().size(),
                         this.controller.getDocks().size(),
                         this.controller.getTrucks().size(),
                         this.productionLine.getProductions().size()));
 
+        for (Mobile mobile : this.controller.getAvailableMobiles()) {
+            mobile.interrupt(this.time);
+        }
+
         // match available mobiles with waiting missions
         ArrayList<Pair<Mobile,Mission>> mobileMissionPairs = this.controller.mobileMissionSelector.matchMobileMission(
+                this.time,
                 this.controller.getAvailableMobiles(),
-                this.controller.getMissions()
+                this.controller.getStartableMissions()
         );
 
         for (Pair<Mobile,Mission> pair : mobileMissionPairs) {
@@ -44,9 +48,6 @@ public class ControllerEvent extends Event {
 
             Event event = new MobileMissionStartEvent(this.simulation, this.time, this.controller, mobile, mission);
             this.simulation.enqueueEvent(event);
-
-            this.controller.remove(mobile);
-            this.controller.remove(mission);
         }
 
         // match available docks with waiting trucks

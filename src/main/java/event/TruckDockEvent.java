@@ -10,8 +10,13 @@ import util.Pair;
 import warehouse.Mission;
 import warehouse.Pallet;
 import warehouse.Position;
+import warehouse.Warehouse;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TruckDockEvent extends Event {
 
@@ -38,11 +43,16 @@ public class TruckDockEvent extends Event {
 
         this.truck.dock();
 
+        Position delta = new Position(0, this.controller.getConfiguration().palletSize);
+
+        HashMap<Position,Pallet> toUnload = this.truck.getToUnload();
+        HashMap<Position,Mission> unloadMissions = new HashMap<>();
+        ArrayList<Position> unloadPositions = new ArrayList<>(toUnload.keySet());
+        unloadPositions.sort(Comparator.comparingInt(Position::getY));
+
         // scan pallets to load and unload
-        // TODO add precedence constraint
-        for (Pair<Position, Pallet> pair : this.truck.getToUnload()) {
-            Position palletPosition = pair.first;
-            Pallet pallet = pair.second;
+        for (Position palletPosition : unloadPositions) {
+            Pallet pallet = toUnload.get(palletPosition);
 
             Position startPosition = this.truck.getPosition().add(palletPosition);
             Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock);
@@ -55,11 +65,23 @@ public class TruckDockEvent extends Event {
             Mission mission = new Mission(this.time, pallet, this.truck, null, startPosition, endPosition);
             this.controller.add(mission);
             this.stock.lock(endPosition);
+
+            Position previousPosition = palletPosition.subtract(delta);
+            if (unloadMissions.containsKey(previousPosition)) {
+                Mission previousMission = unloadMissions.get(previousPosition);
+                //mission.startAfterEnd(previousMission);
+            }
+
+            unloadMissions.put(palletPosition, mission);
         }
 
-        for (Pair<Position, Pallet> pair : this.truck.getToLoad()) {
-            Position palletPosition = pair.first;
-            Pallet pallet = pair.second;
+        HashMap<Position,Pallet> toLoad = this.truck.getToLoad();
+        HashMap<Position,Mission> loadMissions = new HashMap<>();
+        ArrayList<Position> loadPositions = new ArrayList<>(toLoad.keySet());
+        loadPositions.sort((p1,p2) -> p2.getY() - p1.getY());
+
+        for (Position palletPosition : loadPositions) {
+            Pallet pallet = toLoad.get(palletPosition);
 
             Position endPosition = this.truck.getPosition().add(palletPosition);
             Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
@@ -72,6 +94,18 @@ public class TruckDockEvent extends Event {
             Mission mission = new Mission(this.time, pallet, null, this.truck, startPosition, endPosition);
             this.controller.add(mission);
             this.stock.lock(startPosition);
+
+            for (Mission unloadMission : unloadMissions.values()) {
+               // mission.startAfterStart(unloadMission);
+            }
+
+            Position previousPosition = palletPosition.add(delta);
+            if (loadMissions.containsKey(previousPosition)) {
+                Mission previousMission = loadMissions.get(previousPosition);
+                //mission.startAfterStart(previousMission);
+            }
+
+            loadMissions.put(palletPosition, mission);
         }
 
         Event event = new ControllerEvent(this.simulation, this.time, this.controller);

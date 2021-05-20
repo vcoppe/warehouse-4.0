@@ -26,7 +26,7 @@ public class Mobile extends Observable {
         this.position = position;
         this.targetPosition = position;
         this.mission = null;
-        this.speed = DoublePrecisionConstraint.round(0.05 + 0.01 * random.nextInt(10));
+        this.speed = DoublePrecisionConstraint.round(0.05 + 0.01 * random.nextInt(3));
     }
 
     public int getId() {
@@ -101,7 +101,11 @@ public class Mobile extends Observable {
             }
         }
 
-        return null;
+        Pair<Position,Double> last = this.path.get(this.path.size()-1);
+        return new Pair<>(
+                new Pair<>(last.first, time-1.0),
+                new Pair<>(last.first, time)
+        );
     }
 
     public Mission getMission() {
@@ -110,10 +114,19 @@ public class Mobile extends Observable {
 
     public void forward(double time) {
         this.pathTime = time;
+        if (this.mission == null && this.path.size() > 1) {
+            Pair<Position,Double> last = this.path.get(this.path.size()-1);
+            if (time >= last.second) {
+                this.position = last.first;
+                this.targetPosition = last.first;
+                this.path = null;
+            }
+        }
     }
 
     public void start(Mission mission) {
         this.mission = mission;
+        this.mission.start();
         this.targetPosition = mission.getStartPosition();
     }
 
@@ -128,6 +141,7 @@ public class Mobile extends Observable {
     }
 
     public void pickUp() {
+        this.mission.pickUp();
         this.position = this.mission.getStartPosition();
         this.targetPosition = this.mission.getEndPosition();
     }
@@ -143,10 +157,22 @@ public class Mobile extends Observable {
     }
 
     public void drop() {
+        this.mission.drop();
         this.position = this.mission.getEndPosition();
         this.mission = null;
         this.path = null;
         this.changed();
+    }
+
+    public void interrupt(double time) {
+        this.mission = null;
+        this.pathTime = time;
+        Pair<Pair<Position,Double>,Pair<Position,Double>> pair = this.getPositionsAt(time);
+        this.path = new ArrayList<>();
+        this.path.add(pair.first);
+        this.path.add(pair.second);
+        this.position = pair.first.first;
+        this.targetPosition = pair.second.first;
     }
 
     public void setPath(double time, ArrayList<Pair<Position,Double>> path) {

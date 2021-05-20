@@ -20,6 +20,7 @@ import warehouse.Position;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class TruckAnimation implements Observer<Controller> {
 
@@ -53,9 +54,9 @@ public class TruckAnimation implements Observer<Controller> {
         this.shapes.put(truck.getId(), shape);
         this.palletShapes.put(truck.getId(), new HashMap<>());
 
-        for (Pair<Position, Pallet> pair : truck.getCurrentLoad()) {
-            Position position = pair.first;
-            Pallet pallet = pair.second;
+        for (Map.Entry<Position, Pallet> entry : truck.getCurrentLoad().entrySet()) {
+            Position position = entry.getKey();
+            Pallet pallet = entry.getValue();
             this.add(truck, position, pallet);
         }
 
@@ -179,9 +180,9 @@ public class TruckAnimation implements Observer<Controller> {
                 palletShape.setEmptyTruck();
             }
 
-            for (Pair<Position, Pallet> pair : truck.getCurrentLoad()) {
-                Position position = pair.first;
-                Pallet pallet = pair.second;
+            for (Map.Entry<Position, Pallet> entry : truck.getCurrentLoad().entrySet()) {
+                Position position = entry.getKey();
+                Pallet pallet = entry.getValue();
 
                 PalletShape palletShape = this.palletShapes.get(truck.getId()).get(position);
                 if (palletShape != null) {

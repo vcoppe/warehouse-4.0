@@ -6,6 +6,8 @@ import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class Truck extends Observable {
 
@@ -14,25 +16,20 @@ public class Truck extends Observable {
     private static final double speed = 50;
     private Dock dock;
     private Position position, targetPosition;
-    private final ArrayList<Pair<Position, Pallet>> toLoad, toUnload, currentLoad;
+    private final HashMap<Position, Pallet> toLoad, toUnload, currentLoad;
     private double arrivalTime, calledTime, departureTime;
 
-    public Truck(Dock dock, Position position, ArrayList<Pair<Position, Pallet>> toLoad, ArrayList<Pair<Position, Pallet>> toUnload) {
+    public Truck(Position position, HashMap<Position, Pallet> toLoad, HashMap<Position, Pallet> toUnload) {
         super();
         this.id = TRUCK_ID++;
-        this.dock = dock;
         this.position = position;
         this.targetPosition = position;
         this.toLoad = toLoad;
         this.toUnload = toUnload;
-        this.currentLoad = new ArrayList<>(toUnload);
+        this.currentLoad = new HashMap<>(toUnload);
         this.arrivalTime = -1;
         this.calledTime = -1;
         this.departureTime = -1;
-    }
-
-    public Truck(Position position, ArrayList<Pair<Position, Pallet>> toLoad, ArrayList<Pair<Position, Pallet>> toUnload) {
-        this(null, position, toLoad, toUnload);
     }
 
     public int getId() {
@@ -43,15 +40,15 @@ public class Truck extends Observable {
         return speed;
     }
 
-    public ArrayList<Pair<Position, Pallet>> getToLoad() {
+    public HashMap<Position, Pallet> getToLoad() {
         return this.toLoad;
     }
 
-    public ArrayList<Pair<Position, Pallet>> getToUnload() {
-        return this.toUnload;
+    public HashMap<Position, Pallet> getToUnload() {
+         return this.toUnload;
     }
 
-    public ArrayList<Pair<Position, Pallet>> getCurrentLoad() {
+    public HashMap<Position, Pallet> getCurrentLoad() {
         return this.currentLoad;
     }
 
@@ -91,28 +88,25 @@ public class Truck extends Observable {
     }
 
     public void add(Position position, Pallet pallet) {
-        for (int i = 0; i < this.toLoad.size(); i++) {
-            Pair<Position, Pallet> pair = this.toLoad.get(i);
-            if (position.equals(pair.first.add(this.position)) && pallet.getType() == pair.second.getType()) {
-                this.toLoad.remove(i);
-                this.currentLoad.add(pair);
-                break;
-            }
+        Position positionInTruck = position.subtract(this.position);
+        Pallet palletInTruck = this.toLoad.get(positionInTruck);
+        if (pallet.getType() == palletInTruck.getType()) {
+            this.toLoad.remove(positionInTruck);
+            this.currentLoad.put(positionInTruck, pallet);
+            this.changed();
         }
-
-        this.changed();
     }
 
     public void remove(Position position, Pallet pallet) {
-        for (int i = 0; i < this.toUnload.size(); i++) {
-            Pair<Position, Pallet> pair = this.toUnload.get(i);
-            if (position.equals(pair.first.add(this.position)) && pallet.getType() == pair.second.getType()) {
-                this.toUnload.remove(i);
-                this.currentLoad.remove(pair);
-                break;
+        Position positionInTruck = position.subtract(this.position);
+        Pallet palletInTruck = this.toUnload.get(positionInTruck);
+        if (pallet.getType() == palletInTruck.getType()) {
+            this.toUnload.remove(positionInTruck);
+            if (pallet.getType() == this.currentLoad.get(positionInTruck).getType()) {
+                this.currentLoad.remove(positionInTruck);
             }
+            this.changed();
         }
-        this.changed();
     }
 
     public boolean done() {

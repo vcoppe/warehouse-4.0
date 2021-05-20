@@ -1,4 +1,4 @@
-package pathfinding;
+package graph;
 
 import agent.Mobile;
 import util.DoublePrecisionConstraint;

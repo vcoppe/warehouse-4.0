@@ -2,7 +2,7 @@ package event;
 
 import agent.Controller;
 import agent.Mobile;
-import pathfinding.WHCAStar;
+import graph.WHCAStar;
 import simulation.Event;
 import simulation.Simulation;
 import warehouse.Warehouse;
@@ -50,10 +50,17 @@ public class PathFinderEvent extends Event {
         this.lastEventTime = this.time;
 
         if (this.controller.getAvailableMobiles().size() == this.controller.getAllMobiles().size()) {
-            for (Mobile mobile : this.controller.getAllMobiles()) {
-                mobile.setPath(this.time, null);
+            boolean noMission = true;
+            for (Mobile mobile : this.controller.getAvailableMobiles()) {
+                if (mobile.isAvailable()) {
+                    mobile.setPath(this.time, null);
+                } else {
+                    noMission = false;
+                }
             }
-            return;
+            if (noMission) {
+                return;
+            }
         }
 
         this.pathFinder.computePaths(this.time, this.controller.getAllMobiles(), this.warehouse.getGraph());

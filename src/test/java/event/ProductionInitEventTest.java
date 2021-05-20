@@ -41,9 +41,9 @@ public class ProductionInitEventTest extends TestCase {
     }
 
     public void testGenerateMissions() {
-        assertEquals(0, this.configuration.controller.getMissions().size());
+        assertEquals(0, this.configuration.controller.getAllMissions().size());
         this.event.run();
-        assertEquals(this.production.getIn().size(), this.configuration.controller.getMissions().size());
+        assertEquals(this.production.getIn().size(), this.configuration.controller.getAllMissions().size());
 
         ArrayList<Pallet> productionPallets = new ArrayList<>();
         for (Pair<Pallet, Integer> pair : this.production.getIn()) {
@@ -55,7 +55,7 @@ public class ProductionInitEventTest extends TestCase {
         }
 
         ArrayList<Pallet> missionPallets = new ArrayList<>();
-        for (Mission mission : this.configuration.controller.getMissions()) {
+        for (Mission mission : this.configuration.controller.getAllMissions()) {
             assertNull(mission.getStartTruck());
             assertNull(mission.getEndTruck());
 

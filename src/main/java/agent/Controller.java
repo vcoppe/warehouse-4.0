@@ -4,17 +4,20 @@ import brain.MobileMissionSelector;
 import brain.PalletPositionSelector;
 import brain.TruckDockSelector;
 import observer.Observable;
-import pathfinding.WHCAStar;
+import graph.WHCAStar;
+import warehouse.Configuration;
 import warehouse.Mission;
 import warehouse.Warehouse;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class Controller extends Observable {
 
     public final MobileMissionSelector mobileMissionSelector;
     public final TruckDockSelector truckDockSelector;
     public final PalletPositionSelector palletPositionSelector;
+    private final Configuration configuration;
     private final Warehouse warehouse;
     private final Stock stock;
     private final ProductionLine productionLine;
@@ -25,20 +28,25 @@ public class Controller extends Observable {
     private final ArrayList<Mobile> availableMobiles;
     private final ArrayList<Mission> missions;
 
-    public Controller(Warehouse warehouse, Stock stock, ProductionLine productionLine, WHCAStar pathFinder, ArrayList<Dock> docks, ArrayList<Mobile> mobiles, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
+    public Controller(Configuration configuration, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
         super();
         this.mobileMissionSelector = mobileMissionSelector;
         this.truckDockSelector = truckDockSelector;
         this.palletPositionSelector = palletPositionSelector;
-        this.warehouse = warehouse;
-        this.stock = stock;
-        this.productionLine = productionLine;
-        this.pathFinder = pathFinder;
-        this.docks = docks;
-        this.allMobiles = mobiles;
-        this.availableMobiles = new ArrayList<>(mobiles);
+        this.configuration = configuration;
+        this.warehouse = configuration.warehouse;
+        this.stock = configuration.stock;
+        this.productionLine = configuration.productionLine;
+        this.pathFinder = new WHCAStar();
+        this.docks = configuration.docks;
+        this.allMobiles = configuration.mobiles;
+        this.availableMobiles = new ArrayList<>(configuration.mobiles);
         this.trucks = new ArrayList<>();
         this.missions = new ArrayList<>();
+    }
+
+    public Configuration getConfiguration() {
+        return this.configuration;
     }
 
     public Warehouse getWarehouse() {
@@ -103,8 +111,12 @@ public class Controller extends Observable {
         this.changed();
     }
 
-    public ArrayList<Mission> getMissions() {
+    public ArrayList<Mission> getAllMissions() {
         return this.missions;
+    }
+
+    public ArrayList<Mission> getStartableMissions() {
+        return this.missions.stream().filter(Mission::canStart).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public void add(Mission mission) {

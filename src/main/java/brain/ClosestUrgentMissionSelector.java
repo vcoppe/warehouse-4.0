@@ -3,6 +3,7 @@ package brain;
 import agent.Mobile;
 import util.Pair;
 import warehouse.Mission;
+import warehouse.Position;
 import warehouse.Warehouse;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class ClosestUrgentMissionSelector implements MobileMissionSelector {
     }
 
     @Override
-    public ArrayList<Pair<Mobile, Mission>> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions) {
+    public ArrayList<Pair<Mobile, Mission>> matchMobileMission(double time, ArrayList<Mobile> mobiles, ArrayList<Mission> missions) {
         ArrayList<Pair<Mobile, Mission>> matching = new ArrayList<>();
         HashSet<Integer> taken = new HashSet<>();
 
@@ -25,9 +26,13 @@ public class ClosestUrgentMissionSelector implements MobileMissionSelector {
             double shortestDist = Double.MAX_VALUE;
             Mission closestMission = null;
 
+            Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getPositionsAt(time);
+            Position position = pair.second.first;
+            double offset = pair.second.second - time;
+
             for (Mission mission : missions) {
                 if (!taken.contains(mission.getId())) {
-                    double dist = this.warehouse.getTravelTime(mobile.getPosition(), mission.getStartPosition(), mobile);
+                    double dist = offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), mobile);
                     if ((dist < shortestDist && (closestMission == null || mission.getInitTime() <= closestMission.getInitTime()))
                             || (closestMission != null && mission.getInitTime() <= closestMission.getInitTime() - 300)) {
                         shortestDist = dist;

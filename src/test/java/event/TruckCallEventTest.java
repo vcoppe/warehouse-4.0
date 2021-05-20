@@ -9,6 +9,7 @@ import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TruckCallEventTest extends TestCase {
 
@@ -23,14 +24,14 @@ public class TruckCallEventTest extends TestCase {
         this.configuration = new Configuration(5, 1);
         this.dock = this.configuration.docks.get(0);
 
-        ArrayList<Pair<Position, Pallet>> toLoad = new ArrayList<>();
-        ArrayList<Pair<Position, Pallet>> toUnload = new ArrayList<>();
+        HashMap<Position, Pallet> toLoad = new HashMap<>();
+        HashMap<Position, Pallet> toUnload = new HashMap<>();
 
         for (int i = 0; i < 5; i++) {
-            toUnload.add(new Pair<>(
+            toUnload.put(
                     new Position(0, i * this.configuration.palletSize),
                     new Pallet(i)
-            ));
+            );
         }
 
         this.truck = new Truck(new Position(0, 0), toLoad, toUnload);

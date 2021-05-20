@@ -11,6 +11,7 @@ import warehouse.Position;
 import warehouse.Warehouse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 public class TruckGeneratorEvent extends Event {
@@ -34,25 +35,25 @@ public class TruckGeneratorEvent extends Event {
 
     @Override
     public void run() {
-        ArrayList<Pair<Position, Pallet>> toLoad = new ArrayList<>();
-        ArrayList<Pair<Position, Pallet>> toUnload = new ArrayList<>();
+        HashMap<Position, Pallet> toLoad = new HashMap<>();
+        HashMap<Position, Pallet> toUnload = new HashMap<>();
 
         int nPallets = 9 + random.nextInt(19);
         int nPalletsToLoad = random.nextInt(nPallets);
         int nPalletsToUnload = nPallets - nPalletsToLoad;
 
         for (int i = 0; i < nPalletsToLoad; i++) {
-            toLoad.add(new Pair<>(
-                    new Position((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
-                    new Pallet(random.nextInt(10))
-            ));
+            toLoad.put(
+                new Position((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
+                new Pallet(random.nextInt(10))
+            );
         }
 
         for (int i = 0; i < nPalletsToUnload; i++) {
-            toUnload.add(new Pair<>(
-                    new Position((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
-                    new Pallet(random.nextInt(10))
-            ));
+            toUnload.put(
+                new Position((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
+                new Pallet(random.nextInt(10))
+            );
         }
 
         this.simulation.enqueueEvent(

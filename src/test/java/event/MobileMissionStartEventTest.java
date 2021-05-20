@@ -10,12 +10,14 @@ import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MobileMissionStartEventTest extends TestCase {
 
     private Configuration configuration;
     private Mobile mobile;
     private Truck truckLoad, truckUnload;
+    private ArrayList<Pair<Position, Pallet>> toLoad, toUnload;
     private ArrayList<Position> loadPalletPositions, unloadPalletPositions;
 
     public void setUp() throws Exception {
@@ -26,32 +28,40 @@ public class MobileMissionStartEventTest extends TestCase {
         this.configuration = new Configuration(1, 1);
         this.mobile = this.configuration.mobiles.get(0);
 
-        ArrayList<Pair<Position, Pallet>> toLoad = new ArrayList<>();
-        ArrayList<Pair<Position, Pallet>> toUnload = new ArrayList<>();
+        this.toLoad = new ArrayList<>();
+        this.toUnload = new ArrayList<>();
+        HashMap<Position, Pallet> toLoad = new HashMap<>();
+        HashMap<Position, Pallet> toUnload = new HashMap<>();
         this.loadPalletPositions = new ArrayList<>();
         this.unloadPalletPositions = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
-            toLoad.add(new Pair<>(
+            Pair<Position,Pallet> pair = new Pair<>(
                     new Position(0, i * this.configuration.palletSize),
                     new Pallet(i)
-            ));
-            this.configuration.stock.add(new Position(0, i * this.configuration.palletSize), new Pallet(i)); // add in stock
-            this.loadPalletPositions.add(new Position(0, i * this.configuration.palletSize));
-            toUnload.add(new Pair<>(
-                    new Position(0, i * this.configuration.palletSize),
+            );
+            toLoad.put(pair.first, pair.second);
+            this.toLoad.add(pair);
+            this.configuration.stock.add(pair.first, pair.second); // add in stock
+            this.loadPalletPositions.add(pair.first);
+
+            toUnload.put(pair.first, pair.second);
+            this.toUnload.add(pair);
+
+            pair = new Pair<>(
+                    new Position(3 * this.configuration.palletSize, i * this.configuration.palletSize),
                     new Pallet(i)
-            ));
-            this.configuration.stock.lock(new Position(3 * this.configuration.palletSize, i * this.configuration.palletSize));
-            this.unloadPalletPositions.add(new Position(3 * this.configuration.palletSize, i * this.configuration.palletSize));
+            );
+            this.configuration.stock.lock(pair.first);
+            this.unloadPalletPositions.add(pair.first);
         }
 
-        this.truckLoad = new Truck(new Position(0, 0), toLoad, new ArrayList<>());
-        this.truckUnload = new Truck(new Position(10, 0), new ArrayList<>(), toUnload);
+        this.truckLoad = new Truck(new Position(0, 0), toLoad, new HashMap<>());
+        this.truckUnload = new Truck(new Position(10, 0), new HashMap<>(), toUnload);
     }
 
     public void testSetTargetPosition() {
-        Pallet pallet = this.truckLoad.getToLoad().get(0).second;
+        Pallet pallet = this.toLoad.get(0).second;
         Position startPosition = this.loadPalletPositions.get(0);
         Position endPosition = this.truckLoad.getPosition();
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
@@ -63,7 +73,7 @@ public class MobileMissionStartEventTest extends TestCase {
     }
 
     public void testSetMission() {
-        Pallet pallet = this.truckLoad.getToLoad().get(0).second;
+        Pallet pallet = this.toLoad.get(0).second;
         Position startPosition = this.loadPalletPositions.get(0);
         Position endPosition = this.truckLoad.getPosition();
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
@@ -75,7 +85,7 @@ public class MobileMissionStartEventTest extends TestCase {
     }
 
     public void testTriggerPathFinderEvent() {
-        Pallet pallet = this.truckUnload.getToUnload().get(0).second;
+        Pallet pallet = this.toUnload.get(0).second;
         Position startPosition = this.truckUnload.getPosition();
         Position endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, this.truckUnload, null, startPosition, endPosition);

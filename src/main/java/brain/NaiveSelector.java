@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class NaiveSelector implements MobileMissionSelector, PalletPositionSelector, TruckDockSelector {
 
     @Override
-    public ArrayList<Pair<Mobile, Mission>> matchMobileMission(ArrayList<Mobile> mobiles, ArrayList<Mission> missions) {
+    public ArrayList<Pair<Mobile, Mission>> matchMobileMission(double time, ArrayList<Mobile> mobiles, ArrayList<Mission> missions) {
         ArrayList<Pair<Mobile, Mission>> pairs = new ArrayList<>();
         for (int i = 0; i < Math.min(mobiles.size(), missions.size()); i++) {
             pairs.add(new Pair<>(mobiles.get(i), missions.get(i)));

@@ -6,6 +6,7 @@ import junit.framework.TestCase;
 import warehouse.Configuration;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TruckDoneEventTest extends TestCase {
 
@@ -19,7 +20,8 @@ public class TruckDoneEventTest extends TestCase {
 
         this.configuration = new Configuration(1, 1);
         this.dock = this.configuration.docks.get(0);
-        this.truck = new Truck(this.dock, this.dock.getPosition(), new ArrayList<>(), new ArrayList<>());
+        this.truck = new Truck(this.dock.getPosition(), new HashMap<>(), new HashMap<>());
+        this.truck.go(0, this.dock);
         this.configuration.controller.remove(this.dock); // mark as currently used
 
         this.event = new TruckDoneEvent(this.configuration.simulation, 1, this.configuration.controller, this.dock, this.truck);

@@ -1,4 +1,4 @@
-package pathfinding;
+package graph;
 
 import warehouse.Position;
 

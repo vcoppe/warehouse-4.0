@@ -10,6 +10,8 @@ import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TruckDockEventTest extends TestCase {
 
@@ -24,19 +26,19 @@ public class TruckDockEventTest extends TestCase {
         this.configuration = new Configuration(5, 1);
         this.dock = this.configuration.docks.get(0);
 
-        ArrayList<Pair<Position, Pallet>> toLoad = new ArrayList<>();
-        ArrayList<Pair<Position, Pallet>> toUnload = new ArrayList<>();
+        HashMap<Position, Pallet> toLoad = new HashMap<>();
+        HashMap<Position, Pallet> toUnload = new HashMap<>();
 
         for (int i = 0; i < 5; i++) {
-            toLoad.add(new Pair<>(
+            toLoad.put(
                     new Position(0, i * this.configuration.palletSize),
                     new Pallet(i)
-            ));
+            );
             this.configuration.stock.add(new Position(0, i * this.configuration.palletSize), new Pallet(i)); // add pallets to load in the stock
-            toUnload.add(new Pair<>(
+            toUnload.put(
                     new Position(0, i * this.configuration.palletSize),
                     new Pallet(5 + i)
-            ));
+            );
         }
 
         this.truck = new Truck(new Position(0, this.configuration.warehouse.getDepth() + 10), toLoad, toUnload);
@@ -52,16 +54,16 @@ public class TruckDockEventTest extends TestCase {
     }
 
     public void testGenerateMissions() {
-        assertEquals(0, this.configuration.controller.getMissions().size());
+        assertEquals(0, this.configuration.controller.getAllMissions().size());
         this.event.run();
-        assertEquals(this.truck.getToLoad().size() + this.truck.getToUnload().size(), this.configuration.controller.getMissions().size());
+        assertEquals(this.truck.getToLoad().size() + this.truck.getToUnload().size(), this.configuration.controller.getAllMissions().size());
 
-        for (Mission mission : this.configuration.controller.getMissions()) {
+        for (Mission mission : this.configuration.controller.getAllMissions()) {
             if (mission.getStartTruck() != null) { // unload mission
                 boolean foundPallet = false;
-                for (Pair<Position, Pallet> pair : this.truck.getToUnload()) {
-                    Position position = pair.first;
-                    Pallet pallet = pair.second;
+                for (Map.Entry<Position, Pallet> entry : this.truck.getToUnload().entrySet()) {
+                    Position position = entry.getKey();
+                    Pallet pallet = entry.getValue();
                     if (position.add(this.truck.getPosition()).equals(mission.getStartPosition())) {
                         assertEquals(pallet.getType(), mission.getPallet().getType());
                         assertEquals(pallet.getId(), mission.getPallet().getId());
@@ -73,9 +75,9 @@ public class TruckDockEventTest extends TestCase {
                 assertTrue(this.configuration.stock.isLocked(mission.getEndPosition())); // reserve spot for pallet
             } else if (mission.getEndTruck() != null) { // load mission
                 boolean foundPallet = false;
-                for (Pair<Position, Pallet> pair : this.truck.getToLoad()) {
-                    Position position = pair.first;
-                    Pallet pallet = pair.second;
+                for (Map.Entry<Position, Pallet> entry : this.truck.getToLoad().entrySet()) {
+                    Position position = entry.getKey();
+                    Pallet pallet = entry.getValue();
                     if (position.add(this.truck.getPosition()).equals(mission.getEndPosition())) {
                         assertEquals(pallet.getType(), mission.getPallet().getType());
                         assertEquals(pallet.getId(), mission.getPallet().getId());
