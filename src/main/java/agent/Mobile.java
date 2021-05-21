@@ -114,8 +114,8 @@ public class Mobile extends Observable {
 
     public void forward(double time) {
         this.pathTime = time;
-        if (this.mission == null && this.path.size() > 1) {
-            Pair<Position,Double> last = this.path.get(this.path.size()-1);
+        if (this.mission == null) {
+            Pair<Position, Double> last = this.path.get(this.path.size() - 1);
             if (time >= last.second) {
                 this.position = last.first;
                 this.targetPosition = last.first;
@@ -166,19 +166,23 @@ public class Mobile extends Observable {
 
     public void interrupt(double time) {
         this.mission = null;
-        this.pathTime = time;
-        Pair<Pair<Position,Double>,Pair<Position,Double>> pair = this.getPositionsAt(time);
+        Pair<Pair<Position, Double>, Pair<Position, Double>> pair = this.getPositionsAt(time);
         this.path = new ArrayList<>();
         this.path.add(pair.first);
         this.path.add(pair.second);
+        this.pathTime = time;
         this.position = pair.first.first;
         this.targetPosition = pair.second.first;
+        this.changed();
     }
 
-    public void setPath(double time, ArrayList<Pair<Position,Double>> path) {
+    public void replace(Position position) {
+        this.targetPosition = position;
+    }
+
+    public void setPath(double time, ArrayList<Pair<Position, Double>> path) {
         this.path = path;
         this.pathTime = time;
         this.changed();
     }
-
 }

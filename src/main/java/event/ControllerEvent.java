@@ -5,6 +5,7 @@ import simulation.Event;
 import simulation.Simulation;
 import util.Pair;
 import warehouse.Mission;
+import warehouse.Position;
 import warehouse.Production;
 
 import java.util.ArrayList;
@@ -32,7 +33,9 @@ public class ControllerEvent extends Event {
                         this.productionLine.getProductions().size()));
 
         for (Mobile mobile : this.controller.getAvailableMobiles()) {
-            mobile.interrupt(this.time);
+            if (!mobile.isAvailable()) {
+                mobile.interrupt(this.time);
+            }
         }
 
         // match available mobiles with waiting missions
@@ -56,7 +59,7 @@ public class ControllerEvent extends Event {
                 this.controller.getDocks()
         );
 
-        for (Pair<Truck,Dock> pair : truckDockPairs) {
+        for (Pair<Truck, Dock> pair : truckDockPairs) {
             Truck truck = pair.first;
             Dock dock = pair.second;
 
@@ -65,6 +68,12 @@ public class ControllerEvent extends Event {
 
             this.controller.remove(truck);
             this.controller.remove(dock);
+        }
+
+        for (Mobile mobile : this.controller.getAvailableMobiles()) {
+            if (mobile.isAvailable()) {
+                mobile.replace(new Position(110 + mobile.getId() * 4 * this.controller.getConfiguration().palletSize, 300));
+            }
         }
 
         // launch waiting productions if components have arrived

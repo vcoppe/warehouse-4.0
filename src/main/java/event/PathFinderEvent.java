@@ -52,10 +52,9 @@ public class PathFinderEvent extends Event {
         if (this.controller.getAvailableMobiles().size() == this.controller.getAllMobiles().size()) {
             boolean noMission = true;
             for (Mobile mobile : this.controller.getAvailableMobiles()) {
-                if (mobile.isAvailable()) {
-                    mobile.setPath(this.time, null);
-                } else {
+                if (!mobile.isAvailable()) {
                     noMission = false;
+                    break;
                 }
             }
             if (noMission) {

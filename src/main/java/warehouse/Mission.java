@@ -103,6 +103,10 @@ public class Mission {
         this.startCondition.add(new MissionStartedCondition(mission));
     }
 
+    public void startAfterPickup(Mission mission) {
+        this.startCondition.add(new MissionPickedUpCondition(mission));
+    }
+
     public void startAfterEnd(Mission mission) {
         this.startCondition.add(new MissionDoneCondition(mission));
     }

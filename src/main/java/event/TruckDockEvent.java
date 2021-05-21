@@ -6,17 +6,13 @@ import agent.Stock;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
-import util.Pair;
 import warehouse.Mission;
 import warehouse.Pallet;
 import warehouse.Position;
-import warehouse.Warehouse;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class TruckDockEvent extends Event {
 
@@ -69,7 +65,7 @@ public class TruckDockEvent extends Event {
             Position previousPosition = palletPosition.subtract(delta);
             if (unloadMissions.containsKey(previousPosition)) {
                 Mission previousMission = unloadMissions.get(previousPosition);
-                //mission.startAfterEnd(previousMission);
+                mission.startAfterPickup(previousMission);
             }
 
             unloadMissions.put(palletPosition, mission);
@@ -96,13 +92,13 @@ public class TruckDockEvent extends Event {
             this.stock.lock(startPosition);
 
             for (Mission unloadMission : unloadMissions.values()) {
-               // mission.startAfterStart(unloadMission);
+                mission.startAfterPickup(unloadMission);
             }
 
             Position previousPosition = palletPosition.add(delta);
             if (loadMissions.containsKey(previousPosition)) {
                 Mission previousMission = loadMissions.get(previousPosition);
-                //mission.startAfterStart(previousMission);
+                mission.startAfterPickup(previousMission);
             }
 
             loadMissions.put(palletPosition, mission);
