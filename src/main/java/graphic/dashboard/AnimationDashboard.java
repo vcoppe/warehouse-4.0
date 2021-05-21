@@ -22,10 +22,8 @@ import javafx.scene.transform.Scale;
 import javafx.util.Duration;
 import warehouse.Configuration;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class AnimationDashboard {
 
@@ -159,10 +157,7 @@ public class AnimationDashboard {
                 double delta = this.configuration.simulation.nextEvent().getTime() - currentTime;
                 this.createAnimations(currentTime, delta);
 
-                System.out.println(currentTime + " " + delta);
-
                 if (this.animations.isEmpty()) {
-                    System.out.println("no animations");
                     this.animation = new PauseTransition(Duration.seconds(delta));
                 } else {
                     ParallelTransition transition = new ParallelTransition();
@@ -180,8 +175,6 @@ public class AnimationDashboard {
                         this.play();
                     }
                 });
-            } else {
-                System.out.println("no events");
             }
         } else {
             this.animation.play();
