@@ -10,9 +10,9 @@ public class Simulation {
     private final TreeSet<Event> eventQueue;
     private double currentTime;
 
-    public Simulation(Level level) {
+    public Simulation() {
         this.logger = Logger.getLogger("warehouse");
-        this.logger.setLevel(level);
+        this.logger.setLevel(Level.ALL);
 
         this.eventQueue = new TreeSet<>();
         this.currentTime = 0;

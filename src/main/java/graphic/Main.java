@@ -32,13 +32,13 @@ public class Main extends Application {
         // create scenario
         Random random = new Random(0);
 
-        for (int i = 0; i < 30 * 30; i++) {
+        for (int i = 0; i < this.configuration.nAisles * this.configuration.nSlotsPerAisle; i++) {
             if (random.nextInt(100) < 70) {
                 Pallet pallet = new Pallet(random.nextInt(10));
                 this.configuration.stock.add(
                         new Position(
-                                (2 * (i / 30) + (i / 30) % 2) * this.configuration.palletSize,
-                                (i % 30) * this.configuration.palletSize
+                                (2 * (i / this.configuration.nSlotsPerAisle) + (i / this.configuration.nSlotsPerAisle) % 2) * this.configuration.palletSize,
+                                (i % this.configuration.nSlotsPerAisle) * this.configuration.palletSize
                         ),
                         pallet
                 );

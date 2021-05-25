@@ -3,24 +3,28 @@ package agent;
 import observer.Observable;
 import warehouse.Pallet;
 import warehouse.Position;
+import warehouse.Rule;
 import warehouse.Warehouse;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-// need to add all possible positions with Pallet.FREE at the start
 public class Stock extends Observable {
 
     private final HashMap<Position, Pallet> pallets;
     private final HashSet<Position> lock;
+    private final RuleBasedPalletPositionFilter filter;
 
-    public Stock() {
+    public Stock(ArrayList<Position> positions) {
         super();
         this.pallets = new HashMap<>();
         this.lock = new HashSet<>();
+        this.filter = new RuleBasedPalletPositionFilter(this);
+        this.filter.add(new Rule(Integer.MAX_VALUE, false, positions));
+
+        for (Position position : positions) {
+            this.add(position, Pallet.FREE);
+        }
     }
 
     public void add(Position position, Pallet pallet) {
@@ -61,34 +65,97 @@ public class Stock extends Observable {
         this.lock.remove(position);
     }
 
-    // TODO remove production line start and end buffer from output
     public ArrayList<Position> getStartPositions(Pallet pallet) {
-        ArrayList<Position> positions = new ArrayList<>();
-        for (Position position : this.pallets.keySet()) {
-            Pallet stockPallet = this.pallets.get(position);
-            if (stockPallet != null
-                    && !this.isLocked(position)
-                    && stockPallet.getType() == pallet.getType()) {
-                positions.add(position);
-            }
-        }
-        return positions;
+        return this.filter.getStartPositions(pallet);
     }
 
-    // TODO remove production line start and end buffer from output
     public ArrayList<Position> getEndPositions(Pallet pallet) {
-        ArrayList<Position> positions = new ArrayList<>();
-        for (Position position : this.pallets.keySet()) {
-            Pallet stockPallet = this.pallets.get(position);
-            if (stockPallet == Pallet.FREE && !this.lock.contains(position)) {
-                positions.add(position);
-            }
-        }
-        return positions;
+        return this.filter.getEndPositions(pallet);
     }
 
     public List<Position> getAllPositions() {
         return new ArrayList<>(this.pallets.keySet());
+    }
+
+    public class RuleBasedPalletPositionFilter {
+
+        private final Stock stock;
+        private final PriorityQueue<Rule> rules;
+
+        public RuleBasedPalletPositionFilter(Stock stock) {
+            this.stock = stock;
+            this.rules = new PriorityQueue<>();
+        }
+
+        public void add(Rule rule) {
+            this.rules.add(rule);
+        }
+
+        public void remove(Rule rule) {
+            this.rules.remove(rule);
+        }
+
+        public ArrayList<Position> getStartPositions(Pallet pallet) {
+            boolean found = false;
+            int priority = 0;
+
+            ArrayList<Position> positions = new ArrayList<>();
+
+            for (Rule rule : this.rules) {
+                if (found && rule.getPriority() > priority) {
+                    return positions;
+                }
+
+                if (rule.matches(pallet)) {
+                    found = true;
+                    priority = rule.getPriority();
+
+                    for (Position position : rule.getPositions()) {
+                        Pallet stockPallet = this.stock.get(position);
+                        if (stockPallet != null && stockPallet.getType() == pallet.getType() && !this.stock.isLocked(position)) {
+                            positions.add(position);
+                        }
+                    }
+
+                    if (rule.isBlocking()) {
+                        return positions;
+                    }
+                }
+            }
+
+            return positions;
+        }
+
+        public ArrayList<Position> getEndPositions(Pallet pallet) {
+            boolean found = false;
+            int priority = 0;
+
+            ArrayList<Position> positions = new ArrayList<>();
+
+            for (Rule rule : this.rules) {
+                if (found && rule.getPriority() > priority) {
+                    return positions;
+                }
+
+                if (rule.matches(pallet)) {
+                    found = true;
+                    priority = rule.getPriority();
+
+                    for (Position position : rule.getPositions()) {
+                        if (this.stock.isFree(position)) {
+                            positions.add(position);
+                        }
+                    }
+
+                    if (rule.isBlocking()) {
+                        return positions;
+                    }
+                }
+            }
+
+            return positions;
+        }
+
     }
 
 }

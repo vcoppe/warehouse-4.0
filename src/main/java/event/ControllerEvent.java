@@ -72,7 +72,7 @@ public class ControllerEvent extends Event {
 
         for (Mobile mobile : this.controller.getAvailableMobiles()) {
             if (mobile.isAvailable()) {
-                mobile.replace(new Position(110 + mobile.getId() * 4 * this.controller.getConfiguration().palletSize, 300));
+                mobile.replace(new Position(mobile.getId() * 4 * this.controller.getConfiguration().palletSize, this.controller.getConfiguration().nSlotsPerAisle * this.controller.getConfiguration().palletSize));
             }
         }
 

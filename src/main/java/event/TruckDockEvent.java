@@ -98,7 +98,7 @@ public class TruckDockEvent extends Event {
             Position previousPosition = palletPosition.add(delta);
             if (loadMissions.containsKey(previousPosition)) {
                 Mission previousMission = loadMissions.get(previousPosition);
-                mission.startAfterPickup(previousMission);
+                mission.startAfterEnd(previousMission);
             }
 
             loadMissions.put(palletPosition, mission);

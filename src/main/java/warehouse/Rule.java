@@ -2,23 +2,33 @@ package warehouse;
 
 import java.util.ArrayList;
 
-public abstract class Rule implements Comparable<Rule> {
+public class Rule implements Comparable<Rule> {
 
     private final int priority;
     private final boolean blocking;
+    private final ArrayList<Position> positions;
 
-    public Rule(int priority, boolean blocking) {
+    public Rule(int priority, boolean blocking, ArrayList<Position> positions) {
         this.priority = priority;
         this.blocking = blocking;
+        this.positions = positions;
+    }
+
+    public boolean isBlocking() {
+        return this.blocking;
     }
 
     public int getPriority() {
         return this.priority;
     }
 
-    public abstract boolean matches(Pallet pallet);
+    public boolean matches(Pallet pallet) {
+        return true;
+    }
 
-    public abstract ArrayList<Position> positions();
+    public ArrayList<Position> getPositions() {
+        return this.positions;
+    }
 
     @Override
     public int compareTo(Rule other) {
