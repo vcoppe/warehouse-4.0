@@ -107,7 +107,7 @@ public class AnimationDashboard {
         autoPlay.setOnMouseClicked(e -> this.setAutoplay(autoPlay.isSelected()));
 
         Text levelText = new Text("Level");
-        Spinner<Integer> spinner = new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 1, 0));
+        Spinner<Integer> spinner = new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, this.configuration.warehouse.getHeight()/this.configuration.palletSize - 1, 0));
         spinner.valueProperty().addListener((o,v,v2) -> {
             this.stockAnimation.setLevel(v2);
         });
