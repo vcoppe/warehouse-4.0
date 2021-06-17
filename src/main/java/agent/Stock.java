@@ -4,25 +4,30 @@ import observer.Observable;
 import warehouse.Pallet;
 import warehouse.Position;
 import warehouse.Rule;
-import warehouse.Warehouse;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Stock extends Observable {
 
+    private final ArrayList<Position> stockPositions, bufferPositions;
     private final HashMap<Position, Pallet> pallets;
     private final HashSet<Position> lock;
     private final RuleBasedPalletPositionFilter filter;
 
-    public Stock(ArrayList<Position> positions) {
+    public Stock(ArrayList<Position> stockPositions, ArrayList<Position> bufferPositions) {
         super();
         this.pallets = new HashMap<>();
         this.lock = new HashSet<>();
         this.filter = new RuleBasedPalletPositionFilter(this);
-        this.filter.add(new Rule(Integer.MAX_VALUE, false, positions));
+        this.filter.add(new Rule(Integer.MAX_VALUE, false, stockPositions));
 
-        for (Position position : positions) {
+        this.stockPositions = stockPositions;
+        for (Position position : stockPositions) {
+            this.add(position, Pallet.FREE);
+        }
+
+        this.bufferPositions = bufferPositions;
+        for (Position position : bufferPositions) {
             this.add(position, Pallet.FREE);
         }
     }
@@ -73,8 +78,16 @@ public class Stock extends Observable {
         return this.filter.getEndPositions(pallet);
     }
 
-    public List<Position> getAllPositions() {
+    public ArrayList<Position> getAllPositions() {
         return new ArrayList<>(this.pallets.keySet());
+    }
+
+    public ArrayList<Position> getStockPositions() {
+        return this.stockPositions;
+    }
+
+    public ArrayList<Position> getBufferPositions() {
+        return this.bufferPositions;
     }
 
     public class RuleBasedPalletPositionFilter {

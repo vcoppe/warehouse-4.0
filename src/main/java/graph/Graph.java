@@ -86,21 +86,62 @@ public class Graph {
         this.dijkstra(s, this.dist.get(s), this.prev.get(s));
     }
 
-    public double getShortestPath(Position s, Position t) {
-        if (!this.dist.containsKey(s)) {
-            this.computeShortestPaths(s);
+    public void aStar(Position s, Position t, HashMap<Position, Double> dist, HashMap<Position, Position> prev) {
+        PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
+
+        dist.put(s, 0.0);
+        pq.add(new Edge(s, s.manhattanDistance3D(t)));
+
+        while (!pq.isEmpty()) {
+            Edge e1 = pq.poll();
+            Position u = e1.to;
+            double dist_u = e1.w - u.manhattanDistance3D(t);
+
+            if (dist_u > dist.get(u)) {
+                continue;
+            }
+
+            if (u.equals(t)) {
+                return;
+            }
+
+            for (Edge e2 : this.g.get(u)) {
+                Position v = e2.to;
+                double w = e2.w;
+                Double dist_v = dist.get(v);
+                double other_dist_v = dist_u + w;
+
+                if (dist_v == null || other_dist_v < dist_v) {
+                    dist.put(v, other_dist_v);
+                    prev.put(v, u);
+
+                    pq.add(new Edge(v, other_dist_v + v.manhattanDistance3D(t)));
+                }
+            }
         }
 
-        if (!this.dist.get(s).containsKey(t)) {
+        dist.put(t, null); // not found
+    }
+
+    public void computeShortestPath(Position s, Position t) {
+        this.dist.put(s, new HashMap<>());
+        this.prev.put(s, new HashMap<>());
+        this.aStar(s, t, this.dist.get(s), this.prev.get(s));
+    }
+
+    public double getShortestPath(Position s, Position t) {
+        if (!this.dist.containsKey(s) || !this.dist.get(s).containsKey(t)) {
+            this.computeShortestPath(s, t);
+        }
+
+        Double dist = this.dist.get(s).get(t);
+
+        if (dist == null) {
             System.out.println("No path between " + s + " and " + t);
             System.exit(0);
-        } else {
-            HashMap<Position, Double> dist = this.dist.get(s);
-            HashMap<Position, Position> prev = this.prev.get(s);
-            return dist.get(t);
         }
 
-        return 0;
+        return dist;
     }
 
 }

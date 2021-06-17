@@ -35,6 +35,7 @@ public class Configuration {
         int productionLineWidth = 50, productionLineDepth = 10 * (depth / 20);
         
         ArrayList<Position> stockPositions = new ArrayList<>();
+        ArrayList<Position> bufferPositions = new ArrayList<>();
         ArrayList<Position> productionLineStartBuffer = new ArrayList<>();
         ArrayList<Position> productionLineEndBuffer = new ArrayList<>();
 
@@ -58,9 +59,9 @@ public class Configuration {
         }
 
         for (int i = 0; i < 10; i++) {
-            stockPositions.add(new Position(width - productionLineWidth - 2 * this.palletSize + i / 5 * this.palletSize, (i % 5) * this.palletSize));
+            bufferPositions.add(new Position(width - productionLineWidth - 2 * this.palletSize + i / 5 * this.palletSize, (i % 5) * this.palletSize));
             productionLineStartBuffer.add(new Position(width - productionLineWidth - 2 * this.palletSize + i / 5 * this.palletSize, (i % 5) * this.palletSize));
-            stockPositions.add(new Position(width - productionLineWidth + (i % 5) * this.palletSize, productionLineDepth + i / 5 * this.palletSize));
+            bufferPositions.add(new Position(width - productionLineWidth + (i % 5) * this.palletSize, productionLineDepth + i / 5 * this.palletSize));
             productionLineEndBuffer.add(new Position(width - productionLineWidth + (i % 5) * this.palletSize, productionLineDepth + i / 5 * this.palletSize));
         }
 
@@ -120,6 +121,12 @@ public class Configuration {
                                 position,
                                 new Position(x - this.palletSize, y)
                         );
+                        if (x + this.palletSize == 2 * this.nAisles * this.palletSize) {
+                            this.warehouse.addEdge(
+                                    position,
+                                    new Position(x + this.palletSize, y)
+                            );
+                        }
                         this.warehouse.addEdge(
                                 position,
                                 new Position(x, y + this.palletSize)
@@ -154,7 +161,7 @@ public class Configuration {
                         );
                     }
                 } else {
-                    if (x - this.palletSize >= 2 * this.nAisles * this.palletSize || this.nAisles % 2 == 1) {
+                    if (x - this.palletSize >= 2 * this.nAisles * this.palletSize || type > 0) {
                         this.warehouse.addEdge(
                                 position,
                                 new Position(x - this.palletSize, y)
@@ -182,7 +189,7 @@ public class Configuration {
             }
         }
 
-        this.stock = new Stock(stockPositions);
+        this.stock = new Stock(stockPositions, bufferPositions);
         this.productionLine = new ProductionLine(this.stock, new Position(width - productionLineWidth, 0), productionLineWidth, productionLineDepth, 10, productionLineStartBuffer, productionLineEndBuffer);
 
         this.docks = new ArrayList<>();

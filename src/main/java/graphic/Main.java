@@ -1,5 +1,6 @@
 package graphic;
 
+import brain.SLAP;
 import event.TruckGeneratorEvent;
 import graphic.dashboard.KPIDashboard;
 import graphic.dashboard.AnimationDashboard;
@@ -23,7 +24,7 @@ public class Main extends Application {
 
     public Main() {
         super();
-        this.configuration = new Configuration(10, 5);
+        //this.configuration = new Configuration(10, 5);
 
         // disable JavaFX logging
         Logger logger = Logger.getLogger("javafx");
@@ -32,7 +33,7 @@ public class Main extends Application {
         // create scenario
         Random random = new Random(0);
 
-        for (int i = 0; i < this.configuration.nAisles * this.configuration.nSlotsPerAisle; i++) {
+        /*for (int i = 0; i < this.configuration.nAisles * this.configuration.nSlotsPerAisle; i++) {
             if (random.nextInt(100) < 70) {
                 Pallet pallet = new Pallet(random.nextInt(10));
                 this.configuration.stock.add(
@@ -46,20 +47,21 @@ public class Main extends Application {
         }
 
         Event event = new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration);
-        this.configuration.simulation.enqueueEvent(event);
+        this.configuration.simulation.enqueueEvent(event);*/
+
+        // test SLAP
+        this.configuration = new Configuration(800, 500, 5, 0);
     }
 
     @Override
     public void start(Stage stage) throws Exception {
 
+        SLAP slap = new SLAP(this.configuration);
+        slap.solve();
         AnimationDashboard animation = new AnimationDashboard(this.configuration);
-        KPIDashboard kpiDashboard = new KPIDashboard(this.configuration);
+        //KPIDashboard kpiDashboard = new KPIDashboard(this.configuration);
 
         BorderPane pane = new BorderPane();
-        pane.setTop(new Group());
-        pane.setBottom(new Group());
-        pane.setLeft(new Group());
-        pane.setRight(kpiDashboard.getPane());
         pane.setCenter(animation.getPane());
 
         Scene scene = new Scene(pane);
