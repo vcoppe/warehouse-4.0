@@ -8,11 +8,10 @@ public class Warehouse {
     private final int width, depth, height; // dimensions
     private final Graph graph;
 
-    public Warehouse(int width, int depth) {
-        // TODO constructor with number of shops, number of slots per shop etc
+    public Warehouse(int width, int depth, int height) {
         this.width = width;
         this.depth = depth;
-        this.height = 2;
+        this.height = height;
         this.graph = new Graph();
     }
 
@@ -32,8 +31,24 @@ public class Warehouse {
         return this.graph;
     }
 
-    public void addEdge(Position p1, Position p2) {
+    public void addEdge(Position p1, Position p2, boolean force) {
+        if (!force) {
+            if (p1.getX() < 0 || p1.getX() >= this.width) return;
+            if (p1.getY() < 0 || p1.getY() >= this.depth) return;
+            if (p1.getZ() < 0 || p1.getZ() >= this.height) return;
+            if (p2.getX() < 0 || p2.getX() >= this.width) return;
+            if (p2.getY() < 0 || p2.getY() >= this.depth) return;
+            if (p2.getZ() < 0 || p2.getZ() >= this.height) return;
+        }
         this.graph.addEdge(p1, p2, p1.manhattanDistance3D(p2));
+    }
+
+    public void addEdge(Position p1, Position p2) {
+        this.addEdge(p1, p2, false);
+    }
+
+    public void removeEdge(Position p1, Position p2) {
+        this.graph.removeEdge(p1, p2);
     }
 
     public double getDistance(Position p1, Position p2) {

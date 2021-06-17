@@ -19,7 +19,11 @@ public class Graph {
 
     public double getWeight(Position u, Position v) {
         Edge e = this.g.get(u).floor(new Edge(v, 0));
-        return e.w;
+        if (e.to.equals(v)) {
+            return e.w;
+        } else {
+            return Double.MAX_VALUE;
+        }
     }
 
     public Set<Position> getVertices() {
@@ -47,6 +51,24 @@ public class Graph {
 
         this.g.get(u).add(new Edge(v, w));
         this.gReverse.get(v).add(new Edge(u, w));
+
+        this.dist.clear();
+        this.prev.clear();
+    }
+
+    public void removeEdge(Position u, Position v) {
+        if (this.g.containsKey(u)) {
+            Edge e = this.g.get(u).floor(new Edge(v, 0));
+            if (e != null && e.to.equals(v)) this.g.get(u).remove(e);
+        }
+
+        if (this.gReverse.containsKey(v)) {
+            Edge e = this.gReverse.get(v).floor(new Edge(u, 0));
+            if (e != null && e.to.equals(u)) this.gReverse.get(v).remove(e);
+        }
+
+        this.dist.clear();
+        this.prev.clear();
     }
 
     public void dijkstra(Position s, HashMap<Position, Double> dist, HashMap<Position, Position> prev) {

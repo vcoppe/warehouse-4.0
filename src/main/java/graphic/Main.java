@@ -24,7 +24,7 @@ public class Main extends Application {
 
     public Main() {
         super();
-        //this.configuration = new Configuration(10, 5);
+        this.configuration = new Configuration(10, 5);
 
         // disable JavaFX logging
         Logger logger = Logger.getLogger("javafx");
@@ -33,31 +33,22 @@ public class Main extends Application {
         // create scenario
         Random random = new Random(0);
 
-        /*for (int i = 0; i < this.configuration.nAisles * this.configuration.nSlotsPerAisle; i++) {
+        for (Position position : this.configuration.stock.getStockPositions()) {
             if (random.nextInt(100) < 70) {
                 Pallet pallet = new Pallet(random.nextInt(10));
                 this.configuration.stock.add(
-                        new Position(
-                                (2 * (i / this.configuration.nSlotsPerAisle) + (i / this.configuration.nSlotsPerAisle) % 2) * this.configuration.palletSize,
-                                (i % this.configuration.nSlotsPerAisle) * this.configuration.palletSize
-                        ),
+                        position,
                         pallet
                 );
             }
         }
 
         Event event = new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration);
-        this.configuration.simulation.enqueueEvent(event);*/
-
-        // test SLAP
-        this.configuration = new Configuration(800, 500, 5, 0);
+        this.configuration.simulation.enqueueEvent(event);
     }
 
     @Override
     public void start(Stage stage) throws Exception {
-
-        SLAP slap = new SLAP(this.configuration);
-        slap.solve();
         AnimationDashboard animation = new AnimationDashboard(this.configuration);
         //KPIDashboard kpiDashboard = new KPIDashboard(this.configuration);
 

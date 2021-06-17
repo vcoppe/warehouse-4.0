@@ -66,7 +66,8 @@ public class AnimationDashboard {
             DockShape dockShape = new DockShape(
                     dock.getPosition().getX(),
                     dock.getPosition().getY(),
-                    configuration.dockWidth
+                    configuration.dockWidth,
+                    configuration.truckDepth
             );
             this.add(dockShape);
         }

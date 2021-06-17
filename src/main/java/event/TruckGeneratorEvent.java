@@ -4,13 +4,11 @@ import agent.Controller;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
-import util.Pair;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
 import warehouse.Warehouse;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -62,7 +60,7 @@ public class TruckGeneratorEvent extends Event {
                         this.time,
                         this.controller,
                         new Truck(
-                                new Position(this.warehouse.getWidth() - this.configuration.truckWidth, 2 * this.warehouse.getDepth() - this.configuration.truckHeight),
+                                new Position(this.warehouse.getWidth() - this.configuration.truckWidth, 2 * this.warehouse.getDepth() - this.configuration.truckDepth),
                                 toLoad,
                                 toUnload
                         )

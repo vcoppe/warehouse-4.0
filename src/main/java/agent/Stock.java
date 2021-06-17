@@ -14,22 +14,23 @@ public class Stock extends Observable {
     private final HashSet<Position> lock;
     private final RuleBasedPalletPositionFilter filter;
 
-    public Stock(ArrayList<Position> stockPositions, ArrayList<Position> bufferPositions) {
+    public Stock() {
         super();
         this.pallets = new HashMap<>();
         this.lock = new HashSet<>();
         this.filter = new RuleBasedPalletPositionFilter(this);
-        this.filter.add(new Rule(Integer.MAX_VALUE, false, stockPositions));
+        this.stockPositions = new ArrayList<>();
+        this.bufferPositions = new ArrayList<>();
+    }
 
-        this.stockPositions = stockPositions;
-        for (Position position : stockPositions) {
-            this.add(position, Pallet.FREE);
-        }
+    public void addStockPosition(Position position) {
+        this.stockPositions.add(position);
+        this.add(position, Pallet.FREE);
+    }
 
-        this.bufferPositions = bufferPositions;
-        for (Position position : bufferPositions) {
-            this.add(position, Pallet.FREE);
-        }
+    public void addBufferPosition(Position position) {
+        this.bufferPositions.add(position);
+        this.add(position, Pallet.FREE);
     }
 
     public void add(Position position, Pallet pallet) {
@@ -136,6 +137,16 @@ public class Stock extends Observable {
                 }
             }
 
+            // if no match, return any possible position
+            if (positions.isEmpty()) {
+                for (Position position : this.stock.getStockPositions()) {
+                    Pallet stockPallet = this.stock.get(position);
+                    if (stockPallet != null && stockPallet.getType() == pallet.getType() && !this.stock.isLocked(position)) {
+                        positions.add(position);
+                    }
+                }
+            }
+
             return positions;
         }
 
@@ -162,6 +173,15 @@ public class Stock extends Observable {
 
                     if (rule.isBlocking()) {
                         return positions;
+                    }
+                }
+            }
+
+            // if no match, return any possible position
+            if (positions.isEmpty()) {
+                for (Position position : this.stock.getStockPositions()) {
+                    if (this.stock.isFree(position)) {
+                        positions.add(position);
                     }
                 }
             }

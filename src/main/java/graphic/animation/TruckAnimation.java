@@ -12,7 +12,6 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
 import observer.Observer;
-import util.Pair;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
@@ -47,7 +46,7 @@ public class TruckAnimation implements Observer<Controller> {
                 0,
                 0,
                 this.configuration.truckWidth,
-                this.configuration.truckHeight
+                this.configuration.truckDepth
         );
         CompoundShape shape = new CompoundShape(truckShape, truck.getPosition().getX(), truck.getPosition().getY());
 
@@ -118,8 +117,8 @@ public class TruckAnimation implements Observer<Controller> {
         if (!truck.getPosition().equals(truck.getTargetPosition())) { // travelling to dock
             Position [] positions = {
                     truck.getPosition(),
-                    new Position(truck.getPosition().getX(), 3 * this.configuration.warehouse.getDepth() / 2),
-                    new Position(truck.getTargetPosition().getX(), 3 * this.configuration.warehouse.getDepth() / 2),
+                    new Position(truck.getPosition().getX(), Math.min(2 * this.configuration.warehouse.getDepth() - this.configuration.truckDepth, this.configuration.warehouse.getDepth() + this.configuration.truckDepth)),
+                    new Position(truck.getTargetPosition().getX(), Math.min(2 * this.configuration.warehouse.getDepth() - this.configuration.truckDepth, this.configuration.warehouse.getDepth() + this.configuration.truckDepth)),
                     truck.getTargetPosition()
             };
 

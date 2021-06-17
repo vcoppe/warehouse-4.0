@@ -271,7 +271,7 @@ public class WHCAStar {
             }
         }
 
-        System.out.println("No path found in RRA* from " + endPosition.getX() + "," + endPosition.getY() + " to " + startPosition.getX() + "," + startPosition.getY());
+        System.out.println("No path found in RRA* from " + endPosition + " to " + startPosition);
         System.exit(0);
 
         return Double.MAX_VALUE;
