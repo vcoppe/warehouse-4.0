@@ -12,6 +12,7 @@ public class Observable {
 
     public void attach(Observer observer) {
         this.observers.add(observer);
+        observer.update(this);
     }
 
     protected void changed() {

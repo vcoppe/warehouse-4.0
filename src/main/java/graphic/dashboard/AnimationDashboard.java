@@ -1,6 +1,7 @@
 package graphic.dashboard;
 
 import agent.Dock;
+import agent.Lift;
 import graphic.animation.MobileAnimation;
 import graphic.animation.StockAnimation;
 import graphic.animation.TruckAnimation;
@@ -72,11 +73,21 @@ public class AnimationDashboard {
             this.add(dockShape);
         }
 
+        for (Lift lift : configuration.lifts) {
+            LiftShape liftShape = new LiftShape(
+                    lift.getPosition().getX(),
+                    lift.getPosition().getY(),
+                    configuration.palletSize,
+                    configuration.palletSize
+            );
+            this.add(liftShape);
+        }
+
         this.stockAnimation = new StockAnimation(this.configuration);
         this.truckAnimation = new TruckAnimation(this.configuration);
         this.mobileAnimation = new MobileAnimation(this.configuration);
 
-        this.stockAnimation.update(this.configuration.stock);
+        this.configuration.stock.attach(this.stockAnimation);
 
         this.add(this.stockAnimation.getGroup());
         this.add(this.truckAnimation.getGroup());
@@ -208,7 +219,6 @@ public class AnimationDashboard {
     }
 
     private void createAnimations(double time, double delta) {
-        this.stockAnimation.update(this.configuration.stock);
         this.animations.addAll(this.mobileAnimation.getAnimations(time, delta));
         this.animations.addAll(this.truckAnimation.getAnimations(time, delta));
     }

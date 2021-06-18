@@ -120,7 +120,7 @@ public class MobileAnimation {
                 end = true;
             }
 
-            if (position.equals(lastPosition)) {
+            if (position.equals(lastPosition) || (position.getX() == lastPosition.getX() && position.getY() == lastPosition.getY())) {
                 if (currentPath != null) {
                     if (currentPath.getElements().size() > 1) {
                         PathTransition pathTransition = new PathTransition(Duration.seconds(cumulTime), currentPath, mobileShape.getShape());

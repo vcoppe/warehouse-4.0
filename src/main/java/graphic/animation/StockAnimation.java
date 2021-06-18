@@ -3,13 +3,14 @@ package graphic.animation;
 import agent.Stock;
 import graphic.shape.PalletShape;
 import javafx.scene.Group;
+import observer.Observer;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
 
 import java.util.HashMap;
 
-public class StockAnimation {
+public class StockAnimation implements Observer<Stock> {
 
     private final Configuration configuration;
     private final HashMap<Position, PalletShape> shapes;
@@ -49,6 +50,7 @@ public class StockAnimation {
         this.update(this.configuration.stock);
     }
 
+    @Override
     public void update(Stock stock) {
         // add new slots/pallets
         for (Position position : stock.getAllPositions()) {
@@ -68,5 +70,4 @@ public class StockAnimation {
         }
 
     }
-
 }

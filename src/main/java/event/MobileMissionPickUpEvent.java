@@ -6,12 +6,7 @@ import agent.Stock;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
-import util.Pair;
 import warehouse.Mission;
-import warehouse.Position;
-import warehouse.Warehouse;
-
-import java.util.ArrayList;
 
 public class MobileMissionPickUpEvent extends Event {
 
@@ -52,6 +47,7 @@ public class MobileMissionPickUpEvent extends Event {
             this.stock.remove(this.mission.getStartPosition(), this.mission.getPallet());
         }
 
+        this.simulation.enqueueEvent(new ControllerEvent(this.simulation, this.time, this.controller)); // some missions might have become startable after pickup
         PathFinderEvent.enqueue(this.simulation, this.time, this.controller);
     }
 

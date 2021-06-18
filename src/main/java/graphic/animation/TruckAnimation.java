@@ -5,7 +5,9 @@ import agent.Truck;
 import graphic.shape.CompoundShape;
 import graphic.shape.PalletShape;
 import graphic.shape.TruckShape;
-import javafx.animation.*;
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.PathTransition;
 import javafx.scene.Group;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -27,7 +29,7 @@ public class TruckAnimation implements Observer<Controller> {
     private final HashMap<Integer, Truck> trucks;
     private final HashMap<Integer, CompoundShape> shapes;
     private final HashMap<Integer, HashMap<Position, PalletShape>> palletShapes;
-    private Group group;
+    private final Group group;
 
     public TruckAnimation(Configuration configuration) {
         this.configuration = configuration;

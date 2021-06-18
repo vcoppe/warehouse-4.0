@@ -160,7 +160,7 @@ public class Graph {
 
         if (dist == null) {
             System.out.println("No path between " + s + " and " + t);
-            System.exit(0);
+            //System.exit(0);
         }
 
         return dist;
