@@ -36,7 +36,7 @@ public class Configuration {
         this.lifts = new ArrayList<>();
         this.mobiles = new ArrayList<>();
 
-        int productionLineX = width - 80, productionLineY = 30, productionLineWidth = 50, productionLineDepth = 100;
+        int productionLineX = width - 70, productionLineY = 20, productionLineWidth = 50, productionLineDepth = 100;
 
         ArrayList<Position> productionLineStartBuffer = new ArrayList<>();
         ArrayList<Position> productionLineEndBuffer = new ArrayList<>();
@@ -48,13 +48,13 @@ public class Configuration {
         this.productionLine = this.addProductionLine(productionLineX, productionLineY, productionLineX + productionLineWidth, productionLineY + productionLineDepth, 10, productionLineStartBuffer, productionLineEndBuffer);
 
         this.addStockSection(20, 20, 120, 120, 20, true);
-        this.addStockSection(150, 20, 250, 120, 20, false);
-        this.addStockSection(20, 150, 120, 250, 20, false);
-        this.addStockSection(150, 150, 250, 250, 20, true);
+        this.addStockSection(20, 150, 120, 250, 20, true);
 
-        this.addAutoStockSection(290, 20, 400, 180, 40, true, false, false, true, true);
+        this.addAutoStockSection(150, 20, 270, 200, 40, true, false, false, true, true);
 
-        for (int i=0; i< nDocks-2; i++) this.addOutdoorDock(i * this.dockWidth, depth);
+        this.addStockSection(300, 20, 460, 160, 20, false);
+
+        for (int i = 0; i < nDocks - 2; i++) this.addOutdoorDock(i * this.dockWidth, depth);
         for (int i = 0; i < 2; i++) this.addIndoorDock(300 + i * this.dockWidth * 2, depth - truckDepth);
         for (int i = 0; i < nMobiles; i++)
             this.mobiles.add(new Mobile(new Position(dockWidth * i, depth - this.palletSize)));
@@ -212,24 +212,34 @@ public class Configuration {
 
         for (int x = x1; x < x2; x += this.palletSize) {
             if (vertical) {
-                this.warehouse.addEdge(new Position(x, y1, 0), new Position(x, y1 - this.palletSize, 0));
-                this.warehouse.addEdge(new Position(x, y2 - this.palletSize, 0), new Position(x, y2, 0));
+                if (x >= xStart && x < xEnd) {
+                    this.warehouse.addEdge(new Position(x, y1, 0), new Position(x, y1 - this.palletSize, 0));
+                    this.warehouse.addEdge(new Position(x, y2 - this.palletSize, 0), new Position(x, y2, 0));
+                } else if (x < xStart) { // remove edges (horizontal ones)
+                    this.warehouse.removeEdge(new Position(x - this.palletSize, y1, 0), new Position(x, y1, 0));
+                    this.warehouse.removeEdge(new Position(x - this.palletSize, y2 - this.palletSize, 0), new Position(x, y2 - this.palletSize, 0));
+                } else if (x >= xEnd) {
+                    this.warehouse.removeEdge(new Position(x + this.palletSize, y1, 0), new Position(x, y1, 0));
+                    this.warehouse.removeEdge(new Position(x + this.palletSize, y2 - this.palletSize, 0), new Position(x, y2 - this.palletSize, 0));
+                }
                 for (int z = 0; z < height; z += this.palletSize) {
                     if (x >= xStart && x < xEnd) {
                         this.warehouse.addEdge(new Position(x, y1, z), new Position(x, y1 + this.palletSize, z));
                         this.warehouse.addEdge(new Position(x, y2 - this.palletSize, z), new Position(x, y2 - 2 * this.palletSize, z));
                     }
-                    if (x + this.palletSize < x2) {
-                        if (y1 < yStart)
-                            this.warehouse.addEdge(new Position(x, y1, z), new Position(x + this.palletSize, y1, z));
-                        if (y2 > yEnd)
-                            this.warehouse.addEdge(new Position(x, y2 - this.palletSize, z), new Position(x + this.palletSize, y2 - this.palletSize, z));
-                    }
-                    if (x - this.palletSize >= x1) {
-                        if (y1 < yStart)
-                            this.warehouse.addEdge(new Position(x, y1, z), new Position(x - this.palletSize, y1, z));
-                        if (y2 > yEnd)
-                            this.warehouse.addEdge(new Position(x, y2 - this.palletSize, z), new Position(x - this.palletSize, y2 - this.palletSize, z));
+                    if (z > 0) {
+                        if (x + this.palletSize < x2) {
+                            if (y1 < yStart)
+                                this.warehouse.addEdge(new Position(x, y1, z), new Position(x + this.palletSize, y1, z));
+                            if (y2 > yEnd)
+                                this.warehouse.addEdge(new Position(x, y2 - this.palletSize, z), new Position(x + this.palletSize, y2 - this.palletSize, z));
+                        }
+                        if (x - this.palletSize >= x1) {
+                            if (y1 < yStart)
+                                this.warehouse.addEdge(new Position(x, y1, z), new Position(x - this.palletSize, y1, z));
+                            if (y2 > yEnd)
+                                this.warehouse.addEdge(new Position(x, y2 - this.palletSize, z), new Position(x - this.palletSize, y2 - this.palletSize, z));
+                        }
                     }
                 }
             } else {
@@ -243,32 +253,49 @@ public class Configuration {
                 this.warehouse.removeEdge(new Position(x1 - this.palletSize, y, 0), new Position(x1, y, 0));
                 this.warehouse.removeEdge(new Position(x2, y, 0), new Position(x2 - this.palletSize, y, 0));
             } else {
-                this.warehouse.addEdge(new Position(x1, y, 0), new Position(x1 - this.palletSize, y, 0));
-                this.warehouse.addEdge(new Position(x2 - this.palletSize, y, 0), new Position(x2, y, 0));
+                if (y >= yStart && y < yEnd) {
+                    this.warehouse.addEdge(new Position(x1, y, 0), new Position(x1 - this.palletSize, y, 0));
+                    this.warehouse.addEdge(new Position(x2 - this.palletSize, y, 0), new Position(x2, y, 0));
+                } else if (y < yStart) { // remove edges (vertical ones)
+                    this.warehouse.removeEdge(new Position(x1, y - this.palletSize, 0), new Position(x1, y, 0));
+                    this.warehouse.removeEdge(new Position(x2 - this.palletSize, y - this.palletSize, 0), new Position(x2 - this.palletSize, y, 0));
+                } else if (y >= yEnd) {
+                    this.warehouse.removeEdge(new Position(x1, y + this.palletSize, 0), new Position(x1, y, 0));
+                    this.warehouse.removeEdge(new Position(x2 - this.palletSize, y + this.palletSize, 0), new Position(x2 - this.palletSize, y, 0));
+                }
                 for (int z = 0; z < height; z += this.palletSize) {
                     if (y >= yStart && y < yEnd) {
                         this.warehouse.addEdge(new Position(x1, y, z), new Position(x1 + this.palletSize, y, z));
                         this.warehouse.addEdge(new Position(x2 - this.palletSize, y, z), new Position(x2 - 2 * this.palletSize, y, z));
                     }
-                    if (y + this.palletSize < y2) {
-                        if (x1 < xStart)
-                            this.warehouse.addEdge(new Position(x1, y, z), new Position(x1, y + this.palletSize, z));
-                        if (x2 > xEnd)
-                            this.warehouse.addEdge(new Position(x2 - this.palletSize, y, z), new Position(x2 - this.palletSize, y + this.palletSize, z));
-                    }
-                    if (y - this.palletSize >= y1) {
-                        if (x1 < xStart)
-                            this.warehouse.addEdge(new Position(x1, y, z), new Position(x1, y - this.palletSize, z));
-                        if (x2 > xEnd)
-                            this.warehouse.addEdge(new Position(x2 - this.palletSize, y, z), new Position(x2 - this.palletSize, y - this.palletSize, z));
+                    if (z > 0) {
+                        if (y + this.palletSize < y2) {
+                            if (x1 < xStart)
+                                this.warehouse.addEdge(new Position(x1, y, z), new Position(x1, y + this.palletSize, z));
+                            if (x2 > xEnd)
+                                this.warehouse.addEdge(new Position(x2 - this.palletSize, y, z), new Position(x2 - this.palletSize, y + this.palletSize, z));
+                        }
+                        if (y - this.palletSize >= y1) {
+                            if (x1 < xStart)
+                                this.warehouse.addEdge(new Position(x1, y, z), new Position(x1, y - this.palletSize, z));
+                            if (x2 > xEnd)
+                                this.warehouse.addEdge(new Position(x2 - this.palletSize, y, z), new Position(x2 - this.palletSize, y - this.palletSize, z));
+                        }
                     }
                 }
             }
         }
 
-        // lift vertical edges
+        // lift vertical edges + exits
         if (liftNW) {
             this.lifts.add(new Lift(new Position(x1, y1, 0), height));
+            if (vertical) {
+                this.warehouse.addEdge(new Position(x1, y1, 0), new Position(x1, y1 + this.palletSize, 0));
+                this.warehouse.addEdge(new Position(x1, y1 + this.palletSize, 0), new Position(x1 - this.palletSize, y1 + this.palletSize, 0));
+            } else {
+                this.warehouse.addEdge(new Position(x1, y1, 0), new Position(x1 + this.palletSize, y1, 0));
+                this.warehouse.addEdge(new Position(x1 + this.palletSize, y1, 0), new Position(x1 + this.palletSize, y1 - this.palletSize, 0));
+            }
             for (int z = 0; z < height; z += this.palletSize) {
                 this.warehouse.addEdge(new Position(x1, y1, z), new Position(x1, y1, z - this.palletSize));
                 if (z + this.palletSize < height) {
@@ -278,6 +305,13 @@ public class Configuration {
         }
         if (liftNE) {
             this.lifts.add(new Lift(new Position(x2 - this.palletSize, y1, 0), height));
+            if (vertical) {
+                this.warehouse.addEdge(new Position(x2 - this.palletSize, y1, 0), new Position(x2 - this.palletSize, y1 + this.palletSize, 0));
+                this.warehouse.addEdge(new Position(x2 - this.palletSize, y1 + this.palletSize, 0), new Position(x2, y1 + this.palletSize, 0));
+            } else {
+                this.warehouse.addEdge(new Position(x2 - this.palletSize, y1, 0), new Position(x2 - 2 * this.palletSize, y1, 0));
+                this.warehouse.addEdge(new Position(x2 - 2 * this.palletSize, y1, 0), new Position(x2 - 2 * this.palletSize, y1 - this.palletSize, 0));
+            }
             for (int z = 0; z < height; z += this.palletSize) {
                 this.warehouse.addEdge(new Position(x2 - this.palletSize, y1, z), new Position(x2 - this.palletSize, y1, z - this.palletSize));
                 if (z + this.palletSize < height) {
@@ -287,6 +321,13 @@ public class Configuration {
         }
         if (liftSW) {
             this.lifts.add(new Lift(new Position(x1, y2 - this.palletSize, 0), height));
+            if (vertical) {
+                this.warehouse.addEdge(new Position(x1, y2 - this.palletSize, 0), new Position(x1, y2 - 2 * this.palletSize, 0));
+                this.warehouse.addEdge(new Position(x1, y2 - 2 * this.palletSize, 0), new Position(x1 - this.palletSize, y2 - 2 * this.palletSize, 0));
+            } else {
+                this.warehouse.addEdge(new Position(x1, y2 - this.palletSize, 0), new Position(x1 + this.palletSize, y2 - this.palletSize, 0));
+                this.warehouse.addEdge(new Position(x1 + this.palletSize, y2 - this.palletSize, 0), new Position(x1 + this.palletSize, y2, 0));
+            }
             for (int z = 0; z < height; z += this.palletSize) {
                 this.warehouse.addEdge(new Position(x1, y2 - this.palletSize, z), new Position(x1, y2 - this.palletSize, z - this.palletSize));
                 if (z + this.palletSize < height) {
@@ -296,6 +337,13 @@ public class Configuration {
         }
         if (liftSE) {
             this.lifts.add(new Lift(new Position(x2 - this.palletSize, y2 - this.palletSize, 0), height));
+            if (vertical) {
+                this.warehouse.addEdge(new Position(x2 - this.palletSize, y2 - this.palletSize, 0), new Position(x2 - this.palletSize, y2 - 2 * this.palletSize, 0));
+                this.warehouse.addEdge(new Position(x2 - this.palletSize, y2 - 2 * this.palletSize, 0), new Position(x2, y2 - 2 * this.palletSize, 0));
+            } else {
+                this.warehouse.addEdge(new Position(x2 - this.palletSize, y2 - this.palletSize, 0), new Position(x2 - 2 * this.palletSize, y2 - this.palletSize, 0));
+                this.warehouse.addEdge(new Position(x2 - 2 * this.palletSize, y2 - this.palletSize, 0), new Position(x2 - 2 * this.palletSize, y2, 0));
+            }
             for (int z = 0; z < height; z += this.palletSize) {
                 this.warehouse.addEdge(new Position(x2 - this.palletSize, y2 - this.palletSize, z), new Position(x2 - this.palletSize, y2 - this.palletSize, z - this.palletSize));
                 if (z + this.palletSize < height) {
@@ -304,9 +352,10 @@ public class Configuration {
             }
         }
 
-        for (int x = xStart; x < xEnd; x += this.palletSize) {
-            for (int y = yStart; y < yEnd; y += this.palletSize) {
+        for (int x = x1; x < x2; x += this.palletSize) {
+            for (int y = y1; y < y2; y += this.palletSize) {
                 for (int z = 0; z < height; z += this.palletSize) {
+                    if (z > 0 && (x < xStart || x >= xEnd || y < yStart || y >= yEnd)) continue;
                     if (vertical) {
                         if (y + this.palletSize < y2)
                             this.warehouse.addEdge(new Position(x, y, z), new Position(x, y + this.palletSize, z));
