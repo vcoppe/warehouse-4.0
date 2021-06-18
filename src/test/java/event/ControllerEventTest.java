@@ -25,10 +25,10 @@ public class ControllerEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        this.configuration = new Configuration(2, 2);
+        this.configuration = new Configuration();
         this.controller = this.configuration.controller;
         this.stock = this.configuration.stock;
-        this.productionLine = this.configuration.productionLine;
+        this.productionLine = this.configuration.productionLines.get(0);
 
         this.event = new ControllerEvent(this.configuration.simulation, 1, this.controller);
 

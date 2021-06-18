@@ -11,8 +11,6 @@ import warehouse.Pallet;
 import warehouse.Position;
 import warehouse.Production;
 
-import java.util.ArrayList;
-
 public class ProductionInitEvent extends Event {
 
     private final Controller controller;
@@ -20,11 +18,11 @@ public class ProductionInitEvent extends Event {
     private final ProductionLine productionLine;
     private final Production production;
 
-    public ProductionInitEvent(Simulation simulation, double time, Controller controller, Production production) {
+    public ProductionInitEvent(Simulation simulation, double time, Controller controller, ProductionLine productionLine, Production production) {
         super(simulation, time);
         this.controller = controller;
         this.stock = controller.getStock();
-        this.productionLine = controller.getProductionLine();
+        this.productionLine = productionLine;
         this.production = production;
     }
 

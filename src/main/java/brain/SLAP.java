@@ -27,13 +27,14 @@ public class SLAP {
     public SLAP(Configuration configuration) {
         this.configuration = configuration;
         int nDocks = this.configuration.docks.size();
+        int nProductionLines = this.configuration.productionLines.size();
 
         this.slots = this.configuration.stock.getStockPositions();
         this.nSlots = this.slots.size();
         this.slotCapacity = new int[this.nSlots];
         Arrays.fill(this.slotCapacity, 1);
 
-        this.nIOPoints = nDocks + 2; // all docks + input and output of production line
+        this.nIOPoints = nDocks + nProductionLines * 2; // all docks + production lines (in + out)
 
         this.dist = new double[this.nSlots][this.nIOPoints];
         for (int i=0; i<this.nSlots; i++) {
@@ -43,15 +44,15 @@ public class SLAP {
                 if (j < nDocks) {
                     p2 = this.configuration.docks.get(j).getPosition();
                 } else if (j % 2 == 0) {
-                    p2 = this.configuration.productionLine.getStartBuffer().get(0);
+                    p2 = this.configuration.productionLines.get((j - nDocks) / 2).getStartBuffer().get(0);
                 } else {
-                    p2 = this.configuration.productionLine.getEndBuffer().get(0);
+                    p2 = this.configuration.productionLines.get((j - nDocks) / 2).getEndBuffer().get(0);
                 }
                 this.dist[i][j] = this.configuration.warehouse.getDistance(p1, p2);
             }
         }
 
-        this.nTypes = 20;
+        this.nTypes = 5;
         this.nPalletsOfType = new int[this.nTypes];
         this.freq = new double[this.nTypes][this.nIOPoints];
         this.throughput = new double[this.nTypes];

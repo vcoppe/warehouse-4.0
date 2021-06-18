@@ -24,7 +24,7 @@ public class MobileMissionEndEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        this.configuration = new Configuration(1, 1);
+        this.configuration = new Configuration();
         this.mobile = this.configuration.mobiles.get(0);
         this.configuration.controller.remove(this.mobile); //  mark as used
 

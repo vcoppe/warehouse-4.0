@@ -20,8 +20,8 @@ public class Controller extends Observable {
     private final Configuration configuration;
     private final Warehouse warehouse;
     private final Stock stock;
-    private final ProductionLine productionLine;
     private final WHCAStar pathFinder;
+    private final ArrayList<ProductionLine> productionLines;
     private final ArrayList<Dock> docks;
     private final ArrayList<Lift> lifts;
     private final ArrayList<Truck> trucks;
@@ -37,7 +37,7 @@ public class Controller extends Observable {
         this.configuration = configuration;
         this.warehouse = configuration.warehouse;
         this.stock = configuration.stock;
-        this.productionLine = configuration.productionLine;
+        this.productionLines = configuration.productionLines;
         this.pathFinder = new WHCAStar();
         this.docks = configuration.docks;
         this.lifts = configuration.lifts;
@@ -59,8 +59,8 @@ public class Controller extends Observable {
         return this.stock;
     }
 
-    public ProductionLine getProductionLine() {
-        return this.productionLine;
+    public ArrayList<ProductionLine> getProductionLines() {
+        return this.productionLines;
     }
 
     public WHCAStar getPathFinder() {

@@ -24,7 +24,7 @@ public class PathFinderEventTest extends TestCase {
         PathFinderEvent.reset();
         PathUpdateEvent.reset();
 
-        this.configuration = new Configuration(1, 1);
+        this.configuration = new Configuration();
         this.simulation = this.configuration.simulation;
         this.controller = this.configuration.controller;
         this.mobile = this.configuration.mobiles.get(0);

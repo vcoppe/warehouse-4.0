@@ -12,7 +12,7 @@ public class Configuration {
     public final Controller controller;
     public final Warehouse warehouse;
     public final Stock stock;
-    public final ProductionLine productionLine;
+    public final ArrayList<ProductionLine> productionLines;
     public final ArrayList<Dock> docks;
     public final ArrayList<Lift> lifts;
     public final ArrayList<Mobile> mobiles;
@@ -26,15 +26,28 @@ public class Configuration {
     public int truckWidth = dockWidth;
     public int truckDepth = 3 * truckWidth;
 
-    public Configuration(int width, int depth, int height, int nDocks, int nMobiles) {
+    public Configuration(int width, int depth, int height) {
         this.simulation = new Simulation();
 
         this.warehouse = this.createWarehouse(width, depth, height);
         this.stock = new Stock();
 
+        this.productionLines = new ArrayList<>();
         this.docks = new ArrayList<>();
         this.lifts = new ArrayList<>();
         this.mobiles = new ArrayList<>();
+
+        this.mobileMissionSelector = new MobileMissionMatchingSelector(this.warehouse);
+        this.palletPositionSelector = new ClosestPositionSelector(this.warehouse);
+        this.truckDockSelector = new NaiveSelector();
+
+        this.controller = new Controller(this, this.mobileMissionSelector, this.truckDockSelector, this.palletPositionSelector);
+    }
+
+    public Configuration() {
+        this(300, 200, 20);
+
+        int width = this.warehouse.getWidth(), depth = this.warehouse.getDepth();
 
         int productionLineX = width - 70, productionLineY = 20, productionLineWidth = 50, productionLineDepth = 100;
 
@@ -45,39 +58,22 @@ public class Configuration {
             productionLineEndBuffer.add(new Position(productionLineX + (i % 5) * this.palletSize, productionLineY + productionLineDepth + i / 5 * this.palletSize));
         }
 
-        this.productionLine = this.addProductionLine(productionLineX, productionLineY, productionLineX + productionLineWidth, productionLineY + productionLineDepth, 10, productionLineStartBuffer, productionLineEndBuffer);
+        this.addProductionLine(productionLineX, productionLineY, productionLineX + productionLineWidth, productionLineY + productionLineDepth, 10, productionLineStartBuffer, productionLineEndBuffer);
 
         this.addStockSection(20, 20, 120, 120, 20, true);
-        this.addStockSection(20, 150, 120, 250, 20, true);
 
-        this.addAutoStockSection(150, 20, 270, 200, 40, true, false, false, true, true);
-
-        this.addStockSection(300, 20, 460, 160, 20, false);
-
-        for (int i = 0; i < nDocks - 2; i++) this.addOutdoorDock(i * this.dockWidth, depth);
-        for (int i = 0; i < 2; i++) this.addIndoorDock(300 + i * this.dockWidth * 2, depth - truckDepth);
-        for (int i = 0; i < nMobiles; i++)
-            this.mobiles.add(new Mobile(new Position(dockWidth * i, depth - this.palletSize)));
-
-        this.mobileMissionSelector = new MobileMissionMatchingSelector(this.warehouse);
-        this.palletPositionSelector = new ClosestPositionSelector(this.warehouse);
-        this.truckDockSelector = new NaiveSelector();
-
-        this.controller = new Controller(this, this.mobileMissionSelector, this.truckDockSelector, this.palletPositionSelector);
-    }
-
-    public Configuration(int nDocks, int nMobiles) {
-        this(600, 300, 40, nDocks, nMobiles);
+        for (int i = 0; i < 5; i++) this.addOutdoorDock(i * this.dockWidth, depth);
+        for (int i = 0; i < 5; i++) this.addMobile(new Position(dockWidth * i, depth - this.palletSize));
     }
 
     private Warehouse createWarehouse(int width, int depth, int height) {
         Warehouse warehouse = new Warehouse(width, depth, height);
 
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<depth; y++) {
-                warehouse.addEdge(new Position(x, y, 0), new Position(x+this.palletSize, y, 0));
-                warehouse.addEdge(new Position(x, y, 0), new Position(x-this.palletSize, y, 0));
-                warehouse.addEdge(new Position(x, y, 0), new Position(x, y+this.palletSize, 0));
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < depth; y++) {
+                warehouse.addEdge(new Position(x, y, 0), new Position(x + this.palletSize, y, 0));
+                warehouse.addEdge(new Position(x, y, 0), new Position(x - this.palletSize, y, 0));
+                warehouse.addEdge(new Position(x, y, 0), new Position(x, y + this.palletSize, 0));
                 warehouse.addEdge(new Position(x, y, 0), new Position(x, y-this.palletSize, 0));
             }
         }
@@ -406,16 +402,16 @@ public class Configuration {
         }
     }
 
-    public ProductionLine addProductionLine(int x1, int y1, int x2, int y2, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
+    public void addProductionLine(int x1, int y1, int x2, int y2, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
         this.removeGraphEdges(x1, y1, x2, y2);
 
-        for (int x=x1; x<x2; x += this.palletSize) {
-            this.warehouse.removeEdge(new Position(x, y1-this.palletSize, 0), new Position(x, y1, 0));
-            this.warehouse.removeEdge(new Position(x, y2, 0), new Position(x, y2-this.palletSize, 0));
+        for (int x = x1; x < x2; x += this.palletSize) {
+            this.warehouse.removeEdge(new Position(x, y1 - this.palletSize, 0), new Position(x, y1, 0));
+            this.warehouse.removeEdge(new Position(x, y2, 0), new Position(x, y2 - this.palletSize, 0));
         }
-        for (int y=y1; y<y2; y += this.palletSize) {
-            this.warehouse.removeEdge(new Position(x1-this.palletSize, y, 0), new Position(x1, y, 0));
-            this.warehouse.removeEdge(new Position(x2, y, 0), new Position(x2-this.palletSize, y, 0));
+        for (int y = y1; y < y2; y += this.palletSize) {
+            this.warehouse.removeEdge(new Position(x1 - this.palletSize, y, 0), new Position(x1, y, 0));
+            this.warehouse.removeEdge(new Position(x2, y, 0), new Position(x2 - this.palletSize, y, 0));
         }
 
         for (Position position : startBuffer) {
@@ -426,7 +422,13 @@ public class Configuration {
             this.stock.addBufferPosition(position);
         }
 
-        return new ProductionLine(this.stock, new Position(x1, y1), x2-x1, y2-y1, capacity, startBuffer, endBuffer);
+        this.productionLines.add(new ProductionLine(this.stock, new Position(x1, y1), x2 - x1, y2 - y1, capacity, startBuffer, endBuffer));
+    }
+
+    public void addMobile(Position position) {
+        Mobile mobile = new Mobile(position);
+        this.mobiles.add(mobile);
+        this.controller.add(mobile);
     }
 
 }

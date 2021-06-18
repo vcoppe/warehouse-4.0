@@ -2,6 +2,7 @@ package graphic.dashboard;
 
 import agent.Dock;
 import agent.Lift;
+import agent.ProductionLine;
 import graphic.animation.MobileAnimation;
 import graphic.animation.StockAnimation;
 import graphic.animation.TruckAnimation;
@@ -53,15 +54,18 @@ public class AnimationDashboard {
 
         SiteShape siteShape = new SiteShape(width, height);
         WarehouseShape warehouseShape = new WarehouseShape(0, 0, configuration.warehouse.getWidth(), configuration.warehouse.getDepth());
-        ProductionLineShape productionLineShape = new ProductionLineShape(
-                configuration.productionLine.getPosition().getX(),
-                configuration.productionLine.getPosition().getY(),
-                configuration.productionLine.getWidth(),
-                configuration.productionLine.getDepth());
 
         this.add(siteShape);
         this.add(warehouseShape);
-        this.add(productionLineShape);
+
+        for (ProductionLine productionLine : configuration.productionLines) {
+            ProductionLineShape productionLineShape = new ProductionLineShape(
+                    productionLine.getPosition().getX(),
+                    productionLine.getPosition().getY(),
+                    productionLine.getWidth(),
+                    productionLine.getDepth());
+            this.add(productionLineShape);
+        }
 
         for (Dock dock : configuration.docks) {
             DockShape dockShape = new DockShape(

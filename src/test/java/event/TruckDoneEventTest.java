@@ -5,7 +5,6 @@ import agent.Truck;
 import junit.framework.TestCase;
 import warehouse.Configuration;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TruckDoneEventTest extends TestCase {
@@ -18,7 +17,7 @@ public class TruckDoneEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        this.configuration = new Configuration(1, 1);
+        this.configuration = new Configuration();
         this.dock = this.configuration.docks.get(0);
         this.truck = new Truck(this.dock.getPosition(), new HashMap<>(), new HashMap<>());
         this.truck.go(0, this.dock);

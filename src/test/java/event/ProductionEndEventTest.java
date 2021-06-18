@@ -20,8 +20,8 @@ public class ProductionEndEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        this.configuration = new Configuration(1, 1);
-        this.productionLine = this.configuration.productionLine;
+        this.configuration = new Configuration();
+        this.productionLine = this.configuration.productionLines.get(0);
         this.stock = this.configuration.stock;
 
         ArrayList<Pair<Pallet, Integer>> in = new ArrayList<>();
@@ -34,7 +34,7 @@ public class ProductionEndEventTest extends TestCase {
 
         this.production = new Production(in, out, 10, 1, 250);
         this.productionLine.reserveCapacity(this.production.getCapacity());
-        this.event = new ProductionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.production);
+        this.event = new ProductionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.productionLine, this.production);
     }
 
     public void testAddPalletsToBuffer() {

@@ -11,6 +11,7 @@ import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,7 +22,34 @@ public class Main extends Application {
 
     public Main() {
         super();
-        this.configuration = new Configuration(10, 5);
+        //this.configuration = new Configuration();
+        this.configuration = new Configuration(600, 300, 40);
+
+        int width = this.configuration.warehouse.getWidth(), depth = this.configuration.warehouse.getDepth();
+
+        int productionLineX = width - 70, productionLineY = 20, productionLineWidth = 50, productionLineDepth = 100;
+
+        ArrayList<Position> productionLineStartBuffer = new ArrayList<>();
+        ArrayList<Position> productionLineEndBuffer = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            productionLineStartBuffer.add(new Position(productionLineX - 2 * this.configuration.palletSize + i / 5 * this.configuration.palletSize, productionLineY + (i % 5) * this.configuration.palletSize));
+            productionLineEndBuffer.add(new Position(productionLineX + (i % 5) * this.configuration.palletSize, productionLineY + productionLineDepth + i / 5 * this.configuration.palletSize));
+        }
+
+        this.configuration.addProductionLine(productionLineX, productionLineY, productionLineX + productionLineWidth, productionLineY + productionLineDepth, 10, productionLineStartBuffer, productionLineEndBuffer);
+
+        this.configuration.addStockSection(20, 20, 120, 120, 20, true);
+        this.configuration.addStockSection(20, 150, 120, 250, 20, true);
+
+        this.configuration.addAutoStockSection(150, 20, 270, 200, 40, true, false, false, true, true);
+
+        this.configuration.addStockSection(300, 20, 460, 160, 20, false);
+
+        for (int i = 0; i < 5; i++) this.configuration.addOutdoorDock(i * this.configuration.dockWidth, depth);
+        for (int i = 0; i < 2; i++)
+            this.configuration.addIndoorDock(300 + i * this.configuration.dockWidth * 2, depth - this.configuration.truckDepth);
+        for (int i = 0; i < 5; i++)
+            this.configuration.addMobile(new Position(this.configuration.dockWidth * i, depth - this.configuration.palletSize));
 
         // disable JavaFX logging
         Logger logger = Logger.getLogger("javafx");
@@ -42,6 +70,9 @@ public class Main extends Application {
 
         Event event = new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration);
         this.configuration.simulation.enqueueEvent(event);
+
+        //SLAP slap = new SLAP(this.configuration);
+        //slap.solve();
     }
 
     @Override

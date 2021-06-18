@@ -13,24 +13,21 @@ import java.util.ArrayList;
 public class ControllerEvent extends Event {
 
     private final Controller controller;
-    private final ProductionLine productionLine;
 
     public ControllerEvent(Simulation simulation, double time, Controller controller) {
         super(simulation, time, Integer.MAX_VALUE-1); // set large id to have ControllerEvents at the end of each timestep
         this.controller = controller;
-        this.productionLine = this.controller.getProductionLine();
     }
 
     @Override
     public void run() {
         this.simulation.logger.info(
-                String.format("Simulation time %f: ControllerEvent\n\t%d available mobiles\n\t%d waiting missions\n\t%d available docks\n\t%d waiting trucks\n\t%d waiting productions",
+                String.format("Simulation time %f: ControllerEvent\n\t%d available mobiles\n\t%d waiting missions\n\t%d available docks\n\t%d waiting trucks",
                         this.time,
                         this.controller.getAvailableMobiles().size(),
                         this.controller.getAllMissions().size(),
                         this.controller.getDocks().size(),
-                        this.controller.getTrucks().size(),
-                        this.productionLine.getProductions().size()));
+                        this.controller.getTrucks().size()));
 
         for (Mobile mobile : this.controller.getAvailableMobiles()) {
             if (!mobile.isAvailable()) {
@@ -72,19 +69,21 @@ public class ControllerEvent extends Event {
 
         for (Mobile mobile : this.controller.getAvailableMobiles()) {
             if (mobile.isAvailable()) {
-                mobile.replace(new Position(160 + 2 * mobile.getId() * this.controller.getConfiguration().palletSize, 250));
+                mobile.replace(new Position(0, this.controller.getWarehouse().getDepth() - (mobile.getId() + 1) * this.controller.getConfiguration().palletSize, 0));
             }
         }
 
         // launch waiting productions if components have arrived
-        ArrayList<Production> startableProductions = this.productionLine.getStartableProductions();
-        for (Production production : startableProductions) {
-            Event event = new ProductionStartEvent(this.simulation, this.time, this.controller, production);
-            this.simulation.enqueueEvent(event);
+        for (ProductionLine productionLine : this.controller.getProductionLines()) {
+            ArrayList<Production> startableProductions = productionLine.getStartableProductions();
+            for (Production production : startableProductions) {
+                Event event = new ProductionStartEvent(this.simulation, this.time, this.controller, productionLine, production);
+                this.simulation.enqueueEvent(event);
 
-            this.productionLine.lockProductionPallets(production);
-            this.productionLine.remove(production);
-            this.productionLine.reserveCapacity(production.getCapacity());
+                productionLine.lockProductionPallets(production);
+                productionLine.remove(production);
+                productionLine.reserveCapacity(production.getCapacity());
+            }
         }
 
     }

@@ -26,7 +26,7 @@ public class MobileMissionPickUpEventTest extends TestCase {
 
         PathFinderEvent.reset();
 
-        this.configuration = new Configuration(1, 1);
+        this.configuration = new Configuration();
         this.mobile = this.configuration.mobiles.get(0);
 
         this.toLoad = new ArrayList<>();

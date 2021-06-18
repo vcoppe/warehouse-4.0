@@ -18,8 +18,8 @@ public class ProductionInitEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        this.configuration = new Configuration(1, 1);
-        this.productionLine = this.configuration.productionLine;
+        this.configuration = new Configuration();
+        this.productionLine = this.configuration.productionLines.get(0);
 
         ArrayList<Pair<Pallet, Integer>> in = new ArrayList<>();
         ArrayList<Pair<Pallet, Integer>> out = new ArrayList<>();
@@ -30,7 +30,7 @@ public class ProductionInitEventTest extends TestCase {
         }
 
         this.production = new Production(in, out, 10, 1, 250);
-        this.event = new ProductionInitEvent(this.configuration.simulation, 1, this.configuration.controller, this.production);
+        this.event = new ProductionInitEvent(this.configuration.simulation, 1, this.configuration.controller, this.productionLine, this.production);
     }
 
     public void testAddProductionToProductionLine() {

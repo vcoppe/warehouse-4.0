@@ -2,9 +2,6 @@ package brain;
 
 import gurobi.*;
 import util.Pair;
-import warehouse.Configuration;
-import warehouse.Pallet;
-import warehouse.Position;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -209,7 +206,6 @@ public class SLAPCG {
                     continue;
                 }
                 patternsHash.add(hash);
-
 
                 double reducedCost = 0;
 

@@ -3,12 +3,10 @@ package event;
 import agent.Dock;
 import agent.Truck;
 import junit.framework.TestCase;
-import util.Pair;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Position;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TruckCallEventTest extends TestCase {
@@ -21,7 +19,7 @@ public class TruckCallEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        this.configuration = new Configuration(5, 1);
+        this.configuration = new Configuration();
         this.dock = this.configuration.docks.get(0);
 
         HashMap<Position, Pallet> toLoad = new HashMap<>();
