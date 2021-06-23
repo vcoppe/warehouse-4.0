@@ -35,7 +35,7 @@ public class ControllerEventTest extends TestCase {
         this.missions = new ArrayList<>();
         this.trucks = new ArrayList<>();
         this.productions = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             this.missions.add(new Mission(0, new Pallet(0), new Position(0, 0), new Position(0, 0)));
             this.trucks.add(new Truck(new Position(0, 0), new HashMap<>(), new HashMap<>()));
 
@@ -46,14 +46,14 @@ public class ControllerEventTest extends TestCase {
     }
 
     public void testNothingToDo() {
-        assertEquals(2, this.controller.getAvailableMobiles().size());
-        assertEquals(2, this.controller.getDocks().size());
+        assertEquals(5, this.controller.getAvailableMobiles().size());
+        assertEquals(5, this.controller.getDocks().size());
         assertEquals(0, this.controller.getAllMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(2, this.controller.getAvailableMobiles().size());
-        assertEquals(2, this.controller.getDocks().size());
+        assertEquals(5, this.controller.getAvailableMobiles().size());
+        assertEquals(5, this.controller.getDocks().size());
         assertEquals(0, this.controller.getAllMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
@@ -63,14 +63,14 @@ public class ControllerEventTest extends TestCase {
         this.controller.add(this.missions.get(0));
         this.controller.add(this.missions.get(1));
 
-        assertEquals(2, this.controller.getAvailableMobiles().size());
-        assertEquals(2, this.controller.getDocks().size());
+        assertEquals(5, this.controller.getAvailableMobiles().size());
+        assertEquals(5, this.controller.getDocks().size());
         assertEquals(2, this.controller.getAllMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(0, this.controller.getAvailableMobiles().size());
-        assertEquals(2, this.controller.getDocks().size());
+        assertEquals(3, this.controller.getAvailableMobiles().size());
+        assertEquals(5, this.controller.getDocks().size());
         assertEquals(0, this.controller.getAllMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(2, this.configuration.simulation.queueSize());
@@ -82,17 +82,17 @@ public class ControllerEventTest extends TestCase {
             this.controller.add(mission);
         }
 
-        assertEquals(2, this.controller.getAvailableMobiles().size());
-        assertEquals(2, this.controller.getDocks().size());
-        assertEquals(5, this.controller.getAllMissions().size());
+        assertEquals(5, this.controller.getAvailableMobiles().size());
+        assertEquals(5, this.controller.getDocks().size());
+        assertEquals(10, this.controller.getAllMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
         assertEquals(0, this.controller.getAvailableMobiles().size());
-        assertEquals(2, this.controller.getDocks().size());
-        assertEquals(3, this.controller.getAllMissions().size());
+        assertEquals(5, this.controller.getDocks().size());
+        assertEquals(5, this.controller.getAllMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
-        assertEquals(2, this.configuration.simulation.queueSize());
+        assertEquals(5, this.configuration.simulation.queueSize());
         assertTrue(this.configuration.simulation.nextEvent() instanceof MobileMissionStartEvent);
     }
 
@@ -100,14 +100,14 @@ public class ControllerEventTest extends TestCase {
         this.controller.add(this.trucks.get(0));
         this.controller.add(this.trucks.get(1));
 
-        assertEquals(2, this.controller.getAvailableMobiles().size());
-        assertEquals(2, this.controller.getDocks().size());
+        assertEquals(5, this.controller.getAvailableMobiles().size());
+        assertEquals(5, this.controller.getDocks().size());
         assertEquals(0, this.controller.getAllMissions().size());
         assertEquals(2, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(2, this.controller.getAvailableMobiles().size());
-        assertEquals(0, this.controller.getDocks().size());
+        assertEquals(5, this.controller.getAvailableMobiles().size());
+        assertEquals(3, this.controller.getDocks().size());
         assertEquals(0, this.controller.getAllMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(2, this.configuration.simulation.queueSize());
@@ -119,17 +119,17 @@ public class ControllerEventTest extends TestCase {
             this.controller.add(truck);
         }
 
-        assertEquals(2, this.controller.getAvailableMobiles().size());
-        assertEquals(2, this.controller.getDocks().size());
+        assertEquals(5, this.controller.getAvailableMobiles().size());
+        assertEquals(5, this.controller.getDocks().size());
         assertEquals(0, this.controller.getAllMissions().size());
-        assertEquals(5, this.controller.getTrucks().size());
+        assertEquals(10, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(2, this.controller.getAvailableMobiles().size());
+        assertEquals(5, this.controller.getAvailableMobiles().size());
         assertEquals(0, this.controller.getDocks().size());
         assertEquals(0, this.controller.getAllMissions().size());
-        assertEquals(3, this.controller.getTrucks().size());
-        assertEquals(2, this.configuration.simulation.queueSize());
+        assertEquals(5, this.controller.getTrucks().size());
+        assertEquals(5, this.configuration.simulation.queueSize());
         assertTrue(this.configuration.simulation.nextEvent() instanceof TruckCallEvent);
     }
 
@@ -190,11 +190,11 @@ public class ControllerEventTest extends TestCase {
             }
         }
 
-        assertEquals(5, this.productionLine.getProductions().size());
+        assertEquals(10, this.productionLine.getProductions().size());
         assertEquals(this.productionLine.getCapacity(), this.productionLine.getCurrentCapacity());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(2, this.productionLine.getProductions().size());
+        assertEquals(7, this.productionLine.getProductions().size());
         assertEquals(1, this.productionLine.getCurrentCapacity());
         assertEquals(3, this.configuration.simulation.queueSize());
         assertTrue(this.configuration.simulation.nextEvent() instanceof ProductionStartEvent);
@@ -205,11 +205,11 @@ public class ControllerEventTest extends TestCase {
             this.productionLine.add(production); // don't add components
         }
 
-        assertEquals(5, this.productionLine.getProductions().size());
+        assertEquals(10, this.productionLine.getProductions().size());
         assertEquals(this.productionLine.getCapacity(), this.productionLine.getCurrentCapacity());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
-        assertEquals(5, this.productionLine.getProductions().size());
+        assertEquals(10, this.productionLine.getProductions().size());
         assertEquals(this.productionLine.getCapacity(), this.productionLine.getCurrentCapacity());
         assertEquals(0, this.configuration.simulation.queueSize());
     }

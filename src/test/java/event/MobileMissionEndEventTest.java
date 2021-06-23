@@ -123,10 +123,10 @@ public class MobileMissionEndEventTest extends TestCase {
 
         MobileMissionEndEvent event = new MobileMissionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile);
 
-        assertEquals(0, this.configuration.controller.getAvailableMobiles().size());
+        assertEquals(4, this.configuration.controller.getAvailableMobiles().size());
         event.run();
-        assertEquals(1, this.configuration.controller.getAvailableMobiles().size());
-        assertEquals(this.mobile, this.configuration.controller.getAvailableMobiles().get(0));
+        assertEquals(5, this.configuration.controller.getAvailableMobiles().size());
+        assertEquals(this.mobile, this.configuration.controller.getAvailableMobiles().get(4));
     }
 
     public void testDoneWhenLoaded() {

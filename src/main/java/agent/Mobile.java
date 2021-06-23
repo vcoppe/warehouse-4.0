@@ -114,7 +114,7 @@ public class Mobile extends Observable {
 
     public void forward(double time) {
         this.pathTime = time;
-        if (this.mission == null) {
+        if (this.mission == null && this.path != null) {
             Pair<Position, Double> last = this.path.get(this.path.size() - 1);
             if (time >= last.second) {
                 this.position = last.first;

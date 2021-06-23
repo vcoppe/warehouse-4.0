@@ -3,7 +3,10 @@ package event;
 import agent.ProductionLine;
 import junit.framework.TestCase;
 import util.Pair;
-import warehouse.*;
+import warehouse.Configuration;
+import warehouse.Mission;
+import warehouse.Pallet;
+import warehouse.Production;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,7 +28,7 @@ public class ProductionInitEventTest extends TestCase {
         ArrayList<Pair<Pallet, Integer>> out = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             in.add(new Pair<>(new Pallet(i), 1));
-            this.configuration.stock.add(new Position(0, i * this.configuration.palletSize), new Pallet(i)); // add to stock
+            this.configuration.stock.add(this.configuration.stock.getStockPositions().get(i), new Pallet(i)); // add to stock
             out.add(new Pair<>(new Pallet(3 + i), 1));
         }
 

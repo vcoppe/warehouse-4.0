@@ -1,5 +1,6 @@
 package simulation;
 
+import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +54,17 @@ public class Simulation {
 
     public Event nextEvent() {
         return this.eventQueue.first();
+    }
+
+    public Event getEventAt(int index) {
+        if (index >= this.eventQueue.size()) {
+            return null;
+        }
+        Iterator<Event> it = this.eventQueue.iterator();
+        for (int i = 0; i < index; i++) {
+            it.next();
+        }
+        return it.next();
     }
 
     public boolean hasNextEvent() {

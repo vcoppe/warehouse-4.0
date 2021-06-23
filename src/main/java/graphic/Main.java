@@ -22,7 +22,7 @@ public class Main extends Application {
 
     public Main() {
         super();
-        //this.configuration = new Configuration();
+
         this.configuration = new Configuration(600, 300, 40);
 
         int width = this.configuration.warehouse.getWidth(), depth = this.configuration.warehouse.getDepth();

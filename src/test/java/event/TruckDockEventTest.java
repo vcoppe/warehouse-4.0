@@ -32,7 +32,7 @@ public class TruckDockEventTest extends TestCase {
                     new Position(0, i * this.configuration.palletSize),
                     new Pallet(i)
             );
-            this.configuration.stock.add(new Position(0, i * this.configuration.palletSize), new Pallet(i)); // add pallets to load in the stock
+            this.configuration.stock.add(this.configuration.stock.getStockPositions().get(i), new Pallet(i)); // add pallets to load in the stock
             toUnload.put(
                     new Position(0, i * this.configuration.palletSize),
                     new Pallet(5 + i)

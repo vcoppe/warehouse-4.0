@@ -27,10 +27,10 @@ public class TruckDoneEventTest extends TestCase {
     }
 
     public void testAddDockToController() {
-        assertEquals(0, this.configuration.controller.getDocks().size());
+        assertEquals(4, this.configuration.controller.getDocks().size());
         this.event.run();
-        assertEquals(1, this.configuration.controller.getDocks().size());
-        assertEquals(this.dock, this.configuration.controller.getDocks().get(0));
+        assertEquals(5, this.configuration.controller.getDocks().size());
+        assertEquals(this.dock, this.configuration.controller.getDocks().get(4));
     }
 
     public void testTriggerControllerEvent() {

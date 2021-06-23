@@ -29,12 +29,6 @@ public class ControllerEvent extends Event {
                         this.controller.getDocks().size(),
                         this.controller.getTrucks().size()));
 
-        for (Mobile mobile : this.controller.getAvailableMobiles()) {
-            if (!mobile.isAvailable()) {
-                mobile.interrupt(this.time);
-            }
-        }
-
         // match available mobiles with waiting missions
         ArrayList<Pair<Mobile,Mission>> mobileMissionPairs = this.controller.mobileMissionSelector.matchMobileMission(
                 this.time,
@@ -45,6 +39,9 @@ public class ControllerEvent extends Event {
         for (Pair<Mobile,Mission> pair : mobileMissionPairs) {
             Mobile mobile = pair.first;
             Mission mission = pair.second;
+
+            this.controller.remove(mobile);
+            this.controller.remove(mission);
 
             Event event = new MobileMissionStartEvent(this.simulation, this.time, this.controller, mobile, mission);
             this.simulation.enqueueEvent(event);
