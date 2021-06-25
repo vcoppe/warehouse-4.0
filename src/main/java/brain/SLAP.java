@@ -59,9 +59,7 @@ public class SLAP {
 
         int totalPallets = 0;
         for (int i=0; i<this.nTypes; i++) {
-            while (this.nPalletsOfType[i] == 0) {
-                this.nPalletsOfType[i] = random.nextInt((this.nSlots - totalPallets) / 2);
-            }
+            this.nPalletsOfType[i] = 1 + random.nextInt(this.nSlots - totalPallets - (this.nTypes - 1 - i));
             totalPallets += this.nPalletsOfType[i];
             this.throughput[i] = 10 * random.nextDouble() * this.nPalletsOfType[i];
 

@@ -45,10 +45,7 @@ public class SLAPCG {
             }
         }
 
-        double[] pi = new double[l], rho = new double[n];
-        Arrays.fill(pi, 0);
-        Arrays.fill(rho, 0);
-        patterns = generatePatterns(pi, rho);
+        patterns = greedyPatterns();
 
         // create model
         lambda = new ArrayList<>();
@@ -94,21 +91,148 @@ public class SLAPCG {
         master.update();
     }
 
+    public void solve() throws GRBException {
+        long start = System.currentTimeMillis();
+
+        int it = 0;
+        for (; ; it++) {
+            GRBModel relax = master.relax();
+            relax.set(GRB.IntParam.OutputFlag, 0);
+            relax.optimize();
+
+            //System.out.print("pi: ");
+            double[] pi = new double[l];
+            for (int k = 0; k < l; k++) {
+                pi[k] = relax.getConstrByName("loc_" + k).get(GRB.DoubleAttr.Pi);
+                //System.out.print(pi[k] + " ");
+            }
+            //System.out.println();
+
+            //System.out.print("rho: ");
+            double[] rho = new double[n];
+            for (int i=0; i<n; i++) {
+                rho[i] = relax.getConstrByName("cap_"+i).get(GRB.DoubleAttr.Pi);
+                //System.out.print(rho[i] + " ");
+            }
+            //System.out.println();
+
+            boolean newColumn = false;
+            ArrayList<int[][]> newPatterns = newPatterns(pi, rho);
+            for (int p=0; p<newPatterns.size(); p++) {
+                int[][] pattern = newPatterns.get(p);
+
+                int hash = Arrays.deepHashCode(pattern);
+                if (patternsHash.contains(hash)) {
+                    //System.out.println("pattern already in model");
+                    continue;
+                }
+                patternsHash.add(hash);
+
+                double reducedCost = 0;
+                int capacity = 0, patternType = 0;
+
+                for (int i=0; i<n; i++) {
+                    for (int k=0; k<l; k++) if (pattern[i][k] == 1) {
+                        reducedCost += pattern[i][k] * (T[i] / S[i] * C[k] * cost[i][k] - pi[k] - C[k] * rho[i]);
+                        capacity++;
+                        patternType = i;
+                    }
+                }
+
+                if (reducedCost < 0) { // add epsilon ?
+                    newColumn = true;
+                    patterns.add(pattern);
+
+                    GRBColumn column = new GRBColumn();
+
+                    for (int k = 0; k < l; k++) {
+                        if (pattern[patternType][k] == 1) {
+                            column.addTerm(1, locationConstraints[k]);
+                        }
+                    }
+
+                    column.addTerm(capacity, capacityConstraints[patternType]);
+
+                    //System.out.println("adding pattern: " + lambda.size() + " of cost=" + this.patternWeight(pattern));
+                    lambda.add(master.addVar(0, 1, this.patternWeight(pattern), GRB.BINARY, column, "lambda_" + lambda.size()));
+                }
+            }
+
+            if (!newColumn) {
+                System.out.println("No column with negative reduced cost found");
+                break;
+            }
+
+            master.update();
+
+            if (it % 10 == 0) System.out.println("Iteration " + it + ": " + patterns.size() + " patterns");
+        }
+
+        System.out.println("Solving master problem");
+        master.optimize();
+
+        long end = System.currentTimeMillis();
+
+        System.out.println("Column generation summary");
+        System.out.println(it + " iterations");
+        System.out.println(patterns.size() + " patterns");
+        System.out.println(((end - start) / 1000) + " seconds");
+        double cost = 0;
+        for (int i = 0; i < n; i++) cost += patternWeight(patterns.get(i));
+        System.out.println(cost + " initial obj");
+        System.out.println(master.get(GRB.DoubleAttr.ObjVal) + " final obj");
+    }
+
+    private ArrayList<int[][]> greedyPatterns() {
+        // generate initial patterns
+        ArrayList<Pair<Integer, Double>> typeOrder = new ArrayList<>();
+        for (int i = 0; i < n; i++) typeOrder.add(new Pair<>(i, T[i] / S[i]));
+        typeOrder.sort((t1, t2) -> Double.compare(t2.second, t1.second)); // high throughput first
+
+        boolean[] taken = new boolean[l];
+        ArrayList<int[][]> newPatterns = new ArrayList<>();
+        for (Pair<Integer, Double> pair : typeOrder) {
+            int i = pair.first;
+
+            ArrayList<Pair<Integer, Double>> locationOrder = new ArrayList<>();
+            for (int k = 0; k < l; k++)
+                locationOrder.add(new Pair<>(k, T[i] / S[i] * C[k] * cost[i][k]));
+            locationOrder.sort(Comparator.comparingDouble(Pair::getSecond));
+
+            int reservedCapacity = 0;
+            int[][] pattern = new int[n][l];
+            for (Pair<Integer, Double> pair1 : locationOrder) {
+                int k = pair1.first;
+                if (!taken[k]) {
+                    taken[k] = true;
+                    pattern[i][k] = 1;
+                    reservedCapacity += C[k];
+
+                    if (reservedCapacity >= S[i]) break;
+                }
+            }
+
+            newPatterns.add(pattern);
+        }
+
+        return newPatterns;
+    }
+
     private ArrayList<int[][]> generatePatterns(double[] pi, double[] rho) {
         // generate initial patterns
-        ArrayList<Pair<Integer,Double>> typeOrder = new ArrayList<>();
-        for (int i=0; i<n; i++) typeOrder.add(new Pair<>(i, T[i]/S[i]));
-        typeOrder.sort((t1,t2) -> Double.compare(t2.second, t1.second)); // high throughput first
+        ArrayList<Pair<Integer, Double>> typeOrder = new ArrayList<>();
+        for (int i = 0; i < n; i++) typeOrder.add(new Pair<>(i, T[i] / S[i]));
+        typeOrder.sort((t1, t2) -> Double.compare(t2.second, t1.second)); // high throughput first
 
         ArrayList<int[][]> newPatterns = new ArrayList<>();
-        for (int first=0; first<n; first++) {
+        for (int first = 0; first < n; first++) {
             if (typeOrder.size() == n) typeOrder.add(0, new Pair<>(first, 0.0));
             else typeOrder.set(0, new Pair<>(first, 0.0));
 
             boolean[] taken = new boolean[l];
             boolean isFirst = true;
 
-            for (Pair<Integer,Double> pair : typeOrder) {
+            for (Pair<Integer, Double> pair : typeOrder) {
                 int i = pair.first;
                 if (i == first) {
                     if (isFirst) isFirst = false;
@@ -143,14 +267,15 @@ public class SLAPCG {
     private ArrayList<int[][]> newPatterns(double[] pi, double[] rho) {
         ArrayList<int[][]> newPatterns = new ArrayList<>();
 
-        for (int i=0; i<n; i++) { // create one pattern for each product type
-            ArrayList<Pair<Integer,Double>> locationOrder = new ArrayList<>();
-            for (int k=0; k<l; k++) locationOrder.add(new Pair<>(k, T[i]/S[i] * C[k] * cost[i][k] - pi[k] - rho[i] * C[k]));
+        for (int i = 0; i < n; i++) { // create one pattern for each product type
+            ArrayList<Pair<Integer, Double>> locationOrder = new ArrayList<>();
+            for (int k = 0; k < l; k++)
+                locationOrder.add(new Pair<>(k, T[i] / S[i] * C[k] * cost[i][k] - pi[k] - rho[i] * C[k]));
             locationOrder.sort(Comparator.comparingDouble(Pair::getSecond));
 
             int reservedCapacity = 0;
             int[][] pattern = new int[n][l];
-            for (Pair<Integer,Double> pair1 : locationOrder) {
+            for (Pair<Integer, Double> pair1 : locationOrder) {
                 int k = pair1.first;
                 pattern[i][k] = 1;
                 reservedCapacity += C[k];
@@ -166,129 +291,12 @@ public class SLAPCG {
 
     private double patternWeight(int[][] pattern) {
         double weight = 0;
-        for (int i=0; i<n; i++) {
-            for (int k=0; k<l; k++) {
-                weight += T[i]/S[i] * C[k] * pattern[i][k] * cost[i][k];
+        for (int i = 0; i < n; i++) {
+            for (int k = 0; k < l; k++) {
+                weight += T[i] / S[i] * C[k] * pattern[i][k] * cost[i][k];
             }
         }
         return weight;
-    }
-
-    public void solve() throws GRBException {
-        for (int it=0; ; it++) {
-            GRBModel relax = master.relax();
-            relax.optimize();
-
-            System.out.print("pi: ");
-            double[] pi = new double[l];
-            for (int k=0; k<l; k++) {
-                pi[k] = relax.getConstrByName("loc_"+k).get(GRB.DoubleAttr.Pi);
-                System.out.print(pi[k] + " ");
-            }
-            System.out.println();
-
-            System.out.print("rho: ");
-            double[] rho = new double[n];
-            for (int i=0; i<n; i++) {
-                rho[i] = relax.getConstrByName("cap_"+i).get(GRB.DoubleAttr.Pi);
-                System.out.print(rho[i] + " ");
-            }
-            System.out.println();
-
-            boolean newColumn = false;
-            ArrayList<int[][]> newPatterns = generatePatterns(pi, rho);
-            for (int p=0; p<newPatterns.size(); p++) {
-                int[][] pattern = newPatterns.get(p);
-
-                int hash = Arrays.deepHashCode(pattern);
-                if (patternsHash.contains(hash)) {
-                    System.out.println("pattern already in model");
-                    continue;
-                }
-                patternsHash.add(hash);
-
-                double reducedCost = 0;
-
-                for (int i=0; i<n; i++) {
-                    for (int k=0; k<l; k++) if (pattern[i][k] == 1) {
-                        reducedCost += pattern[i][k] * (T[i]/S[i] * C[k] * cost[i][k] - pi[k] - C[k] * rho[i]);
-                    }
-                }
-
-                if (reducedCost < 0) {
-                    newColumn = true;
-                    patterns.add(pattern);
-
-                    /*GRBColumn column = new GRBColumn();
-
-                    for (int k=0; k<l; k++) {
-                        for (int i=0; i<n; i++) if (pattern[i][k] == 1) {
-                            column.addTerm(1, locationConstraints[k]);
-                        }
-                    }
-
-                    for (int i=0; i<n; i++) {
-                        for (int k=0; k<l; k++) if (pattern[i][k] == 1) {
-                            column.addTerm(C[k], capacityConstraints[i]);
-                        }
-                    }
-
-                    System.out.println("adding pattern: " + lambda.size() + " of cost=" + this.patternWeight(pattern));
-                    lambda.add(master.addVar(0, 1, this.patternWeight(pattern), GRB.BINARY, column, "lambda_"+lambda.size()));*/
-                }
-            }
-
-            if (!newColumn) {
-                System.out.println("No column with negative reduced cost found");
-                break;
-            }
-
-            //master.update();
-
-            master = new GRBModel(env);
-
-            lambda = new ArrayList<>();
-
-            for (int p=0; p<patterns.size(); p++) {
-                int[][] pattern = patterns.get(p);
-                lambda.add(master.addVar(0, 1, this.patternWeight(pattern), GRB.BINARY, "lambda_"+p));
-            }
-
-            master.update();
-
-            GRBLinExpr lhs;
-
-            for (int k=0; k<l; k++) {
-                lhs = new GRBLinExpr();
-
-                for (int p=0; p<patterns.size(); p++) {
-                    int[][] pattern = patterns.get(p);
-                    for (int i=0; i<n; i++) if (pattern[i][k] == 1) {
-                        lhs.addTerm(1, lambda.get(p));
-                    }
-                }
-
-                locationConstraints[k] = master.addConstr(lhs, GRB.LESS_EQUAL, 1, "loc_"+k);
-            }
-
-            for (int i=0; i<n; i++) {
-                lhs = new GRBLinExpr();
-
-                for (int p=0; p<patterns.size(); p++) {
-                    int[][] pattern = patterns.get(p);
-                    for (int k=0; k<l; k++) if (pattern[i][k] == 1) {
-                        lhs.addTerm(C[k], lambda.get(p));
-                    }
-                }
-
-                capacityConstraints[i] = master.addConstr(lhs, GRB.GREATER_EQUAL, S[i], "cap_"+i);
-            }
-
-            master.update();
-        }
-
-        System.out.println("Solving master problem");
-        master.optimize();
     }
 
     public double gap() throws GRBException {
@@ -305,6 +313,7 @@ public class SLAPCG {
 
     public int[] getSolution() throws GRBException {
         int[] sol = new int[l];
+        Arrays.fill(sol, -1);
 
         for (int p=0; p<patterns.size(); p++) {
             int value = (int) lambda.get(p).get(GRB.DoubleAttr.X);
