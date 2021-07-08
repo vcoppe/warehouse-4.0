@@ -110,13 +110,13 @@ public class WHCAStar {
         dist.put(pair.second.first, pair.second.second);
         prev.put(pair.second.first, pair.first.first);
         h.put(pair.second.first, DoublePrecisionConstraint.round(pair.second.second + this.reverseResumableAStar(mobile, pair.second.first, startPosition) * mobile.getSpeed()));
-        pq.add(new Edge(pair.second.first, h.get(pair.second.first)));
+        pq.add(new Edge(null, pair.second.first, h.get(pair.second.first)));
 
         while (!pq.isEmpty()) {
             Edge e = pq.poll();
 
             Position u = e.to;
-            double estimateU = e.w;
+            double estimateU = e.weight;
 
             if (estimateU > h.get(u)) { // not the shortest path anymore
                 continue;
@@ -127,11 +127,15 @@ public class WHCAStar {
                 return true;
             }
 
+            double distU = dist.get(u);
+
             for (Edge edge : this.graph.getEdges(u)) {
                 Position v = edge.to;
-                double w = edge.w;
+                double w = edge.weight;
 
-                double otherDist = DoublePrecisionConstraint.round(dist.get(u) + w * mobile.getSpeed());
+                if (!edge.canCross(distU, mobile)) continue;
+
+                double otherDist = DoublePrecisionConstraint.round(distU + w * mobile.getSpeed());
 
                 if (otherDist < time + W) { // check for collisions only within the time window
                     if (!this.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
@@ -147,7 +151,7 @@ public class WHCAStar {
                     dist.put(v, otherDist);
                     h.put(v, estimateV);
                     prev.put(v, u);
-                    pq.add(new Edge(v, estimateV));
+                    pq.add(new Edge(null, v, estimateV));
                 }
             }
         }
@@ -214,7 +218,7 @@ public class WHCAStar {
         HashSet<Position> closed = new HashSet<>();
 
         dist.put(endPosition, 0.0);
-        pq.add(new Edge(endPosition, dist.get(endPosition) + startPosition.manhattanDistance3D(endPosition)));
+        pq.add(new Edge(null, endPosition, dist.get(endPosition) + startPosition.manhattanDistance3D(endPosition)));
 
         this.resumableDist.put(mobile.getId(), dist);
         this.resumablePq.put(mobile.getId(), pq);
@@ -235,7 +239,7 @@ public class WHCAStar {
         while (!pq.isEmpty()) {
             Edge e = pq.peek();
             Position u = e.to;
-            double estimateU = e.w;
+            double estimateU = e.weight;
 
             if (estimateU - u.manhattanDistance3D(finalPosition) > dist.get(u)) { // not the shortest path anymore
                 pq.poll();
@@ -251,14 +255,14 @@ public class WHCAStar {
 
             for (Edge edge : this.graph.getReverseEdges(u)) { // reverse edges for reverse A star
                 Position v = edge.to;
-                double w = edge.w;
+                double w = edge.weight;
 
                 double otherDist = dist.get(u) + w;
 
                 if (!dist.containsKey(v) || otherDist < dist.get(v)) {
                     dist.put(v, otherDist);
                     double estimateV = otherDist + v.manhattanDistance3D(finalPosition);
-                    pq.add(new Edge(v, estimateV));
+                    pq.add(new Edge(null, v, estimateV));
                 }
             }
         }

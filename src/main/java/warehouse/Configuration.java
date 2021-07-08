@@ -2,7 +2,9 @@ package warehouse;
 
 import agent.*;
 import brain.*;
+import graph.Edge;
 import simulation.Simulation;
+import util.DockEdgeCondition;
 
 import java.util.ArrayList;
 
@@ -369,36 +371,62 @@ public class Configuration {
     }
 
     public void addOutdoorDock(int x1, int y1) {
-        this.docks.add(new Dock(new Position(x1, y1)));
+        Dock dock = new Dock(new Position(x1, y1));
+        this.docks.add(dock);
 
         int depth = this.warehouse.getDepth();
         int x2 = x1 + this.truckWidth, y2 = y1 + this.truckDepth;
 
-        for (int x=x1; x<x2; x+= this.palletSize) {
-            this.warehouse.addEdge(new Position(x, depth-this.palletSize, 0), new Position(x, depth, 0), true);
+        ArrayList<Edge> edges = new ArrayList<>();
+
+        for (int x = x1; x < x2; x += this.palletSize) {
+            edges.add(this.warehouse.addEdge(new Position(x, depth - this.palletSize, 0), new Position(x, depth, 0), true));
         }
 
-        for (int x=x1; x<x2; x+= this.palletSize) {
-            for (int y=y1; y<y2; y+= this.palletSize) {
-                if (y+this.palletSize < y2) this.warehouse.addEdge(new Position(x, y, 0), new Position(x, y+this.palletSize, 0), true);
-                this.warehouse.addEdge(new Position(x, y, 0), new Position(x, y-this.palletSize, 0), true);
-                if (x+this.palletSize < x2) this.warehouse.addEdge(new Position(x, y, 0), new Position(x+this.palletSize, y, 0), true);
-                if (x-this.palletSize >= x1) this.warehouse.addEdge(new Position(x, y, 0), new Position(x-this.palletSize, y, 0), true);
+        for (int x = x1; x < x2; x += this.palletSize) {
+            for (int y = y1; y < y2; y += this.palletSize) {
+                if (y + this.palletSize < y2)
+                    edges.add(this.warehouse.addEdge(new Position(x, y, 0), new Position(x, y + this.palletSize, 0), true));
+                edges.add(this.warehouse.addEdge(new Position(x, y, 0), new Position(x, y - this.palletSize, 0), true));
+                if (x + this.palletSize < x2)
+                    edges.add(this.warehouse.addEdge(new Position(x, y, 0), new Position(x + this.palletSize, y, 0), true));
+                if (x - this.palletSize >= x1)
+                    edges.add(this.warehouse.addEdge(new Position(x, y, 0), new Position(x - this.palletSize, y, 0), true));
             }
+        }
+
+        DockEdgeCondition condition = new DockEdgeCondition(dock, this.dockWidth, this.truckDepth);
+        for (Edge edge : edges) {
+            edge.addCrossCondition(condition);
         }
     }
 
     public void addIndoorDock(int x1, int y1) {
-        this.docks.add(new Dock(new Position(x1, y1)));
+        Dock dock = new Dock(new Position(x1, y1));
+        this.docks.add(dock);
         int x2 = x1 + this.truckWidth, y2 = y1 + this.truckDepth;
 
-        // remove all edges and add condition to cross edges inside truck (mobile with mission of the given truck)
+        this.removeGraphEdges(x1, y1, x2, y2);
 
-        for (int x=x1; x<x2; x += this.palletSize) {
-            this.warehouse.removeEdge(new Position(x, y1-this.palletSize, 0), new Position(x, y1, 0));
-            this.warehouse.removeEdge(new Position(x, y1, 0), new Position(x, y1-this.palletSize, 0));
-            this.warehouse.removeEdge(new Position(x, y2, 0), new Position(x, y2-this.palletSize, 0));
-            this.warehouse.removeEdge(new Position(x, y2-this.palletSize, 0), new Position(x, y2, 0));
+        for (int x = x1; x < x2; x += this.palletSize) { // remove access from top and bottom
+            this.warehouse.removeEdge(new Position(x, y1 - this.palletSize, 0), new Position(x, y1, 0));
+            this.warehouse.removeEdge(new Position(x, y1, 0), new Position(x, y1 - this.palletSize, 0));
+            this.warehouse.removeEdge(new Position(x, y2, 0), new Position(x, y2 - this.palletSize, 0));
+            this.warehouse.removeEdge(new Position(x, y2 - this.palletSize, 0), new Position(x, y2, 0));
+        }
+
+        ArrayList<Edge> edges = new ArrayList<>();
+
+        for (int x = x1; x < x2; x += this.palletSize) {
+            for (int y = y1; y < y2; y += this.palletSize) {
+                edges.add(this.warehouse.addEdge(new Position(x, y, 0), new Position(x - this.palletSize, y, 0)));
+                edges.add(this.warehouse.addEdge(new Position(x, y, 0), new Position(x + this.palletSize, y, 0)));
+            }
+        }
+
+        DockEdgeCondition condition = new DockEdgeCondition(dock, this.dockWidth, this.truckDepth);
+        for (Edge edge : edges) {
+            edge.addCrossCondition(condition);
         }
     }
 

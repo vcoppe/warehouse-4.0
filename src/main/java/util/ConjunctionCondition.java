@@ -1,4 +1,6 @@
-package warehouse;
+package util;
+
+import agent.Mobile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +21,16 @@ public class ConjunctionCondition extends Condition {
     public boolean satisfied() {
         for (Condition condition : this.conditions) {
             if (!condition.satisfied()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean satisfied(double time, Mobile mobile) {
+        for (Condition condition : this.conditions) {
+            if (!condition.satisfied(time, mobile)) {
                 return false;
             }
         }

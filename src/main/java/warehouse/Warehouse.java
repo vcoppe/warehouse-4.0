@@ -1,6 +1,7 @@
 package warehouse;
 
 import agent.Mobile;
+import graph.Edge;
 import graph.Graph;
 
 public class Warehouse {
@@ -31,20 +32,20 @@ public class Warehouse {
         return this.graph;
     }
 
-    public void addEdge(Position p1, Position p2, boolean force) {
+    public Edge addEdge(Position p1, Position p2, boolean force) {
         if (!force) {
-            if (p1.getX() < 0 || p1.getX() >= this.width) return;
-            if (p1.getY() < 0 || p1.getY() >= this.depth) return;
-            if (p1.getZ() < 0 || p1.getZ() >= this.height) return;
-            if (p2.getX() < 0 || p2.getX() >= this.width) return;
-            if (p2.getY() < 0 || p2.getY() >= this.depth) return;
-            if (p2.getZ() < 0 || p2.getZ() >= this.height) return;
+            if (p1.getX() < 0 || p1.getX() >= this.width) return null;
+            if (p1.getY() < 0 || p1.getY() >= this.depth) return null;
+            if (p1.getZ() < 0 || p1.getZ() >= this.height) return null;
+            if (p2.getX() < 0 || p2.getX() >= this.width) return null;
+            if (p2.getY() < 0 || p2.getY() >= this.depth) return null;
+            if (p2.getZ() < 0 || p2.getZ() >= this.height) return null;
         }
-        this.graph.addEdge(p1, p2, p1.manhattanDistance3D(p2));
+        return this.graph.addEdge(p1, p2, p1.manhattanDistance3D(p2));
     }
 
-    public void addEdge(Position p1, Position p2) {
-        this.addEdge(p1, p2, false);
+    public Edge addEdge(Position p1, Position p2) {
+        return this.addEdge(p1, p2, false);
     }
 
     public void removeEdge(Position p1, Position p2) {

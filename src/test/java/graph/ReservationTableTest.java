@@ -41,4 +41,5 @@ public class ReservationTableTest extends TestCase {
         assertTrue(table.isAvailable(this.positions[0], 5 * ReservationTable.timeMargin, 0));
         assertEquals(5 * ReservationTable.timeMargin, table.nextAvailability(this.positions[0], 0, 0));
     }
+
 }

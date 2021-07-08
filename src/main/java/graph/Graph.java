@@ -18,9 +18,9 @@ public class Graph {
     }
 
     public double getWeight(Position u, Position v) {
-        Edge e = this.g.get(u).floor(new Edge(v, 0));
+        Edge e = this.g.get(u).floor(new Edge(u, v, 0));
         if (e.to.equals(v)) {
-            return e.w;
+            return e.weight;
         } else {
             return Double.MAX_VALUE;
         }
@@ -38,7 +38,7 @@ public class Graph {
         return this.gReverse.get(u);
     }
 
-    public void addEdge(Position u, Position v, double w) {
+    public Edge addEdge(Position u, Position v, double w) {
         if (!this.g.containsKey(u)) {
             this.g.put(u, new TreeSet<>());
             this.gReverse.put(u, new TreeSet<>());
@@ -49,21 +49,25 @@ public class Graph {
             this.gReverse.put(v, new TreeSet<>());
         }
 
-        this.g.get(u).add(new Edge(v, w));
-        this.gReverse.get(v).add(new Edge(u, w));
+        Edge edge = new Edge(u, v, w);
+
+        this.g.get(u).add(edge);
+        this.gReverse.get(v).add(new Edge(v, u, w));
 
         this.dist.clear();
         this.prev.clear();
+
+        return edge;
     }
 
     public void removeEdge(Position u, Position v) {
         if (this.g.containsKey(u)) {
-            Edge e = this.g.get(u).floor(new Edge(v, 0));
+            Edge e = this.g.get(u).floor(new Edge(u, v, 0));
             if (e != null && e.to.equals(v)) this.g.get(u).remove(e);
         }
 
         if (this.gReverse.containsKey(v)) {
-            Edge e = this.gReverse.get(v).floor(new Edge(u, 0));
+            Edge e = this.gReverse.get(v).floor(new Edge(v, u, 0));
             if (e != null && e.to.equals(u)) this.gReverse.get(v).remove(e);
         }
 
@@ -75,12 +79,12 @@ public class Graph {
         PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
 
         dist.put(s, 0.0);
-        pq.add(new Edge(s, 0.0));
+        pq.add(new Edge(null, s, 0.0));
 
         while (!pq.isEmpty()) {
             Edge e1 = pq.poll();
             Position u = e1.to;
-            double dist_u = e1.w;
+            double dist_u = e1.weight;
 
             if (dist_u > dist.get(u)) {
                 continue;
@@ -88,7 +92,7 @@ public class Graph {
 
             for (Edge e2 : this.g.get(u)) {
                 Position v = e2.to;
-                double w = e2.w;
+                double w = e2.weight;
                 Double dist_v = dist.get(v);
                 double other_dist_v = dist_u + w;
 
@@ -96,7 +100,7 @@ public class Graph {
                     dist.put(v, other_dist_v);
                     prev.put(v, u);
 
-                    pq.add(new Edge(v, other_dist_v));
+                    pq.add(new Edge(null, v, other_dist_v));
                 }
             }
         }
@@ -112,12 +116,12 @@ public class Graph {
         PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparing(Edge::getWeight));
 
         dist.put(s, 0.0);
-        pq.add(new Edge(s, s.manhattanDistance3D(t)));
+        pq.add(new Edge(null, s, s.manhattanDistance3D(t)));
 
         while (!pq.isEmpty()) {
             Edge e1 = pq.poll();
             Position u = e1.to;
-            double dist_u = e1.w - u.manhattanDistance3D(t);
+            double dist_u = e1.weight - u.manhattanDistance3D(t);
 
             if (dist_u > dist.get(u)) {
                 continue;
@@ -129,7 +133,7 @@ public class Graph {
 
             for (Edge e2 : this.g.get(u)) {
                 Position v = e2.to;
-                double w = e2.w;
+                double w = e2.weight;
                 Double dist_v = dist.get(v);
                 double other_dist_v = dist_u + w;
 
@@ -137,7 +141,7 @@ public class Graph {
                     dist.put(v, other_dist_v);
                     prev.put(v, u);
 
-                    pq.add(new Edge(v, other_dist_v + v.manhattanDistance3D(t)));
+                    pq.add(new Edge(null, v, other_dist_v + v.manhattanDistance3D(t)));
                 }
             }
         }

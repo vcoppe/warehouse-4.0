@@ -1,4 +1,6 @@
-package warehouse;
+package util;
+
+import warehouse.Mission;
 
 public class MissionPickedUpCondition extends Condition {
 

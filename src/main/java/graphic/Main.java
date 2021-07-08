@@ -1,12 +1,21 @@
 package graphic;
 
-import brain.SLAP;
+import event.TruckGeneratorEvent;
 import graphic.dashboard.AnimationDashboard;
+import graphic.dashboard.KPIDashboard;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import simulation.Event;
 import warehouse.Configuration;
+import warehouse.Pallet;
+import warehouse.Position;
+
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main extends Application {
 
@@ -17,7 +26,7 @@ public class Main extends Application {
 
         this.configuration = new Configuration(600, 300, 40);
 
-        /*int width = this.configuration.warehouse.getWidth(), depth = this.configuration.warehouse.getDepth();
+        int width = this.configuration.warehouse.getWidth(), depth = this.configuration.warehouse.getDepth();
 
         int productionLineX = width - 70, productionLineY = 20, productionLineWidth = 50, productionLineDepth = 100;
 
@@ -61,25 +70,25 @@ public class Main extends Application {
         }
 
         Event event = new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration);
-        this.configuration.simulation.enqueueEvent(event);*/
+        this.configuration.simulation.enqueueEvent(event);
 
 
-        this.configuration.addStockSection(10, 10, 230, 50, 10, true);
+        /*this.configuration.addStockSection(10, 10, 230, 50, 10, true);
         this.configuration.addOutdoorDock(0, this.configuration.warehouse.getDepth());
         this.configuration.addOutdoorDock(100, this.configuration.warehouse.getDepth());
         this.configuration.addOutdoorDock(200, this.configuration.warehouse.getDepth());
 
         SLAP slap = new SLAP(this.configuration);
-        slap.solve4();
+        slap.solve4();*/
     }
 
     @Override
     public void start(Stage stage) throws Exception {
         AnimationDashboard animation = new AnimationDashboard(this.configuration);
-        //KPIDashboard kpiDashboard = new KPIDashboard(this.configuration);
+        KPIDashboard kpiDashboard = new KPIDashboard(this.configuration);
 
         // test
-        Configuration configuration = new Configuration(this.configuration.warehouse.getWidth(), this.configuration.warehouse.getDepth(), this.configuration.warehouse.getHeight());
+        /*Configuration configuration = new Configuration(this.configuration.warehouse.getWidth(), this.configuration.warehouse.getDepth(), this.configuration.warehouse.getHeight());
         configuration.addStockSection(10, 10, 230, 50, 10, true);
         configuration.addOutdoorDock(0, this.configuration.warehouse.getDepth());
         configuration.addOutdoorDock(100, this.configuration.warehouse.getDepth());
@@ -88,11 +97,12 @@ public class Main extends Application {
         SLAP slap = new SLAP(configuration);
         slap.solve();
 
-        AnimationDashboard animation2 = new AnimationDashboard(configuration);
+        AnimationDashboard animation2 = new AnimationDashboard(configuration);*/
 
         BorderPane pane = new BorderPane();
         pane.setCenter(animation.getPane());
-        pane.setLeft(animation2.getPane());
+        //pane.setLeft(animation2.getPane());
+        pane.setRight(kpiDashboard.getPane());
 
         Scene scene = new Scene(pane);
         stage.setScene(scene);
