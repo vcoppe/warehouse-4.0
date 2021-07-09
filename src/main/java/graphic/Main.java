@@ -1,5 +1,6 @@
 package graphic;
 
+import event.ProductionGeneratorEvent;
 import event.TruckGeneratorEvent;
 import graphic.dashboard.AnimationDashboard;
 import graphic.dashboard.KPIDashboard;
@@ -7,7 +8,6 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import simulation.Event;
 import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Pallet;
@@ -39,12 +39,12 @@ public class Main extends Application {
 
         this.configuration.addProductionLine(productionLineX, productionLineY, productionLineX + productionLineWidth, productionLineY + productionLineDepth, 10, productionLineStartBuffer, productionLineEndBuffer);
 
-        //this.configuration.addStockSection(20, 20, 120, 120, 20, true);
-        //this.configuration.addStockSection(20, 150, 120, 250, 20, true);
+        this.configuration.addStockSection(20, 20, 120, 120, 20, true);
+        this.configuration.addStockSection(20, 150, 120, 250, 20, true);
 
         this.configuration.addAutoStockSection(150, 20, 270, 200, 40, true, false, false, true, true);
 
-        //this.configuration.addStockSection(300, 20, 460, 160, 20, false);
+        this.configuration.addStockSection(300, 20, 460, 160, 20, false);
 
         for (int i = 0; i < 5; i++) this.configuration.addOutdoorDock(i * this.configuration.dockWidth, depth);
         for (int i = 0; i < 2; i++)
@@ -69,9 +69,8 @@ public class Main extends Application {
             }
         }
 
-        Event event = new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration);
-        this.configuration.simulation.enqueueEvent(event);
-
+        this.configuration.simulation.enqueueEvent(new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration));
+        this.configuration.simulation.enqueueEvent(new ProductionGeneratorEvent(this.configuration.simulation, 30, this.configuration, this.configuration.productionLines.get(0)));
 
         /*this.configuration.addStockSection(10, 10, 230, 50, 10, true);
         this.configuration.addOutdoorDock(0, this.configuration.warehouse.getDepth());
