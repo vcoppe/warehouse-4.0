@@ -1,20 +1,20 @@
 package graph;
 
 import junit.framework.TestCase;
-import warehouse.Position;
+import util.Vector3D;
 
 public class GraphTest extends TestCase {
 
     private int n;
-    private Position [] positions;
+    private Vector3D[] positions;
 
     public void setUp() throws Exception {
         super.setUp();
 
         this.n = 25;
-        this.positions = new Position[this.n];
+        this.positions = new Vector3D[this.n];
         for(int i=0; i<this.n; i++) {
-            this.positions[i] = new Position(0, i);
+            this.positions[i] = new Vector3D(0, i);
         }
     }
 
@@ -22,7 +22,7 @@ public class GraphTest extends TestCase {
         Graph graph = new Graph();
 
         assertEquals(0, graph.getVertices().size());
-        graph.addEdge(this.positions[0], this.positions[1], 10);
+        graph.addEdge(this.positions[0], this.positions[1]);
         assertEquals(2, graph.getVertices().size());
         assertEquals(1, graph.getEdges(this.positions[0]).size());
         assertEquals(0, graph.getEdges(this.positions[1]).size()); // graph is directed
@@ -35,7 +35,7 @@ public class GraphTest extends TestCase {
         for (int i = 0; i < this.n; i++) {
             for (int j = 0; j < this.n; j++) {
                 if (i != j) {
-                    graph.addEdge(this.positions[i], this.positions[j], 3);
+                    graph.addEdge(this.positions[i], this.positions[j]);
                 }
             }
         }
@@ -50,10 +50,10 @@ public class GraphTest extends TestCase {
         Graph graph = new Graph();
 
         for (int i = 0; i < 10; i++) {
-            graph.addEdge(this.positions[i], this.positions[i + 1], 5);
+            graph.addEdge(this.positions[i], this.positions[i + 1]);
         }
 
-        assertEquals(50.0, graph.getShortestPath(this.positions[0], this.positions[10]));
+        assertEquals(10, graph.getShortestPath(this.positions[0], this.positions[10]).norm());
     }
 
 }

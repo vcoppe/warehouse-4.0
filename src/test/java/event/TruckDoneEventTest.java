@@ -20,7 +20,7 @@ public class TruckDoneEventTest extends TestCase {
         this.configuration = new Configuration();
         this.dock = this.configuration.docks.get(0);
         this.truck = new Truck(this.dock.getPosition(), new HashMap<>(), new HashMap<>());
-        this.truck.go(0, this.dock);
+        this.dock.call(0, this.truck);
         this.configuration.controller.remove(this.dock); // mark as currently used
 
         this.event = new TruckDoneEvent(this.configuration.simulation, 1, this.configuration.controller, this.dock, this.truck);

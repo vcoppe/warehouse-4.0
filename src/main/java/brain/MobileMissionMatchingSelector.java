@@ -3,8 +3,8 @@ package brain;
 import agent.Mobile;
 import graph.HungarianAlgorithm;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Mission;
-import warehouse.Position;
 import warehouse.Warehouse;
 
 import java.util.ArrayList;
@@ -27,10 +27,10 @@ public class MobileMissionMatchingSelector implements MobileMissionSelector {
 
         for (int i=0; i<mobiles.size(); i++) {
             Mobile mobile = mobiles.get(i);
-            Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getPositionsAt(time);
-            Position position = pair.second.first;
+            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
+            Vector3D position = pair.second.first;
             double offset = pair.second.second - time;
-            for (int j=0; j<missions.size(); j++) {
+            for (int j = 0; j < missions.size(); j++) {
                 Mission mission = missions.get(j);
                 cost[i][j] = offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), mobile);
             }

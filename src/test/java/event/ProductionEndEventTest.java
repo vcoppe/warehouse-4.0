@@ -4,7 +4,11 @@ import agent.ProductionLine;
 import agent.Stock;
 import junit.framework.TestCase;
 import util.Pair;
-import warehouse.*;
+import util.Vector3D;
+import warehouse.Configuration;
+import warehouse.Mission;
+import warehouse.Pallet;
+import warehouse.Production;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -29,7 +33,7 @@ public class ProductionEndEventTest extends TestCase {
         for (int i = 0; i < 3; i++) {
             in.add(new Pair<>(new Pallet(i), 1));
             out.add(new Pair<>(new Pallet(3 + i), 1));
-            this.stock.add(new Position(0, i * this.configuration.palletSize), Pallet.FREE);
+            this.stock.add(new Vector3D(0, i * this.configuration.palletSize), Pallet.FREE);
         }
 
         this.production = new Production(in, out, 10, 1, 250);
@@ -38,7 +42,7 @@ public class ProductionEndEventTest extends TestCase {
     }
 
     public void testAddPalletsToBuffer() {
-        for (Position position : this.productionLine.getEndBuffer()) {
+        for (Vector3D position : this.productionLine.getEndBuffer()) {
             assertEquals(Pallet.FREE, this.stock.get(position));
         }
 
@@ -54,7 +58,7 @@ public class ProductionEndEventTest extends TestCase {
         }
 
         ArrayList<Pallet> bufferPallets = new ArrayList<>();
-        for (Position position : this.productionLine.getEndBuffer()) {
+        for (Vector3D position : this.productionLine.getEndBuffer()) {
             Pallet pallet = this.stock.get(position);
             if (pallet != Pallet.FREE) {
                 bufferPallets.add(pallet);

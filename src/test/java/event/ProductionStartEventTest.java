@@ -4,9 +4,9 @@ import agent.ProductionLine;
 import agent.Stock;
 import junit.framework.TestCase;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Pallet;
-import warehouse.Position;
 import warehouse.Production;
 
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class ProductionStartEventTest extends TestCase {
         }
 
         ArrayList<Pallet> bufferPallets = new ArrayList<>();
-        for (Position position : this.productionLine.getStartBuffer()) {
+        for (Vector3D position : this.productionLine.getStartBuffer()) {
             Pallet pallet = this.stock.get(position);
             if (pallet != Pallet.FREE) {
                 bufferPallets.add(pallet);
@@ -69,7 +69,7 @@ public class ProductionStartEventTest extends TestCase {
 
         this.event.run();
 
-        for (Position position : this.productionLine.getStartBuffer()) {
+        for (Vector3D position : this.productionLine.getStartBuffer()) {
             assertEquals(Pallet.FREE, this.stock.get(position));
         }
     }

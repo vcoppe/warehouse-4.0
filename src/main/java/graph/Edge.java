@@ -3,27 +3,28 @@ package graph;
 import agent.Mobile;
 import util.Condition;
 import util.ConjunctionCondition;
-import warehouse.Position;
+import util.Vector2D;
+import util.Vector3D;
 
 public class Edge implements Comparable<Edge> {
 
-    protected Position from, to;
-    protected double weight;
+    protected Vector3D from, to;
+    protected Vector2D weight;
 
     ConjunctionCondition condition;
 
-    public Edge(Position from, Position to, double weight) {
+    public Edge(Vector3D from, Vector3D to) {
         this.from = from;
         this.to = to;
-        this.weight = weight;
+        this.weight = from.manhattanDistance3D(to);
         this.condition = new ConjunctionCondition();
     }
 
-    public Position to() {
+    public Vector3D to() {
         return this.to;
     }
 
-    public double getWeight() {
+    public Vector2D getWeight() {
         return this.weight;
     }
 

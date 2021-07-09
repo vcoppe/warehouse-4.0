@@ -4,16 +4,16 @@ import agent.Stock;
 import graphic.shape.PalletShape;
 import javafx.scene.Group;
 import observer.Observer;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Pallet;
-import warehouse.Position;
 
 import java.util.HashMap;
 
 public class StockAnimation implements Observer<Stock> {
 
     private final Configuration configuration;
-    private final HashMap<Position, PalletShape> shapes;
+    private final HashMap<Vector3D, PalletShape> shapes;
     private final Group group;
     private int level;
 
@@ -24,12 +24,12 @@ public class StockAnimation implements Observer<Stock> {
         this.level = 0;
     }
 
-    public void remove(Position position, PalletShape shape) {
+    public void remove(Vector3D position, PalletShape shape) {
         this.shapes.remove(position);
         this.group.getChildren().remove(shape.getShape());
     }
 
-    public PalletShape add(Position position, Pallet pallet) {
+    public PalletShape add(Vector3D position, Pallet pallet) {
         PalletShape shape = new PalletShape(
                 position.getX(),
                 position.getY(),
@@ -53,7 +53,7 @@ public class StockAnimation implements Observer<Stock> {
     @Override
     public void update(Stock stock) {
         // add new slots/pallets
-        for (Position position : stock.getAllPositions()) {
+        for (Vector3D position : stock.getAllPositions()) {
             Pallet pallet = stock.get(position);
             PalletShape palletShape = this.shapes.get(position);
 

@@ -1,15 +1,13 @@
 package brain;
 
 import agent.Stock;
+import util.Vector3D;
 import warehouse.Pallet;
-import warehouse.Position;
-
-import java.util.ArrayList;
 
 public interface PalletPositionSelector {
 
-    Position selectStartPosition(Pallet pallet, Position endPosition, Stock stock);
+    Vector3D selectStartPosition(Pallet pallet, Vector3D endPosition, Stock stock);
 
-    Position selectEndPosition(Pallet pallet, Position startPosition, Stock stock);
+    Vector3D selectEndPosition(Pallet pallet, Vector3D startPosition, Stock stock);
 
 }

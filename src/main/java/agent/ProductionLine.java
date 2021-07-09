@@ -2,8 +2,8 @@ package agent;
 
 import observer.Observable;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Pallet;
-import warehouse.Position;
 import warehouse.Production;
 
 import java.util.ArrayList;
@@ -14,13 +14,13 @@ public class ProductionLine extends Observable {
 
     private final Stock stock;
     private final int capacity;
-    private final ArrayList<Position> startBuffer, endBuffer;
+    private final ArrayList<Vector3D> startBuffer, endBuffer;
     private final TreeSet<Production> productions;
-    private final Position position;
+    private final Vector3D position;
     private final int width, depth;
     private int currentCapacity;
 
-    public ProductionLine(Stock stock, Position position, int width, int depth, int capacity, ArrayList<Position> startBuffer, ArrayList<Position> endBuffer) {
+    public ProductionLine(Stock stock, Vector3D position, int width, int depth, int capacity, ArrayList<Vector3D> startBuffer, ArrayList<Vector3D> endBuffer) {
         super();
         this.stock = stock;
         this.position = position;
@@ -33,16 +33,16 @@ public class ProductionLine extends Observable {
         this.currentCapacity = capacity;
     }
 
-    public ArrayList<Position> getStartBuffer() {
+    public ArrayList<Vector3D> getStartBuffer() {
         return this.startBuffer;
     }
 
-    public ArrayList<Position> getEndBuffer() {
+    public ArrayList<Vector3D> getEndBuffer() {
         return this.endBuffer;
     }
 
-    public Position getStartBufferPosition() {
-        for (Position position : this.startBuffer) {
+    public Vector3D getStartBufferPosition() {
+        for (Vector3D position : this.startBuffer) {
             if (this.stock.isFree(position)) {
                 return position;
             }
@@ -51,8 +51,8 @@ public class ProductionLine extends Observable {
         return null;
     }
 
-    public Position getEndBufferPosition() {
-        for (Position position : this.endBuffer) {
+    public Vector3D getEndBufferPosition() {
+        for (Vector3D position : this.endBuffer) {
             if (this.stock.isFree(position)) {
                 return position;
             }
@@ -88,7 +88,7 @@ public class ProductionLine extends Observable {
                 int quantity = pair.second;
 
                 int count = 0;
-                for (Position position : this.startBuffer) {
+                for (Vector3D position : this.startBuffer) {
                     if (!this.stock.isLocked(position)) {
                         Pallet bufferPallet = this.stock.get(position);
                         if (bufferPallet != null
@@ -123,7 +123,7 @@ public class ProductionLine extends Observable {
             int quantity = pair.second;
 
             int count = 0;
-            for (Position position : this.startBuffer) {
+            for (Vector3D position : this.startBuffer) {
                 if (!this.stock.isLocked(position)) {
                     Pallet bufferPallet = this.stock.get(position);
                     if (bufferPallet != null && bufferPallet.getType() == pallet.getType()) {
@@ -156,7 +156,7 @@ public class ProductionLine extends Observable {
         return this.currentCapacity;
     }
 
-    public Position getPosition() {
+    public Vector3D getPosition() {
         return this.position;
     }
 

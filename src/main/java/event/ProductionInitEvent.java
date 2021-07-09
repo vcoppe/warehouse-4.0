@@ -6,9 +6,9 @@ import agent.Stock;
 import simulation.Event;
 import simulation.Simulation;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Mission;
 import warehouse.Pallet;
-import warehouse.Position;
 import warehouse.Production;
 
 public class ProductionInitEvent extends Event {
@@ -38,14 +38,14 @@ public class ProductionInitEvent extends Event {
             int quantity = pair.second;
 
             for (int i=0; i<quantity; i++) {
-                Position endPosition = this.productionLine.getStartBufferPosition();
+                Vector3D endPosition = this.productionLine.getStartBufferPosition();
 
                 if (endPosition == null) {
                     this.simulation.logger.warning("FAILURE! Start buffer of production line is full.");
                     return;
                 }
 
-                Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
+                Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
 
                 if (startPosition == null) {
                     this.simulation.logger.warning("FAILURE! Missing pallets to launch production.");

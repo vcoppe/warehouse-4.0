@@ -6,7 +6,11 @@ import agent.Stock;
 import agent.Truck;
 import junit.framework.TestCase;
 import util.Pair;
-import warehouse.*;
+import util.Vector3D;
+import warehouse.Configuration;
+import warehouse.Mission;
+import warehouse.Pallet;
+import warehouse.Production;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,8 +40,8 @@ public class ControllerEventTest extends TestCase {
         this.trucks = new ArrayList<>();
         this.productions = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            this.missions.add(new Mission(0, new Pallet(0), new Position(0, 0), new Position(0, 0)));
-            this.trucks.add(new Truck(new Position(0, 0), new HashMap<>(), new HashMap<>()));
+            this.missions.add(new Mission(0, new Pallet(0), new Vector3D(0, 0), new Vector3D(0, 0)));
+            this.trucks.add(new Truck(new Vector3D(0, 0), new HashMap<>(), new HashMap<>()));
 
             ArrayList<Pair<Pallet, Integer>> in = new ArrayList<>();
             in.add(new Pair<>(new Pallet(0), 1));
@@ -139,13 +143,13 @@ public class ControllerEventTest extends TestCase {
         this.productionLine.add(production1);
         for (Pair<Pallet, Integer> pair : production1.getIn()) {
             Pallet pallet = pair.first;
-            Position position = this.productionLine.getStartBufferPosition();
+            Vector3D position = this.productionLine.getStartBufferPosition();
             this.stock.add(position, pallet);
         }
         this.productionLine.add(production2);
         for (Pair<Pallet, Integer> pair : production2.getIn()) {
             Pallet pallet = pair.first;
-            Position position = this.productionLine.getStartBufferPosition();
+            Vector3D position = this.productionLine.getStartBufferPosition();
             this.stock.add(position, pallet);
         }
 
@@ -165,7 +169,7 @@ public class ControllerEventTest extends TestCase {
         this.productionLine.add(production1);
         for (Pair<Pallet, Integer> pair : production1.getIn()) {
             Pallet pallet = pair.first;
-            Position position = this.productionLine.getStartBufferPosition();
+            Vector3D position = this.productionLine.getStartBufferPosition();
             this.stock.add(position, pallet);
         }
         this.productionLine.add(production2); // don't add components for that production
@@ -185,7 +189,7 @@ public class ControllerEventTest extends TestCase {
             this.productionLine.add(production);
             for (Pair<Pallet, Integer> pair : production.getIn()) {
                 Pallet pallet = pair.first;
-                Position position = this.productionLine.getStartBufferPosition();
+                Vector3D position = this.productionLine.getStartBufferPosition();
                 this.stock.add(position, pallet);
             }
         }

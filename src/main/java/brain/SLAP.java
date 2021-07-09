@@ -3,9 +3,9 @@ package brain;
 import graph.HungarianAlgorithm;
 import graph.MinCostMaxFlow;
 import gurobi.GRBException;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Pallet;
-import warehouse.Position;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +18,7 @@ public class SLAP {
     public final Configuration configuration;
 
     private final int nSlots, nTypes, nIOPoints;
-    private final ArrayList<Position> slots;
+    private final ArrayList<Vector3D> slots;
     private final int[] nPalletsOfType, slotCapacity;
 
     private final double[][] dist, freq;
@@ -38,9 +38,9 @@ public class SLAP {
 
         this.dist = new double[this.nSlots][this.nIOPoints];
         for (int i=0; i<this.nSlots; i++) {
-            Position p1 = this.slots.get(i);
+            Vector3D p1 = this.slots.get(i);
             for (int j=0; j<this.nIOPoints; j++) {
-                Position p2;
+                Vector3D p2;
                 if (j < nDocks) {
                     p2 = this.configuration.docks.get(j).getPosition();
                 } else if (j % 2 == 0) {
@@ -48,7 +48,7 @@ public class SLAP {
                 } else {
                     p2 = this.configuration.productionLines.get((j - nDocks) / 2).getEndBuffer().get(0);
                 }
-                this.dist[i][j] = this.configuration.warehouse.getDistance(p1, p2);
+                this.dist[i][j] = this.configuration.warehouse.getDistance(p1, p2).norm();
             }
         }
 

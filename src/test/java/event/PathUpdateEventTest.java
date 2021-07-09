@@ -5,9 +5,9 @@ import agent.Mobile;
 import junit.framework.TestCase;
 import simulation.Simulation;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Mission;
-import warehouse.Position;
 
 import java.util.ArrayList;
 
@@ -41,9 +41,9 @@ public class PathUpdateEventTest extends TestCase {
     }
 
     public void testTriggerMobileMissionPickUpEvent() {
-        this.mobile.start(new Mission(0, null, new Position(60, 60), new Position(100,100)));
+        this.mobile.start(new Mission(0, null, new Vector3D(60, 60), new Vector3D(100, 100)));
 
-        ArrayList<Pair<Position,Double>> path = new ArrayList<>();
+        ArrayList<Pair<Vector3D, Double>> path = new ArrayList<>();
         path.add(new Pair<>(this.mobile.getCurrentPosition(), 0.0));
         path.add(new Pair<>(this.mobile.getTargetPosition(), 10.0));
         this.mobile.setPath(0, path);
@@ -56,10 +56,10 @@ public class PathUpdateEventTest extends TestCase {
     }
 
     public void testTriggerMobileMissionEndEvent() {
-        this.mobile.start(new Mission(0, null, new Position(60, 60), new Position(100,100)));
+        this.mobile.start(new Mission(0, null, new Vector3D(60, 60), new Vector3D(100, 100)));
         this.mobile.pickUp();
 
-        ArrayList<Pair<Position,Double>> path = new ArrayList<>();
+        ArrayList<Pair<Vector3D, Double>> path = new ArrayList<>();
         path.add(new Pair<>(this.mobile.getCurrentPosition(), 0.0));
         path.add(new Pair<>(this.mobile.getTargetPosition(), 10.0));
         this.mobile.setPath(0, path);

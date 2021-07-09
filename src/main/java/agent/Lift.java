@@ -2,21 +2,22 @@ package agent;
 
 import observer.Observable;
 import util.Pair;
-import warehouse.Position;
+import util.Vector3D;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class Lift extends Observable {
 
+    public static double speed = 0.1; // in second per distance unit
     private static int LIFT_ID = 0;
     private final int id, height;
-    private final Position position;
+    private final Vector3D position;
     private final PriorityQueue<Pair<Double, Mobile>>[] queues;
 
-    private int level;
+    private final int level;
 
-    public Lift(Position position, int height) {
+    public Lift(Vector3D position, int height) {
         super();
         this.id = LIFT_ID++;
         this.position = position;
@@ -32,7 +33,7 @@ public class Lift extends Observable {
         return this.id;
     }
 
-    public Position getPosition() {
+    public Vector3D getPosition() {
         return this.position;
     }
 

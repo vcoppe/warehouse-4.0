@@ -1,17 +1,20 @@
 package agent;
 
 import observer.Observable;
+import util.Vector3D;
 import warehouse.Pallet;
-import warehouse.Position;
 import warehouse.Rule;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.PriorityQueue;
 
 public class Stock extends Observable {
 
-    private final ArrayList<Position> stockPositions, bufferPositions;
-    private final HashMap<Position, Pallet> pallets;
-    private final HashSet<Position> lock;
+    private final ArrayList<Vector3D> stockPositions, bufferPositions;
+    private final HashMap<Vector3D, Pallet> pallets;
+    private final HashSet<Vector3D> lock;
     private final RuleBasedPalletPositionFilter filter;
 
     public Stock() {
@@ -23,17 +26,17 @@ public class Stock extends Observable {
         this.bufferPositions = new ArrayList<>();
     }
 
-    public void addStockPosition(Position position) {
+    public void addStockPosition(Vector3D position) {
         this.stockPositions.add(position);
         this.add(position, Pallet.FREE);
     }
 
-    public void addBufferPosition(Position position) {
+    public void addBufferPosition(Vector3D position) {
         this.bufferPositions.add(position);
         this.add(position, Pallet.FREE);
     }
 
-    public void add(Position position, Pallet pallet) {
+    public void add(Vector3D position, Pallet pallet) {
         if (pallet == null) {
             return;
         }
@@ -42,7 +45,7 @@ public class Stock extends Observable {
         this.changed();
     }
 
-    public void remove(Position position, Pallet pallet) {
+    public void remove(Vector3D position, Pallet pallet) {
         if (pallet == null) {
             return;
         }
@@ -51,43 +54,43 @@ public class Stock extends Observable {
         this.changed();
     }
 
-    public Pallet get(Position position) {
+    public Pallet get(Vector3D position) {
         return this.pallets.get(position);
     }
 
-    public boolean isFree(Position position) {
+    public boolean isFree(Vector3D position) {
         return this.get(position) == Pallet.FREE && !this.isLocked(position);
     }
 
-    public boolean isLocked(Position position) {
+    public boolean isLocked(Vector3D position) {
         return this.lock.contains(position);
     }
 
-    public void lock(Position position) {
+    public void lock(Vector3D position) {
         this.lock.add(position);
     }
 
-    public void unlock(Position position) {
+    public void unlock(Vector3D position) {
         this.lock.remove(position);
     }
 
-    public ArrayList<Position> getStartPositions(Pallet pallet) {
+    public ArrayList<Vector3D> getStartPositions(Pallet pallet) {
         return this.filter.getStartPositions(pallet);
     }
 
-    public ArrayList<Position> getEndPositions(Pallet pallet) {
+    public ArrayList<Vector3D> getEndPositions(Pallet pallet) {
         return this.filter.getEndPositions(pallet);
     }
 
-    public ArrayList<Position> getAllPositions() {
+    public ArrayList<Vector3D> getAllPositions() {
         return new ArrayList<>(this.pallets.keySet());
     }
 
-    public ArrayList<Position> getStockPositions() {
+    public ArrayList<Vector3D> getStockPositions() {
         return this.stockPositions;
     }
 
-    public ArrayList<Position> getBufferPositions() {
+    public ArrayList<Vector3D> getBufferPositions() {
         return this.bufferPositions;
     }
 
@@ -109,11 +112,11 @@ public class Stock extends Observable {
             this.rules.remove(rule);
         }
 
-        public ArrayList<Position> getStartPositions(Pallet pallet) {
+        public ArrayList<Vector3D> getStartPositions(Pallet pallet) {
             boolean found = false;
             int priority = 0;
 
-            ArrayList<Position> positions = new ArrayList<>();
+            ArrayList<Vector3D> positions = new ArrayList<>();
 
             for (Rule rule : this.rules) {
                 if (found && rule.getPriority() > priority) {
@@ -124,7 +127,7 @@ public class Stock extends Observable {
                     found = true;
                     priority = rule.getPriority();
 
-                    for (Position position : rule.getPositions()) {
+                    for (Vector3D position : rule.getPositions()) {
                         Pallet stockPallet = this.stock.get(position);
                         if (stockPallet != null && stockPallet.getType() == pallet.getType() && !this.stock.isLocked(position)) {
                             positions.add(position);
@@ -139,7 +142,7 @@ public class Stock extends Observable {
 
             // if no match, return any possible position
             if (positions.isEmpty()) {
-                for (Position position : this.stock.getStockPositions()) {
+                for (Vector3D position : this.stock.getStockPositions()) {
                     Pallet stockPallet = this.stock.get(position);
                     if (stockPallet != null && stockPallet.getType() == pallet.getType() && !this.stock.isLocked(position)) {
                         positions.add(position);
@@ -150,11 +153,11 @@ public class Stock extends Observable {
             return positions;
         }
 
-        public ArrayList<Position> getEndPositions(Pallet pallet) {
+        public ArrayList<Vector3D> getEndPositions(Pallet pallet) {
             boolean found = false;
             int priority = 0;
 
-            ArrayList<Position> positions = new ArrayList<>();
+            ArrayList<Vector3D> positions = new ArrayList<>();
 
             for (Rule rule : this.rules) {
                 if (found && rule.getPriority() > priority) {
@@ -165,7 +168,7 @@ public class Stock extends Observable {
                     found = true;
                     priority = rule.getPriority();
 
-                    for (Position position : rule.getPositions()) {
+                    for (Vector3D position : rule.getPositions()) {
                         if (this.stock.isFree(position)) {
                             positions.add(position);
                         }
@@ -179,7 +182,7 @@ public class Stock extends Observable {
 
             // if no match, return any possible position
             if (positions.isEmpty()) {
-                for (Position position : this.stock.getStockPositions()) {
+                for (Vector3D position : this.stock.getStockPositions()) {
                     if (this.stock.isFree(position)) {
                         positions.add(position);
                     }

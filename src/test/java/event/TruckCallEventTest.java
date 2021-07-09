@@ -3,9 +3,9 @@ package event;
 import agent.Dock;
 import agent.Truck;
 import junit.framework.TestCase;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Pallet;
-import warehouse.Position;
 
 import java.util.HashMap;
 
@@ -22,17 +22,17 @@ public class TruckCallEventTest extends TestCase {
         this.configuration = new Configuration();
         this.dock = this.configuration.docks.get(0);
 
-        HashMap<Position, Pallet> toLoad = new HashMap<>();
-        HashMap<Position, Pallet> toUnload = new HashMap<>();
+        HashMap<Vector3D, Pallet> toLoad = new HashMap<>();
+        HashMap<Vector3D, Pallet> toUnload = new HashMap<>();
 
         for (int i = 0; i < 5; i++) {
             toUnload.put(
-                    new Position(0, i * this.configuration.palletSize),
+                    new Vector3D(0, i * this.configuration.palletSize),
                     new Pallet(i)
             );
         }
 
-        this.truck = new Truck(new Position(0, 0), toLoad, toUnload);
+        this.truck = new Truck(new Vector3D(0, 0), toLoad, toUnload);
         this.event = new TruckCallEvent(this.configuration.simulation, 1, this.configuration.controller, this.dock, this.truck);
     }
 

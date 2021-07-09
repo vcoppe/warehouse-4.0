@@ -4,9 +4,9 @@ import agent.Controller;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Pallet;
-import warehouse.Position;
 import warehouse.Warehouse;
 
 import java.util.HashMap;
@@ -33,8 +33,8 @@ public class TruckGeneratorEvent extends Event {
 
     @Override
     public void run() {
-        HashMap<Position, Pallet> toLoad = new HashMap<>();
-        HashMap<Position, Pallet> toUnload = new HashMap<>();
+        HashMap<Vector3D, Pallet> toLoad = new HashMap<>();
+        HashMap<Vector3D, Pallet> toUnload = new HashMap<>();
 
         int nPallets = 9 + random.nextInt(19);
         int nPalletsToLoad = random.nextInt(nPallets);
@@ -42,15 +42,15 @@ public class TruckGeneratorEvent extends Event {
 
         for (int i = 0; i < nPalletsToLoad; i++) {
             toLoad.put(
-                new Position((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
-                new Pallet(random.nextInt(10))
+                    new Vector3D((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
+                    new Pallet(random.nextInt(10))
             );
         }
 
         for (int i = 0; i < nPalletsToUnload; i++) {
             toUnload.put(
-                new Position((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
-                new Pallet(random.nextInt(10))
+                    new Vector3D((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
+                    new Pallet(random.nextInt(10))
             );
         }
 
@@ -60,7 +60,7 @@ public class TruckGeneratorEvent extends Event {
                         this.time,
                         this.controller,
                         new Truck(
-                                new Position(this.warehouse.getWidth() - this.configuration.truckWidth, 2 * this.warehouse.getDepth() - this.configuration.truckDepth),
+                                new Vector3D(this.warehouse.getWidth() - this.configuration.truckWidth, 2 * this.warehouse.getDepth() - this.configuration.truckDepth),
                                 toLoad,
                                 toUnload
                         )

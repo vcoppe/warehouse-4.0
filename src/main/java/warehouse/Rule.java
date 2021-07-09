@@ -1,14 +1,16 @@
 package warehouse;
 
+import util.Vector3D;
+
 import java.util.ArrayList;
 
 public class Rule implements Comparable<Rule> {
 
     private final int priority;
     private final boolean blocking;
-    private final ArrayList<Position> positions;
+    private final ArrayList<Vector3D> positions;
 
-    public Rule(int priority, boolean blocking, ArrayList<Position> positions) {
+    public Rule(int priority, boolean blocking, ArrayList<Vector3D> positions) {
         this.priority = priority;
         this.blocking = blocking;
         this.positions = positions;
@@ -26,7 +28,7 @@ public class Rule implements Comparable<Rule> {
         return true;
     }
 
-    public ArrayList<Position> getPositions() {
+    public ArrayList<Vector3D> getPositions() {
         return this.positions;
     }
 

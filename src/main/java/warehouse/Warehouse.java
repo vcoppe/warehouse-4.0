@@ -1,8 +1,12 @@
 package warehouse;
 
+import agent.Lift;
 import agent.Mobile;
 import graph.Edge;
 import graph.Graph;
+import util.DoublePrecisionConstraint;
+import util.Vector2D;
+import util.Vector3D;
 
 public class Warehouse {
 
@@ -32,7 +36,7 @@ public class Warehouse {
         return this.graph;
     }
 
-    public Edge addEdge(Position p1, Position p2, boolean force) {
+    public Edge addEdge(Vector3D p1, Vector3D p2, boolean force) {
         if (!force) {
             if (p1.getX() < 0 || p1.getX() >= this.width) return null;
             if (p1.getY() < 0 || p1.getY() >= this.depth) return null;
@@ -41,23 +45,24 @@ public class Warehouse {
             if (p2.getY() < 0 || p2.getY() >= this.depth) return null;
             if (p2.getZ() < 0 || p2.getZ() >= this.height) return null;
         }
-        return this.graph.addEdge(p1, p2, p1.manhattanDistance3D(p2));
+        return this.graph.addEdge(p1, p2);
     }
 
-    public Edge addEdge(Position p1, Position p2) {
+    public Edge addEdge(Vector3D p1, Vector3D p2) {
         return this.addEdge(p1, p2, false);
     }
 
-    public void removeEdge(Position p1, Position p2) {
+    public void removeEdge(Vector3D p1, Vector3D p2) {
         this.graph.removeEdge(p1, p2);
     }
 
-    public double getDistance(Position p1, Position p2) {
+    public Vector2D getDistance(Vector3D p1, Vector3D p2) {
         return this.graph.getShortestPath(p1, p2);
     }
 
-    public double getTravelTime(Position p1, Position p2, Mobile mobile) {
-        return this.getDistance(p1, p2) * mobile.getSpeed();
+    public double getTravelTime(Vector3D p1, Vector3D p2, Mobile mobile) {
+        Vector2D dist2D = this.getDistance(p1, p2);
+        return DoublePrecisionConstraint.round(dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
     }
 
 }

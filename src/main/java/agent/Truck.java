@@ -1,13 +1,10 @@
 package agent;
 
 import observer.Observable;
-import util.Pair;
+import util.Vector3D;
 import warehouse.Pallet;
-import warehouse.Position;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 
 public class Truck extends Observable {
 
@@ -15,11 +12,11 @@ public class Truck extends Observable {
     private final int id;
     private static final double speed = 50;
     private Dock dock;
-    private Position position, targetPosition;
-    private final HashMap<Position, Pallet> toLoad, toUnload, currentLoad;
+    private final HashMap<Vector3D, Pallet> toLoad, toUnload, currentLoad;
+    private Vector3D position, targetPosition;
     private double arrivalTime, calledTime, departureTime;
 
-    public Truck(Position position, HashMap<Position, Pallet> toLoad, HashMap<Position, Pallet> toUnload) {
+    public Truck(Vector3D position, HashMap<Vector3D, Pallet> toLoad, HashMap<Vector3D, Pallet> toUnload) {
         super();
         this.id = TRUCK_ID++;
         this.position = position;
@@ -40,15 +37,15 @@ public class Truck extends Observable {
         return speed;
     }
 
-    public HashMap<Position, Pallet> getToLoad() {
+    public HashMap<Vector3D, Pallet> getToLoad() {
         return this.toLoad;
     }
 
-    public HashMap<Position, Pallet> getToUnload() {
-         return this.toUnload;
+    public HashMap<Vector3D, Pallet> getToUnload() {
+        return this.toUnload;
     }
 
-    public HashMap<Position, Pallet> getCurrentLoad() {
+    public HashMap<Vector3D, Pallet> getCurrentLoad() {
         return this.currentLoad;
     }
 
@@ -79,16 +76,16 @@ public class Truck extends Observable {
         return this.dock;
     }
 
-    public Position getPosition() {
+    public Vector3D getPosition() {
         return this.position;
     }
 
-    public Position getTargetPosition() {
+    public Vector3D getTargetPosition() {
         return this.targetPosition;
     }
 
-    public void add(Position position, Pallet pallet) {
-        Position positionInTruck = position.subtract(this.position);
+    public void add(Vector3D position, Pallet pallet) {
+        Vector3D positionInTruck = position.subtract(this.position);
         Pallet palletInTruck = this.toLoad.get(positionInTruck);
         if (pallet.getType() == palletInTruck.getType()) {
             this.toLoad.remove(positionInTruck);
@@ -97,8 +94,8 @@ public class Truck extends Observable {
         }
     }
 
-    public void remove(Position position, Pallet pallet) {
-        Position positionInTruck = position.subtract(this.position);
+    public void remove(Vector3D position, Pallet pallet) {
+        Vector3D positionInTruck = position.subtract(this.position);
         Pallet palletInTruck = this.toUnload.get(positionInTruck);
         if (pallet.getType() == palletInTruck.getType()) {
             this.toUnload.remove(positionInTruck);

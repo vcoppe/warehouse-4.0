@@ -4,7 +4,6 @@ import agent.Dock;
 import agent.Mobile;
 import agent.Truck;
 import warehouse.Mission;
-import warehouse.Position;
 
 public class DockEdgeCondition extends Condition {
 
@@ -19,8 +18,8 @@ public class DockEdgeCondition extends Condition {
 
     @Override
     public boolean satisfied(double time, Mobile mobile) {
-        Position dockPosition = this.dock.getPosition();
-        Position mobilePosition = mobile.getPosition(); // start of path
+        Vector3D dockPosition = this.dock.getPosition();
+        Vector3D mobilePosition = mobile.getPosition(); // start of path
         if (mobilePosition.getX() >= dockPosition.getX() &&
                 mobilePosition.getX() < dockPosition.getX() + width &&
                 mobilePosition.getY() >= dockPosition.getY() &&

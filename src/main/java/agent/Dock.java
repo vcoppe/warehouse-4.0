@@ -1,15 +1,15 @@
 package agent;
 
-import warehouse.Position;
+import util.Vector3D;
 
 public class Dock {
 
     private static int DOCK_ID = 0;
     private final int id;
-    private final Position position;
+    private final Vector3D position;
     private Truck truck;
 
-    public Dock(Position position) {
+    public Dock(Vector3D position) {
         this.id = DOCK_ID++;
         this.position = position;
         this.truck = null;
@@ -19,7 +19,7 @@ public class Dock {
         return this.id;
     }
 
-    public Position getPosition() {
+    public Vector3D getPosition() {
         return this.position;
     }
 

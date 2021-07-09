@@ -4,10 +4,10 @@ import agent.Mobile;
 import agent.Truck;
 import junit.framework.TestCase;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Mission;
 import warehouse.Pallet;
-import warehouse.Position;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +18,8 @@ public class MobileMissionEndEventTest extends TestCase {
     private Configuration configuration;
     private Mobile mobile;
     private Truck truckLoad, truckUnload;
-    private ArrayList<Pair<Position, Pallet>> toLoad, toUnload;
-    private ArrayList<Position> loadPalletPositions, unloadPalletPositions;
+    private ArrayList<Pair<Vector3D, Pallet>> toLoad, toUnload;
+    private ArrayList<Vector3D> loadPalletPositions, unloadPalletPositions;
 
     public void setUp() throws Exception {
         super.setUp();
@@ -30,14 +30,14 @@ public class MobileMissionEndEventTest extends TestCase {
 
         this.toLoad = new ArrayList<>();
         this.toUnload = new ArrayList<>();
-        HashMap<Position, Pallet> toLoad = new HashMap<>();
-        HashMap<Position, Pallet> toUnload = new HashMap<>();
+        HashMap<Vector3D, Pallet> toLoad = new HashMap<>();
+        HashMap<Vector3D, Pallet> toUnload = new HashMap<>();
         this.loadPalletPositions = new ArrayList<>();
         this.unloadPalletPositions = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
-            Pair<Position,Pallet> pair = new Pair<>(
-                    new Position(0, i * this.configuration.palletSize),
+            Pair<Vector3D, Pallet> pair = new Pair<>(
+                    new Vector3D(0, i * this.configuration.palletSize),
                     new Pallet(i)
             );
             toLoad.put(pair.first, pair.second);
@@ -49,21 +49,21 @@ public class MobileMissionEndEventTest extends TestCase {
             this.toUnload.add(pair);
 
             pair = new Pair<>(
-                    new Position(3 * this.configuration.palletSize, i * this.configuration.palletSize),
+                    new Vector3D(3 * this.configuration.palletSize, i * this.configuration.palletSize),
                     new Pallet(i)
             );
             this.configuration.stock.lock(pair.first);
             this.unloadPalletPositions.add(pair.first);
         }
 
-        this.truckLoad = new Truck(new Position(0, this.configuration.warehouse.getDepth()), toLoad, new HashMap<>());
-        this.truckUnload = new Truck(new Position(this.configuration.dockWidth, this.configuration.warehouse.getDepth()), new HashMap<>(), toUnload);
+        this.truckLoad = new Truck(new Vector3D(0, this.configuration.warehouse.getDepth()), toLoad, new HashMap<>());
+        this.truckUnload = new Truck(new Vector3D(this.configuration.dockWidth, this.configuration.warehouse.getDepth()), new HashMap<>(), toUnload);
     }
 
     public void testSetPosition() {
         Pallet pallet = this.toLoad.get(0).second;
-        Position startPosition = this.loadPalletPositions.get(0);
-        Position endPosition = this.truckLoad.getPosition();
+        Vector3D startPosition = this.loadPalletPositions.get(0);
+        Vector3D endPosition = this.truckLoad.getPosition();
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
 
         this.mobile.start(mission);
@@ -78,8 +78,8 @@ public class MobileMissionEndEventTest extends TestCase {
 
     public void testAddPalletToStock() {
         Pallet pallet = this.toUnload.get(0).second;
-        Position startPosition = this.truckUnload.getPosition();
-        Position endPosition = this.unloadPalletPositions.get(0);
+        Vector3D startPosition = this.truckUnload.getPosition();
+        Vector3D endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, truckUnload, null, startPosition, endPosition);
 
         this.mobile.start(mission);
@@ -95,8 +95,8 @@ public class MobileMissionEndEventTest extends TestCase {
 
     public void testAddPalletToTruck() {
         Pallet pallet = this.toLoad.get(0).second;
-        Position startPosition = this.loadPalletPositions.get(0);
-        Position endPosition = this.toLoad.get(0).first.add(this.truckLoad.getPosition());
+        Vector3D startPosition = this.loadPalletPositions.get(0);
+        Vector3D endPosition = this.toLoad.get(0).first.add(this.truckLoad.getPosition());
         Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
 
         this.mobile.start(mission);
@@ -114,8 +114,8 @@ public class MobileMissionEndEventTest extends TestCase {
 
     public void testAddMobileToController() {
         Pallet pallet = this.toUnload.get(0).second;
-        Position startPosition = this.truckUnload.getPosition();
-        Position endPosition = this.unloadPalletPositions.get(0);
+        Vector3D startPosition = this.truckUnload.getPosition();
+        Vector3D endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, truckUnload, null, startPosition, endPosition);
 
         this.mobile.start(mission);
@@ -132,10 +132,10 @@ public class MobileMissionEndEventTest extends TestCase {
     public void testDoneWhenLoaded() {
         int i = 0;
         while (this.truckLoad.getToLoad().size() > 0) {
-            Map.Entry<Position, Pallet> entry = this.truckLoad.getToLoad().entrySet().iterator().next();
+            Map.Entry<Vector3D, Pallet> entry = this.truckLoad.getToLoad().entrySet().iterator().next();
             Pallet pallet = entry.getValue();
-            Position startPosition = this.loadPalletPositions.get(i);
-            Position endPosition = entry.getKey().add(this.truckLoad.getPosition());
+            Vector3D startPosition = this.loadPalletPositions.get(i);
+            Vector3D endPosition = entry.getKey().add(this.truckLoad.getPosition());
             Mission mission = new Mission(0, pallet, null, this.truckLoad, startPosition, endPosition);
 
             this.mobile.start(mission);
@@ -156,8 +156,8 @@ public class MobileMissionEndEventTest extends TestCase {
 
     public void testTriggerControllerEvent() {
         Pallet pallet = this.toUnload.get(0).second;
-        Position startPosition = this.truckUnload.getPosition();
-        Position endPosition = this.unloadPalletPositions.get(0);
+        Vector3D startPosition = this.truckUnload.getPosition();
+        Vector3D endPosition = this.unloadPalletPositions.get(0);
         Mission mission = new Mission(0, pallet, this.truckUnload, null, startPosition, endPosition);
 
         this.mobile.start(mission);

@@ -2,8 +2,8 @@ package brain;
 
 import agent.Mobile;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Mission;
-import warehouse.Position;
 import warehouse.Warehouse;
 
 import java.util.ArrayList;
@@ -26,8 +26,8 @@ public class ClosestUrgentMissionSelector implements MobileMissionSelector {
             double shortestDist = Double.MAX_VALUE;
             Mission closestMission = null;
 
-            Pair<Pair<Position,Double>,Pair<Position,Double>> pair = mobile.getPositionsAt(time);
-            Position position = pair.second.first;
+            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
+            Vector3D position = pair.second.first;
             double offset = pair.second.second - time;
 
             for (Mission mission : missions) {

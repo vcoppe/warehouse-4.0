@@ -1,14 +1,11 @@
 package warehouse;
 
 import agent.Truck;
-import util.ConjunctionCondition;
-import util.MissionDoneCondition;
-import util.MissionPickedUpCondition;
-import util.MissionStartedCondition;
+import util.*;
 
 public class Mission {
 
-    private enum Status { WAITING, STARTED, CARRYING, DONE };
+    private final Vector3D startPosition;
 
     private static int MISSION_ID = 0;
     private final int id;
@@ -16,12 +13,9 @@ public class Mission {
     private final Pallet pallet;
     private final Truck startTruck;
     private final Truck endTruck;
-    private final Position startPosition;
-    private final Position endPosition;
-    private Status status;
-    private final ConjunctionCondition startCondition, pickupCondition, dropCondition;
+    private final Vector3D endPosition;
 
-    public Mission(double initTime, Pallet pallet, Truck startTruck, Truck endTruck, Position startPosition, Position endPosition) {
+    public Mission(double initTime, Pallet pallet, Truck startTruck, Truck endTruck, Vector3D startPosition, Vector3D endPosition) {
         this.id = MISSION_ID++;
         this.initTime = initTime;
         this.pallet = pallet;
@@ -35,8 +29,15 @@ public class Mission {
         this.dropCondition = new ConjunctionCondition();
     }
 
-    public Mission(double initTime, Pallet pallet, Position startPosition, Position endPosition) {
+    private Status status;
+    private final ConjunctionCondition startCondition, pickupCondition, dropCondition;
+
+    public Mission(double initTime, Pallet pallet, Vector3D startPosition, Vector3D endPosition) {
         this(initTime, pallet, null, null, startPosition, endPosition);
+    }
+
+    public Vector3D getStartPosition() {
+        return this.startPosition;
     }
 
     public int getId() {
@@ -59,18 +60,16 @@ public class Mission {
         return this.endTruck;
     }
 
-    public Position getStartPosition() {
-        return this.startPosition;
-    }
-
-    public Position getEndPosition() {
+    public Vector3D getEndPosition() {
         return this.endPosition;
     }
+
+    private enum Status {WAITING, STARTED, CARRYING, DONE}
 
     public boolean canStart() {
         return this.startCondition.satisfied();
     }
-    
+
     public void start() {
         this.status = Status.STARTED;
     }

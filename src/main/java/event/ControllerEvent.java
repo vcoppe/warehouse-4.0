@@ -4,8 +4,8 @@ import agent.*;
 import simulation.Event;
 import simulation.Simulation;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Mission;
-import warehouse.Position;
 import warehouse.Production;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class ControllerEvent extends Event {
 
         for (Mobile mobile : this.controller.getAvailableMobiles()) {
             if (mobile.isAvailable()) {
-                mobile.replace(new Position(0, this.controller.getWarehouse().getDepth() - (mobile.getId() + 1) * this.controller.getConfiguration().palletSize, 0));
+                mobile.replace(new Vector3D(0, this.controller.getWarehouse().getDepth() - (mobile.getId() + 1) * this.controller.getConfiguration().palletSize * 2, 0));
             }
         }
 

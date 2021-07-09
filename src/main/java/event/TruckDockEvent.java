@@ -6,9 +6,9 @@ import agent.Stock;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
+import util.Vector3D;
 import warehouse.Mission;
 import warehouse.Pallet;
-import warehouse.Position;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,19 +39,19 @@ public class TruckDockEvent extends Event {
 
         this.truck.dock();
 
-        Position delta = new Position(0, this.controller.getConfiguration().palletSize);
+        Vector3D delta = new Vector3D(0, this.controller.getConfiguration().palletSize);
 
-        HashMap<Position,Pallet> toUnload = this.truck.getToUnload();
-        HashMap<Position,Mission> unloadMissions = new HashMap<>();
-        ArrayList<Position> unloadPositions = new ArrayList<>(toUnload.keySet());
-        unloadPositions.sort(Comparator.comparingInt(Position::getY));
+        HashMap<Vector3D, Pallet> toUnload = this.truck.getToUnload();
+        HashMap<Vector3D, Mission> unloadMissions = new HashMap<>();
+        ArrayList<Vector3D> unloadPositions = new ArrayList<>(toUnload.keySet());
+        unloadPositions.sort(Comparator.comparingInt(Vector3D::getY));
 
         // scan pallets to load and unload
-        for (Position palletPosition : unloadPositions) {
+        for (Vector3D palletPosition : unloadPositions) {
             Pallet pallet = toUnload.get(palletPosition);
 
-            Position startPosition = this.truck.getPosition().add(palletPosition);
-            Position endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock);
+            Vector3D startPosition = this.truck.getPosition().add(palletPosition);
+            Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock);
 
             if (endPosition == null) {
                 this.simulation.logger.warning("FAILURE! Warehouse is full, cannot handle more pallets.");
@@ -62,7 +62,7 @@ public class TruckDockEvent extends Event {
             this.controller.add(mission);
             this.stock.lock(endPosition);
 
-            Position previousPosition = palletPosition.subtract(delta);
+            Vector3D previousPosition = palletPosition.subtract(delta);
             if (unloadMissions.containsKey(previousPosition)) {
                 Mission previousMission = unloadMissions.get(previousPosition);
                 mission.startAfterPickup(previousMission);
@@ -71,16 +71,16 @@ public class TruckDockEvent extends Event {
             unloadMissions.put(palletPosition, mission);
         }
 
-        HashMap<Position,Pallet> toLoad = this.truck.getToLoad();
-        HashMap<Position,Mission> loadMissions = new HashMap<>();
-        ArrayList<Position> loadPositions = new ArrayList<>(toLoad.keySet());
-        loadPositions.sort((p1,p2) -> p2.getY() - p1.getY());
+        HashMap<Vector3D, Pallet> toLoad = this.truck.getToLoad();
+        HashMap<Vector3D, Mission> loadMissions = new HashMap<>();
+        ArrayList<Vector3D> loadPositions = new ArrayList<>(toLoad.keySet());
+        loadPositions.sort((p1, p2) -> p2.getY() - p1.getY());
 
-        for (Position palletPosition : loadPositions) {
+        for (Vector3D palletPosition : loadPositions) {
             Pallet pallet = toLoad.get(palletPosition);
 
-            Position endPosition = this.truck.getPosition().add(palletPosition);
-            Position startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
+            Vector3D endPosition = this.truck.getPosition().add(palletPosition);
+            Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
 
             if (startPosition == null) {
                 this.simulation.logger.warning("FAILURE! Missing pallets to load truck.");
@@ -95,7 +95,7 @@ public class TruckDockEvent extends Event {
                 mission.startAfterPickup(unloadMission);
             }
 
-            Position previousPosition = palletPosition.add(delta);
+            Vector3D previousPosition = palletPosition.add(delta);
             if (loadMissions.containsKey(previousPosition)) {
                 Mission previousMission = loadMissions.get(previousPosition);
                 mission.startAfterEnd(previousMission);

@@ -11,9 +11,9 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Mission;
-import warehouse.Position;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -85,7 +85,7 @@ public class MobileAnimation {
             }
         }
 
-        List<Pair<Position, Double>> path = mobile.getPath();
+        List<Pair<Vector3D, Double>> path = mobile.getPath();
 
         if (path == null) {
             return null;
@@ -96,18 +96,18 @@ public class MobileAnimation {
 
         Path currentPath = new Path();
 
-        Position currentPosition = mobile.getPositionAt(time);
+        Vector3D currentPosition = mobile.getPositionAt(time);
         currentPath.getElements().add(new MoveTo(
                 currentPosition.getX() + 0.5 * mobileShape.getWidth(),
                 currentPosition.getY() + 0.5 * mobileShape.getHeight()
         ));
 
-        Position lastPosition = currentPosition;
+        Vector3D lastPosition = currentPosition;
         double cumulTime = 0, lastTime = time;
         boolean end = false;
 
-        for (Pair<Position, Double> pair : path) {
-            Position position = pair.first;
+        for (Pair<Vector3D, Double> pair : path) {
+            Vector3D position = pair.first;
             double positionTime = pair.second;
 
             if (positionTime <= lastTime) {

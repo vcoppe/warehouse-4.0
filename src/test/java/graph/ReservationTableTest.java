@@ -1,20 +1,20 @@
 package graph;
 
 import junit.framework.TestCase;
-import warehouse.Position;
+import util.Vector3D;
 
 public class ReservationTableTest extends TestCase {
 
     private int n;
-    private Position[] positions;
+    private Vector3D[] positions;
 
     public void setUp() throws Exception {
         super.setUp();
 
         this.n = 25;
-        this.positions = new Position[this.n];
+        this.positions = new Vector3D[this.n];
         for(int i=0; i<this.n; i++) {
-            this.positions[i] = new Position(0, i);
+            this.positions[i] = new Vector3D(0, i);
         }
     }
 

@@ -14,9 +14,9 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
 import observer.Observer;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Pallet;
-import warehouse.Position;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -28,7 +28,7 @@ public class TruckAnimation implements Observer<Controller> {
     private final Configuration configuration;
     private final HashMap<Integer, Truck> trucks;
     private final HashMap<Integer, CompoundShape> shapes;
-    private final HashMap<Integer, HashMap<Position, PalletShape>> palletShapes;
+    private final HashMap<Integer, HashMap<Vector3D, PalletShape>> palletShapes;
     private final Group group;
 
     public TruckAnimation(Configuration configuration) {
@@ -55,8 +55,8 @@ public class TruckAnimation implements Observer<Controller> {
         this.shapes.put(truck.getId(), shape);
         this.palletShapes.put(truck.getId(), new HashMap<>());
 
-        for (Map.Entry<Position, Pallet> entry : truck.getCurrentLoad().entrySet()) {
-            Position position = entry.getKey();
+        for (Map.Entry<Vector3D, Pallet> entry : truck.getCurrentLoad().entrySet()) {
+            Vector3D position = entry.getKey();
             Pallet pallet = entry.getValue();
             this.add(truck, position, pallet);
         }
@@ -70,7 +70,7 @@ public class TruckAnimation implements Observer<Controller> {
         return this.group;
     }
 
-    public PalletShape add(Truck truck, Position position, Pallet pallet) {
+    public PalletShape add(Truck truck, Vector3D position, Pallet pallet) {
         PalletShape shape = new PalletShape(
                 position.getX(),
                 position.getY(),
@@ -117,18 +117,18 @@ public class TruckAnimation implements Observer<Controller> {
         CompoundShape shape = this.shapes.get(truck.getId());
 
         if (!truck.getPosition().equals(truck.getTargetPosition())) { // travelling to dock
-            Position [] positions = {
+            Vector3D[] positions = {
                     truck.getPosition(),
-                    new Position(truck.getPosition().getX(), Math.min(2 * this.configuration.warehouse.getDepth() - this.configuration.truckDepth, this.configuration.warehouse.getDepth() + this.configuration.truckDepth)),
-                    new Position(truck.getTargetPosition().getX(), Math.min(2 * this.configuration.warehouse.getDepth() - this.configuration.truckDepth, this.configuration.warehouse.getDepth() + this.configuration.truckDepth)),
+                    new Vector3D(truck.getPosition().getX(), Math.min(2 * this.configuration.warehouse.getDepth() - this.configuration.truckDepth, this.configuration.warehouse.getDepth() + this.configuration.truckDepth)),
+                    new Vector3D(truck.getTargetPosition().getX(), Math.min(2 * this.configuration.warehouse.getDepth() - this.configuration.truckDepth, this.configuration.warehouse.getDepth() + this.configuration.truckDepth)),
                     truck.getTargetPosition()
             };
 
             Path path = new Path();
 
-            Position lastPosition = positions[0];
+            Vector3D lastPosition = positions[0];
             double positionTime = truck.getCalledTime();
-            for (Position position : positions) {
+            for (Vector3D position : positions) {
                 if (positionTime > time + delta) {
                     break;
                 }
@@ -136,10 +136,10 @@ public class TruckAnimation implements Observer<Controller> {
                 double moveTime = lastPosition.manhattanDistance2D(position) / Truck.getSpeed();
 
                 if (time < positionTime + moveTime) {
-                    Position moveStart = lastPosition, moveEnd = position;
+                    Vector3D moveStart = lastPosition, moveEnd = position;
                     if (time > positionTime) { // move start
                         double alpha = (positionTime + moveTime - time) / moveTime;
-                        moveStart = new Position(
+                        moveStart = new Vector3D(
                                 (int) (alpha * lastPosition.getX() + (1 - alpha) * position.getX()),
                                 (int) (alpha * lastPosition.getY() + (1 - alpha) * position.getY()),
                                 (int) (alpha * lastPosition.getZ() + (1 - alpha) * position.getZ())
@@ -148,7 +148,7 @@ public class TruckAnimation implements Observer<Controller> {
 
                     if (time + delta < positionTime + moveTime) { // move end
                         double alpha = (positionTime + moveTime - (time + delta)) / (moveTime);
-                        moveEnd = new Position(
+                        moveEnd = new Vector3D(
                                 (int) (alpha * lastPosition.getX() + (1 - alpha) * position.getX()),
                                 (int) (alpha * lastPosition.getY() + (1 - alpha) * position.getY()),
                                 (int) (alpha * lastPosition.getZ() + (1 - alpha) * position.getZ())
@@ -181,8 +181,8 @@ public class TruckAnimation implements Observer<Controller> {
                 palletShape.setEmptyTruck();
             }
 
-            for (Map.Entry<Position, Pallet> entry : truck.getCurrentLoad().entrySet()) {
-                Position position = entry.getKey();
+            for (Map.Entry<Vector3D, Pallet> entry : truck.getCurrentLoad().entrySet()) {
+                Vector3D position = entry.getKey();
                 Pallet pallet = entry.getValue();
 
                 PalletShape palletShape = this.palletShapes.get(truck.getId()).get(position);

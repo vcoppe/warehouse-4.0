@@ -5,9 +5,9 @@ import agent.Mobile;
 import agent.Stock;
 import agent.Truck;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Mission;
 import warehouse.Pallet;
-import warehouse.Position;
 
 import java.util.ArrayList;
 
@@ -23,12 +23,12 @@ public class NaiveSelector implements MobileMissionSelector, PalletPositionSelec
     }
 
     @Override
-    public Position selectStartPosition(Pallet pallet, Position endPosition, Stock stock) {
+    public Vector3D selectStartPosition(Pallet pallet, Vector3D endPosition, Stock stock) {
         return stock.getStartPositions(pallet).get(0);
     }
 
     @Override
-    public Position selectEndPosition(Pallet pallet, Position startPosition, Stock stock) {
+    public Vector3D selectEndPosition(Pallet pallet, Vector3D startPosition, Stock stock) {
         return stock.getEndPositions(pallet).get(0);
     }
 
