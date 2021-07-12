@@ -8,28 +8,27 @@ import util.Pair;
 import warehouse.Configuration;
 import warehouse.Pallet;
 import warehouse.Production;
+import warehouse.Scenario;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class ProductionGeneratorEvent extends Event {
 
     private final Configuration configuration;
+    private final Scenario scenario;
     private final ProductionLine productionLine;
     private final Controller controller;
-    private final Random random;
+    private final Random random = new Random(0);
 
-    public ProductionGeneratorEvent(Simulation simulation, double time, Configuration configuration, ProductionLine productionLine, Random random) {
+    public ProductionGeneratorEvent(Simulation simulation, double time, Configuration configuration, Scenario scenario, ProductionLine productionLine) {
         super(simulation, time);
         this.configuration = configuration;
+        this.scenario = scenario;
         this.productionLine = productionLine;
         this.controller = configuration.controller;
-        this.random = random;
-    }
-
-    public ProductionGeneratorEvent(Simulation simulation, double time, Configuration configuration, ProductionLine productionLine) {
-        this(simulation, time, configuration, productionLine, new Random(0));
     }
 
     @Override
@@ -40,30 +39,32 @@ public class ProductionGeneratorEvent extends Event {
         int nPalletsIn = 1 + random.nextInt(4);
         int nPalletsOut = 1 + random.nextInt(4);
 
-        HashSet<Integer> takenIn = new HashSet<>();
-        for (int i = 0; i < nPalletsIn; ) {
-            int type;
-            do {
-                type = random.nextInt(10);
-            } while (takenIn.contains(type));
-            takenIn.add(type);
-            int number = 1 + random.nextInt(3);
-            if (i + number > nPalletsIn) number = nPalletsIn - i;
-            in.add(new Pair<>(new Pallet(type), number));
-            i += number;
+        HashMap<Integer, Integer> takenIn = new HashMap<>();
+        for (int i = 0; i < nPalletsIn; i++) {
+            int type = Scenario.pickFromDistribution(this.scenario.productionLineInThroughput);
+            if (!takenIn.containsKey(type)) {
+                takenIn.put(type, 1);
+            } else {
+                takenIn.put(type, takenIn.get(type) + 1);
+            }
         }
 
-        HashSet<Integer> takenOut = new HashSet<>();
+        for (Map.Entry<Integer, Integer> entry : takenIn.entrySet()) {
+            in.add(new Pair<>(new Pallet(entry.getKey()), entry.getValue()));
+        }
+
+        HashMap<Integer, Integer> takenOut = new HashMap<>();
         for (int i = 0; i < nPalletsOut; i++) {
-            int type;
-            do {
-                type = random.nextInt(10);
-            } while (takenOut.contains(type));
-            takenOut.add(type);
-            int number = 1 + random.nextInt(3);
-            if (i + number > nPalletsOut) number = nPalletsOut - i;
-            out.add(new Pair<>(new Pallet(type), number));
-            i += number;
+            int type = Scenario.pickFromDistribution(this.scenario.productionLineOutThroughput);
+            if (!takenOut.containsKey(type)) {
+                takenOut.put(type, 1);
+            } else {
+                takenOut.put(type, takenOut.get(type) + 1);
+            }
+        }
+
+        for (Map.Entry<Integer, Integer> entry : takenOut.entrySet()) {
+            out.add(new Pair<>(new Pallet(entry.getKey()), entry.getValue()));
         }
 
         this.simulation.enqueueEvent(
@@ -77,10 +78,10 @@ public class ProductionGeneratorEvent extends Event {
         );
         this.simulation.enqueueEvent(new ProductionGeneratorEvent(
                 this.simulation,
-                this.time + 100 + random.nextInt(200),
+                this.time + 200 + random.nextInt(200),
                 this.configuration,
-                this.productionLine,
-                this.random
+                this.scenario,
+                this.productionLine
         ));
     }
 }

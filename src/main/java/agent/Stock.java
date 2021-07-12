@@ -15,7 +15,7 @@ public class Stock extends Observable {
     private final ArrayList<Vector3D> stockPositions, bufferPositions;
     private final HashMap<Vector3D, Pallet> pallets;
     private final HashSet<Vector3D> lock;
-    private final RuleBasedPalletPositionFilter filter;
+    public final RuleBasedPalletPositionFilter filter;
 
     public Stock() {
         super();
@@ -124,9 +124,6 @@ public class Stock extends Observable {
                 }
 
                 if (rule.matches(pallet)) {
-                    found = true;
-                    priority = rule.getPriority();
-
                     for (Vector3D position : rule.getPositions()) {
                         Pallet stockPallet = this.stock.get(position);
                         if (stockPallet != null && stockPallet.getType() == pallet.getType() && !this.stock.isLocked(position)) {
@@ -134,8 +131,13 @@ public class Stock extends Observable {
                         }
                     }
 
-                    if (rule.isBlocking()) {
-                        return positions;
+                    if (!positions.isEmpty()) {
+                        found = true;
+                        priority = rule.getPriority();
+
+                        if (rule.isBlocking()) {
+                            return positions;
+                        }
                     }
                 }
             }
@@ -165,17 +167,19 @@ public class Stock extends Observable {
                 }
 
                 if (rule.matches(pallet)) {
-                    found = true;
-                    priority = rule.getPriority();
-
                     for (Vector3D position : rule.getPositions()) {
                         if (this.stock.isFree(position)) {
                             positions.add(position);
                         }
                     }
 
-                    if (rule.isBlocking()) {
-                        return positions;
+                    if (!positions.isEmpty()) {
+                        found = true;
+                        priority = rule.getPriority();
+
+                        if (rule.isBlocking()) {
+                            return positions;
+                        }
                     }
                 }
             }

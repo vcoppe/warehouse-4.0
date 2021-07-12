@@ -3,16 +3,19 @@ package warehouse;
 import util.Vector3D;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 public class Rule implements Comparable<Rule> {
 
     private final int priority;
     private final boolean blocking;
+    private final Function<Pallet, Boolean> matcher;
     private final ArrayList<Vector3D> positions;
 
-    public Rule(int priority, boolean blocking, ArrayList<Vector3D> positions) {
+    public Rule(int priority, boolean blocking, Function<Pallet, Boolean> matcher, ArrayList<Vector3D> positions) {
         this.priority = priority;
         this.blocking = blocking;
+        this.matcher = matcher;
         this.positions = positions;
     }
 
@@ -25,7 +28,7 @@ public class Rule implements Comparable<Rule> {
     }
 
     public boolean matches(Pallet pallet) {
-        return true;
+        return this.matcher.apply(pallet);
     }
 
     public ArrayList<Vector3D> getPositions() {

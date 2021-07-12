@@ -10,10 +10,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import util.Vector3D;
 import warehouse.Configuration;
-import warehouse.Pallet;
+import warehouse.Scenario;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,28 +56,12 @@ public class Main extends Application {
         logger.setLevel(Level.OFF);
 
         // create scenario
-        Random random = new Random(0);
+        Scenario scenario = new Scenario(this.configuration, 15);
+        scenario.createZones();
+        scenario.initStock();
 
-        for (Vector3D position : this.configuration.stock.getStockPositions()) {
-            if (random.nextInt(100) < 70) {
-                Pallet pallet = new Pallet(random.nextInt(10));
-                this.configuration.stock.add(
-                        position,
-                        pallet
-                );
-            }
-        }
-
-        this.configuration.simulation.enqueueEvent(new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration));
-        this.configuration.simulation.enqueueEvent(new ProductionGeneratorEvent(this.configuration.simulation, 30, this.configuration, this.configuration.productionLines.get(0)));
-
-        /*this.configuration.addStockSection(10, 10, 230, 50, 10, true);
-        this.configuration.addOutdoorDock(0, this.configuration.warehouse.getDepth());
-        this.configuration.addOutdoorDock(100, this.configuration.warehouse.getDepth());
-        this.configuration.addOutdoorDock(200, this.configuration.warehouse.getDepth());
-
-        SLAP slap = new SLAP(this.configuration);
-        slap.solve4();*/
+        this.configuration.simulation.enqueueEvent(new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration, scenario));
+        this.configuration.simulation.enqueueEvent(new ProductionGeneratorEvent(this.configuration.simulation, 30, this.configuration, scenario, this.configuration.productionLines.get(0)));
     }
 
     @Override
@@ -86,21 +69,8 @@ public class Main extends Application {
         AnimationDashboard animation = new AnimationDashboard(this.configuration);
         KPIDashboard kpiDashboard = new KPIDashboard(this.configuration);
 
-        // test
-        /*Configuration configuration = new Configuration(this.configuration.warehouse.getWidth(), this.configuration.warehouse.getDepth(), this.configuration.warehouse.getHeight());
-        configuration.addStockSection(10, 10, 230, 50, 10, true);
-        configuration.addOutdoorDock(0, this.configuration.warehouse.getDepth());
-        configuration.addOutdoorDock(100, this.configuration.warehouse.getDepth());
-        configuration.addOutdoorDock(200, this.configuration.warehouse.getDepth());
-
-        SLAP slap = new SLAP(configuration);
-        slap.solve();
-
-        AnimationDashboard animation2 = new AnimationDashboard(configuration);*/
-
         BorderPane pane = new BorderPane();
         pane.setCenter(animation.getPane());
-        //pane.setLeft(animation2.getPane());
         pane.setRight(kpiDashboard.getPane());
 
         Scene scene = new Scene(pane);

@@ -7,6 +7,7 @@ import simulation.Simulation;
 import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Pallet;
+import warehouse.Scenario;
 import warehouse.Warehouse;
 
 import java.util.HashMap;
@@ -15,20 +16,17 @@ import java.util.Random;
 public class TruckGeneratorEvent extends Event {
 
     private final Configuration configuration;
+    private final Scenario scenario;
     private final Warehouse warehouse;
     private final Controller controller;
-    private final Random random;
+    private final Random random = new Random(0);
 
-    public TruckGeneratorEvent(Simulation simulation, double time, Configuration configuration, Random random) {
+    public TruckGeneratorEvent(Simulation simulation, double time, Configuration configuration, Scenario scenario) {
         super(simulation, time);
         this.configuration = configuration;
+        this.scenario = scenario;
         this.warehouse = configuration.warehouse;
         this.controller = configuration.controller;
-        this.random = random;
-    }
-
-    public TruckGeneratorEvent(Simulation simulation, double time, Configuration configuration) {
-        this(simulation, time, configuration, new Random(0));
     }
 
     @Override
@@ -43,14 +41,14 @@ public class TruckGeneratorEvent extends Event {
         for (int i = 0; i < nPalletsToLoad; i++) {
             toLoad.put(
                     new Vector3D((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
-                    new Pallet(random.nextInt(10))
+                    new Pallet(Scenario.pickFromDistribution(this.scenario.dockThroughput))
             );
         }
 
         for (int i = 0; i < nPalletsToUnload; i++) {
             toUnload.put(
                     new Vector3D((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
-                    new Pallet(random.nextInt(10))
+                    new Pallet(Scenario.pickFromDistribution(this.scenario.dockThroughput))
             );
         }
 
@@ -68,9 +66,9 @@ public class TruckGeneratorEvent extends Event {
         );
         this.simulation.enqueueEvent(new TruckGeneratorEvent(
                 this.simulation,
-                this.time + 50 + random.nextInt(100),
+                this.time + 100 + random.nextInt(100),
                 this.configuration,
-                this.random
+                this.scenario
         ));
     }
 }

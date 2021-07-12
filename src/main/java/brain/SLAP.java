@@ -1,96 +1,35 @@
 package brain;
 
-import graph.HungarianAlgorithm;
-import graph.MinCostMaxFlow;
 import gurobi.GRBException;
-import util.Vector3D;
-import warehouse.Configuration;
-import warehouse.Pallet;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import warehouse.Scenario;
 
 public class SLAP {
 
-    private final Random random = new Random(0);
+    private final Scenario scenario;
+    private int[] assignment;
 
-    public final Configuration configuration;
+    public SLAP(Scenario scenario) {
+        this.scenario = scenario;
+    }
 
-    private final int nSlots, nTypes, nIOPoints;
-    private final ArrayList<Vector3D> slots;
-    private final int[] nPalletsOfType, slotCapacity;
-
-    private final double[][] dist, freq;
-    private final double[] throughput;
-
-    public SLAP(Configuration configuration) {
-        this.configuration = configuration;
-        int nDocks = this.configuration.docks.size();
-        int nProductionLines = this.configuration.productionLines.size();
-
-        this.slots = this.configuration.stock.getStockPositions();
-        this.nSlots = this.slots.size();
-        this.slotCapacity = new int[this.nSlots];
-        Arrays.fill(this.slotCapacity, 1);
-
-        this.nIOPoints = nDocks + nProductionLines * 2; // all docks + production lines (in + out)
-
-        this.dist = new double[this.nSlots][this.nIOPoints];
-        for (int i=0; i<this.nSlots; i++) {
-            Vector3D p1 = this.slots.get(i);
-            for (int j=0; j<this.nIOPoints; j++) {
-                Vector3D p2;
-                if (j < nDocks) {
-                    p2 = this.configuration.docks.get(j).getPosition();
-                } else if (j % 2 == 0) {
-                    p2 = this.configuration.productionLines.get((j - nDocks) / 2).getStartBuffer().get(0);
-                } else {
-                    p2 = this.configuration.productionLines.get((j - nDocks) / 2).getEndBuffer().get(0);
-                }
-                this.dist[i][j] = this.configuration.warehouse.getDistance(p1, p2).norm();
-            }
-        }
-
-        this.nTypes = 5;
-        this.nPalletsOfType = new int[this.nTypes];
-        this.freq = new double[this.nTypes][this.nIOPoints];
-        this.throughput = new double[this.nTypes];
-
-        int totalPallets = 0;
-        for (int i=0; i<this.nTypes; i++) {
-            this.nPalletsOfType[i] = 1 + random.nextInt(this.nSlots - totalPallets - (this.nTypes - 1 - i));
-            totalPallets += this.nPalletsOfType[i];
-            this.throughput[i] = 10 * random.nextDouble() * this.nPalletsOfType[i];
-
-            double totalFreq = 0;
-            for (int j=0; j<this.nIOPoints; j++) {
-                this.freq[i][j] = random.nextInt(1000);
-                totalFreq += this.freq[i][j];
-            }
-            for (int j=0; j<this.nIOPoints; j++) {
-                this.freq[i][j] /= totalFreq;
-            }
-        }
+    public int[] getAssignment() {
+        return this.assignment;
     }
 
     public void solve() {
         try {
-            SLAPMIP model = new SLAPMIP(this.nTypes, this.nIOPoints, this.nSlots, this.slotCapacity, this.nPalletsOfType, this.throughput, this.freq, this.dist);
+            SLAPMIP model = new SLAPMIP(this.scenario.nTypes, this.scenario.nIOPoints, this.scenario.nSlots, this.scenario.slotCapacity, this.scenario.nPalletsOfType, this.scenario.throughput, this.scenario.freq, this.scenario.dist);
             model.solve();
 
-            int[] assignment = model.getSolution();
-            for (int i=0; i<this.nSlots; i++) {
-                this.configuration.stock.add(this.slots.get(i), new Pallet(assignment[i]));
-            }
-
+            this.assignment = model.getSolution();
         } catch (GRBException e) {
             e.printStackTrace();
+            this.assignment = null;
         }
 
     }
 
-    public void solve2() {
+    /*public void solve2() {
         int[] type = new int[this.nSlots];
         double[][] cost = new double[this.nSlots][this.nSlots];
 
@@ -156,20 +95,17 @@ public class SLAP {
                 }
             }
         }
-    }
+    }*/
 
     public void solve4() {
         try {
-            SLAPCG model = new SLAPCG(this.nTypes, this.nIOPoints, this.nSlots, this.nPalletsOfType, this.throughput, this.slotCapacity, this.freq, this.dist);
+            SLAPCG model = new SLAPCG(this.scenario.nTypes, this.scenario.nIOPoints, this.scenario.nSlots, this.scenario.nPalletsOfType, this.scenario.throughput, this.scenario.slotCapacity, this.scenario.freq, this.scenario.dist);
             model.solve();
 
-            int[] assignment = model.getSolution();
-            for (int i=0; i<this.nSlots; i++) {
-                this.configuration.stock.add(this.slots.get(i), new Pallet(assignment[i]));
-            }
-
+            this.assignment = model.getSolution();
         } catch (GRBException e) {
             e.printStackTrace();
+            this.assignment = null;
         }
 
     }
