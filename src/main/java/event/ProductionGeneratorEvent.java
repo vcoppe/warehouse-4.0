@@ -2,6 +2,7 @@ package event;
 
 import agent.Controller;
 import agent.ProductionLine;
+import agent.Stock;
 import simulation.Event;
 import simulation.Simulation;
 import util.Pair;
@@ -19,6 +20,7 @@ public class ProductionGeneratorEvent extends Event {
 
     private final Configuration configuration;
     private final Scenario scenario;
+    private final Stock stock;
     private final ProductionLine productionLine;
     private final Controller controller;
     private final Random random = new Random(0);
@@ -26,6 +28,7 @@ public class ProductionGeneratorEvent extends Event {
     public ProductionGeneratorEvent(Simulation simulation, double time, Configuration configuration, Scenario scenario, ProductionLine productionLine) {
         super(simulation, time);
         this.configuration = configuration;
+        this.stock = configuration.stock;
         this.scenario = scenario;
         this.productionLine = productionLine;
         this.controller = configuration.controller;
@@ -41,12 +44,12 @@ public class ProductionGeneratorEvent extends Event {
 
         HashMap<Integer, Integer> takenIn = new HashMap<>();
         for (int i = 0; i < nPalletsIn; i++) {
-            int type = Scenario.pickFromDistribution(this.scenario.productionLineInThroughput);
-            if (!takenIn.containsKey(type)) {
-                takenIn.put(type, 1);
-            } else {
-                takenIn.put(type, takenIn.get(type) + 1);
-            }
+            int type;
+            do {
+                type = Scenario.pickFromDistribution(this.scenario.productionLineInThroughput);
+            } while (takenIn.getOrDefault(type, 0) == this.stock.getQuantity(type));
+            takenIn.computeIfPresent(type, (key, val) -> val + 1);
+            takenIn.putIfAbsent(type, 1);
         }
 
         for (Map.Entry<Integer, Integer> entry : takenIn.entrySet()) {

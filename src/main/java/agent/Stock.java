@@ -15,6 +15,7 @@ public class Stock extends Observable {
     private final ArrayList<Vector3D> stockPositions, bufferPositions;
     private final HashMap<Vector3D, Pallet> pallets;
     private final HashSet<Vector3D> lock;
+    private final HashMap<Integer, Integer> quantities;
     public final RuleBasedPalletPositionFilter filter;
 
     public Stock() {
@@ -24,6 +25,7 @@ public class Stock extends Observable {
         this.filter = new RuleBasedPalletPositionFilter(this);
         this.stockPositions = new ArrayList<>();
         this.bufferPositions = new ArrayList<>();
+        this.quantities = new HashMap<>();
     }
 
     public void addStockPosition(Vector3D position) {
@@ -42,6 +44,10 @@ public class Stock extends Observable {
         }
         this.pallets.put(position, pallet);
         this.unlock(position);
+        if (pallet.getType() != Pallet.FREE.getType()) {
+            this.quantities.computeIfPresent(pallet.getType(), (key, val) -> val + 1);
+            this.quantities.putIfAbsent(pallet.getType(), 0);
+        }
         this.changed();
     }
 
@@ -58,6 +64,10 @@ public class Stock extends Observable {
         return this.pallets.get(position);
     }
 
+    public int getQuantity(int type) {
+        return this.quantities.getOrDefault(type, 0);
+    }
+
     public boolean isFree(Vector3D position) {
         return this.get(position) == Pallet.FREE && !this.isLocked(position);
     }
@@ -68,6 +78,10 @@ public class Stock extends Observable {
 
     public void lock(Vector3D position) {
         this.lock.add(position);
+        Pallet pallet = this.pallets.get(position);
+        if (pallet != null && pallet.getType() != Pallet.FREE.getType()) {
+            this.quantities.computeIfPresent(pallet.getType(), (key, val) -> val - 1);
+        }
     }
 
     public void unlock(Vector3D position) {

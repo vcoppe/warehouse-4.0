@@ -56,7 +56,7 @@ public class Main extends Application {
         logger.setLevel(Level.OFF);
 
         // create scenario
-        Scenario scenario = new Scenario(this.configuration, 15);
+        Scenario scenario = new Scenario(this.configuration, 10);
         scenario.createZones();
         scenario.initStock();
 

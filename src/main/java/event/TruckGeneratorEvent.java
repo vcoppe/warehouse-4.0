@@ -1,6 +1,7 @@
 package event;
 
 import agent.Controller;
+import agent.Stock;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
@@ -18,6 +19,7 @@ public class TruckGeneratorEvent extends Event {
     private final Configuration configuration;
     private final Scenario scenario;
     private final Warehouse warehouse;
+    private final Stock stock;
     private final Controller controller;
     private static final Random random = new Random(0);
 
@@ -26,6 +28,7 @@ public class TruckGeneratorEvent extends Event {
         this.configuration = configuration;
         this.scenario = scenario;
         this.warehouse = configuration.warehouse;
+        this.stock = configuration.stock;
         this.controller = configuration.controller;
     }
 
@@ -34,15 +37,23 @@ public class TruckGeneratorEvent extends Event {
         HashMap<Vector3D, Pallet> toLoad = new HashMap<>();
         HashMap<Vector3D, Pallet> toUnload = new HashMap<>();
 
+        HashMap<Integer, Integer> loadQuantities = new HashMap<>();
+
         int nPallets = 9 + random.nextInt(19);
         int nPalletsToLoad = random.nextInt(nPallets);
         int nPalletsToUnload = nPallets - nPalletsToLoad;
 
         for (int i = 0; i < nPalletsToLoad; i++) {
+            int type;
+            do {
+                type = Scenario.pickFromDistribution(this.scenario.dockThroughput);
+            } while (loadQuantities.getOrDefault(type, 0) == this.stock.getQuantity(type));
             toLoad.put(
                     new Vector3D((i / 9) * this.configuration.palletSize, (i % 9) * this.configuration.palletSize),
-                    new Pallet(Scenario.pickFromDistribution(this.scenario.dockThroughput))
+                    new Pallet(type)
             );
+            loadQuantities.computeIfPresent(type, (key, val) -> val + 1);
+            loadQuantities.putIfAbsent(type, 1);
         }
 
         for (int i = 0; i < nPalletsToUnload; i++) {
@@ -53,7 +64,7 @@ public class TruckGeneratorEvent extends Event {
         }
 
         Truck.Type type = Truck.Type.BACK;
-        if (random.nextDouble() > 0.5) {
+        if (random.nextInt(100) > 65) {
             type = Truck.Type.SIDES;
         }
 
