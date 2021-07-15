@@ -9,6 +9,7 @@ import warehouse.Mission;
 import warehouse.Production;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class ControllerEvent extends Event {
 
@@ -48,10 +49,13 @@ public class ControllerEvent extends Event {
         }
 
         // match available docks with waiting trucks
-        ArrayList<Pair<Truck,Dock>> truckDockPairs = this.controller.truckDockSelector.matchTruckDock(
-                this.controller.getTrucks(),
-                this.controller.getDocks()
-        );
+        ArrayList<Pair<Truck, Dock>> truckDockPairs = new ArrayList<>();
+        for (Truck.Type type : Truck.Type.values()) {
+            truckDockPairs.addAll(this.controller.truckDockSelector.matchTruckDock(
+                    this.controller.getTrucks().stream().filter(truck -> truck.getType() == type).collect(Collectors.toCollection(ArrayList::new)),
+                    this.controller.getDocks().stream().filter(dock -> dock.getType() == type).collect(Collectors.toCollection(ArrayList::new))
+            ));
+        }
 
         for (Pair<Truck, Dock> pair : truckDockPairs) {
             Truck truck = pair.first;

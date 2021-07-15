@@ -45,6 +45,15 @@ public class TruckDockEventTest extends TestCase {
         this.truck.go(1, this.dock);
     }
 
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.dock = null;
+        this.truck = null;
+        this.event = null;
+    }
+
     public void testSetPosition() {
         assertFalse(this.truck.getPosition().equals(this.dock.getPosition()));
         this.event.run();

@@ -49,6 +49,19 @@ public class ControllerEventTest extends TestCase {
         }
     }
 
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.controller = null;
+        this.stock = null;
+        this.productionLine = null;
+        this.event = null;
+        this.missions = null;
+        this.trucks = null;
+        this.productions = null;
+    }
+
     public void testNothingToDo() {
         assertEquals(5, this.controller.getAvailableMobiles().size());
         assertEquals(5, this.controller.getDocks().size());

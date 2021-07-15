@@ -1,7 +1,9 @@
 package warehouse;
 
 import agent.Truck;
-import util.*;
+import util.Condition;
+import util.ConjunctionCondition;
+import util.Vector3D;
 
 public class Mission {
 
@@ -102,16 +104,8 @@ public class Mission {
         return this.status.ordinal() >= Status.DONE.ordinal();
     }
 
-    public void startAfterStart(Mission mission) {
-        this.startCondition.add(new MissionStartedCondition(mission));
-    }
-
-    public void startAfterPickup(Mission mission) {
-        this.startCondition.add(new MissionPickedUpCondition(mission));
-    }
-
-    public void startAfterEnd(Mission mission) {
-        this.startCondition.add(new MissionDoneCondition(mission));
+    public void addStartCondition(Condition condition) {
+        this.startCondition.add(condition);
     }
 
 }

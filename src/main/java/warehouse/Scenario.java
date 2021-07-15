@@ -5,6 +5,7 @@ import util.Vector3D;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 
 public class Scenario {
@@ -19,6 +20,7 @@ public class Scenario {
     public final double[][] dist, freq;
     public final double[] throughput, dockThroughput, productionLineInThroughput, productionLineOutThroughput;
     private final Configuration configuration;
+    private final HashMap<Integer, Rule> rules;
 
     public Scenario(Configuration configuration, int nTypes) {
         this.configuration = configuration;
@@ -85,6 +87,8 @@ public class Scenario {
                 }
             }
         }
+
+        this.rules = new HashMap<>();
     }
 
     public static int pickFromDistribution(double[] dist) {
@@ -127,7 +131,9 @@ public class Scenario {
 
         for (int i = 0; i < this.nTypes; i++) {
             int finalI = i;
-            this.configuration.stock.filter.add(new Rule(1, true, pallet -> pallet.getType() == finalI, typePositions[i]));
+            Rule rule = new Rule(1, true, pallet -> pallet.getType() == finalI, typePositions[i]);
+            this.rules.put(i, rule);
+            this.configuration.stock.filter.add(rule);
         }
     }
 
@@ -140,11 +146,12 @@ public class Scenario {
                 while (dock >= this.nDocks) {
                     dock = pickFromDistribution(this.freq[i]);
                 }
-                Vector3D position = this.configuration.palletPositionSelector.selectEndPosition(
+                /*Vector3D position = this.configuration.palletPositionSelector.selectEndPosition(
                         pallet,
                         this.configuration.docks.get(dock).getPosition(),
                         this.configuration.stock
-                );
+                );*/
+                Vector3D position = this.rules.get(i).getPositions().get(j);
                 this.configuration.stock.add(position, pallet);
             }
         }

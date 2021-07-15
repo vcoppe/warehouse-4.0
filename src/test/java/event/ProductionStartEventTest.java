@@ -41,6 +41,16 @@ public class ProductionStartEventTest extends TestCase {
         this.event = new ProductionStartEvent(this.configuration.simulation, 1, this.configuration.controller, this.productionLine, this.production);
     }
 
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.productionLine = null;
+        this.production = null;
+        this.stock = null;
+        this.event = null;
+    }
+
     public void testRemovePalletsFromBuffer() {
         ArrayList<Pallet> productionPallets = new ArrayList<>();
         for (Pair<Pallet, Integer> pair : this.production.getIn()) {

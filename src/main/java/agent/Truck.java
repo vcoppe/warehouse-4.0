@@ -8,17 +8,17 @@ import java.util.HashMap;
 
 public class Truck extends Observable {
 
+    private final Type type;
+    ;
+
     private static int TRUCK_ID = 0;
     private final int id;
     private static final double speed = 50;
-    private Dock dock;
-    private final HashMap<Vector3D, Pallet> toLoad, toUnload, currentLoad;
-    private Vector3D position, targetPosition;
-    private double arrivalTime, calledTime, departureTime;
 
-    public Truck(Vector3D position, HashMap<Vector3D, Pallet> toLoad, HashMap<Vector3D, Pallet> toUnload) {
+    public Truck(Type type, Vector3D position, HashMap<Vector3D, Pallet> toLoad, HashMap<Vector3D, Pallet> toUnload) {
         super();
         this.id = TRUCK_ID++;
+        this.type = type;
         this.position = position;
         this.targetPosition = position;
         this.toLoad = toLoad;
@@ -29,8 +29,26 @@ public class Truck extends Observable {
         this.departureTime = -1;
     }
 
+    private Dock dock;
+    private final HashMap<Vector3D, Pallet> toLoad, toUnload, currentLoad;
+    private Vector3D position, targetPosition;
+    private double arrivalTime, calledTime, departureTime;
+
+    public Truck(Vector3D position, HashMap<Vector3D, Pallet> toLoad, HashMap<Vector3D, Pallet> toUnload) {
+        this(Type.BACK, position, toLoad, toUnload);
+    }
+
+    public Type getType() {
+        return this.type;
+    }
+
     public int getId() {
         return this.id;
+    }
+
+    public enum Type {
+        BACK,
+        SIDES
     }
 
     public static double getSpeed() {

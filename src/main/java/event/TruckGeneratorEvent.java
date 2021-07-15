@@ -19,7 +19,7 @@ public class TruckGeneratorEvent extends Event {
     private final Scenario scenario;
     private final Warehouse warehouse;
     private final Controller controller;
-    private final Random random = new Random(0);
+    private static final Random random = new Random(0);
 
     public TruckGeneratorEvent(Simulation simulation, double time, Configuration configuration, Scenario scenario) {
         super(simulation, time);
@@ -52,18 +52,25 @@ public class TruckGeneratorEvent extends Event {
             );
         }
 
+        Truck.Type type = Truck.Type.BACK;
+        if (random.nextDouble() > 0.5) {
+            type = Truck.Type.SIDES;
+        }
+
         this.simulation.enqueueEvent(
                 new TruckArriveEvent(
                         this.simulation,
                         this.time,
                         this.controller,
                         new Truck(
+                                type,
                                 new Vector3D(this.warehouse.getWidth() - this.configuration.truckWidth, 2 * this.warehouse.getDepth() - this.configuration.truckDepth),
                                 toLoad,
                                 toUnload
                         )
                 )
         );
+
         this.simulation.enqueueEvent(new TruckGeneratorEvent(
                 this.simulation,
                 this.time + 100 + random.nextInt(100),

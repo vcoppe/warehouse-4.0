@@ -41,12 +41,12 @@ public class Main extends Application {
         this.configuration.addStockSection(20, 20, 120, 120, 20, true);
         this.configuration.addStockSection(20, 150, 120, 250, 20, true);
 
-        this.configuration.addAutoStockSection(150, 20, 270, 200, 40, true, false, false, true, true);
+        this.configuration.addAutoStockSection(150, 20, 270, 200, 40, false, false, false, true, true);
 
-        this.configuration.addStockSection(300, 20, 460, 160, 20, false);
+        this.configuration.addStockSection(300, 20, 450, 160, 20, false);
 
         for (int i = 0; i < 5; i++) this.configuration.addOutdoorDock(i * this.configuration.dockWidth, depth);
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 3; i++)
             this.configuration.addIndoorDock(300 + i * this.configuration.dockWidth * 2, depth - this.configuration.truckDepth);
         for (int i = 0; i < 5; i++)
             this.configuration.addMobile(new Vector3D(this.configuration.dockWidth * i, depth - this.configuration.palletSize));

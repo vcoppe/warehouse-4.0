@@ -403,7 +403,7 @@ public class Configuration {
     }
 
     public void addOutdoorDock(int x1, int y1) {
-        Dock dock = new Dock(new Vector3D(x1, y1));
+        Dock dock = new Dock(new Vector3D(x1, y1), Truck.Type.BACK);
         this.docks.add(dock);
 
         int depth = this.warehouse.getDepth();
@@ -430,7 +430,7 @@ public class Configuration {
     }
 
     public void addIndoorDock(int x1, int y1) {
-        Dock dock = new Dock(new Vector3D(x1, y1));
+        Dock dock = new Dock(new Vector3D(x1, y1), Truck.Type.SIDES);
         this.docks.add(dock);
         int x2 = x1 + this.truckWidth, y2 = y1 + this.truckDepth;
 

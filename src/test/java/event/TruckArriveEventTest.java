@@ -33,6 +33,14 @@ public class TruckArriveEventTest extends TestCase {
         this.event = new TruckArriveEvent(this.configuration.simulation, 1, this.configuration.controller, this.truck);
     }
 
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.truck = null;
+        this.event = null;
+    }
+
     public void testDone() {
         assertFalse(this.truck.done());
     }

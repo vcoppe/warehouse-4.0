@@ -36,6 +36,15 @@ public class TruckCallEventTest extends TestCase {
         this.event = new TruckCallEvent(this.configuration.simulation, 1, this.configuration.controller, this.dock, this.truck);
     }
 
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.dock = null;
+        this.truck = null;
+        this.event = null;
+    }
+
     public void testDockSet() {
         assertNull(this.truck.getDock());
         this.event.run();

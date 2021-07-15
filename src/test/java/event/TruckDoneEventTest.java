@@ -26,6 +26,15 @@ public class TruckDoneEventTest extends TestCase {
         this.event = new TruckDoneEvent(this.configuration.simulation, 1, this.configuration.controller, this.dock, this.truck);
     }
 
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.dock = null;
+        this.truck = null;
+        this.event = null;
+    }
+
     public void testAddDockToController() {
         assertEquals(4, this.configuration.controller.getDocks().size());
         this.event.run();

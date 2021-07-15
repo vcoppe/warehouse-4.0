@@ -60,6 +60,19 @@ public class MobileMissionStartEventTest extends TestCase {
         this.truckUnload = new Truck(new Vector3D(10, 0), new HashMap<>(), toUnload);
     }
 
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.mobile = null;
+        this.truckLoad = null;
+        this.truckUnload = null;
+        this.toLoad = null;
+        this.toUnload = null;
+        this.loadPalletPositions = null;
+        this.unloadPalletPositions = null;
+    }
+
     public void testSetTargetPosition() {
         Pallet pallet = this.toLoad.get(0).second;
         Vector3D startPosition = this.loadPalletPositions.get(0);

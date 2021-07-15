@@ -36,6 +36,15 @@ public class ProductionInitEventTest extends TestCase {
         this.event = new ProductionInitEvent(this.configuration.simulation, 1, this.configuration.controller, this.productionLine, this.production);
     }
 
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.productionLine = null;
+        this.production = null;
+        this.event = null;
+    }
+
     public void testAddProductionToProductionLine() {
         assertEquals(0, this.productionLine.getProductions().size());
         this.event.run();

@@ -1,6 +1,5 @@
 package event;
 
-import agent.Controller;
 import agent.Mobile;
 import junit.framework.TestCase;
 import simulation.Simulation;
@@ -15,7 +14,6 @@ public class PathUpdateEventTest extends TestCase {
 
     private Configuration configuration;
     private Simulation simulation;
-    private Controller controller;
     private Mobile mobile;
 
     public void setUp() throws Exception {
@@ -26,10 +24,17 @@ public class PathUpdateEventTest extends TestCase {
 
         this.configuration = new Configuration();
         this.simulation = this.configuration.simulation;
-        this.controller = this.configuration.controller;
         this.mobile = this.configuration.mobiles.get(0);
 
         PathUpdateEvent.enqueue(this.configuration.simulation, 10, this.configuration.controller);
+    }
+
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.simulation = null;
+        this.mobile = null;
     }
 
     public void testTriggerPathFinderEvent() {

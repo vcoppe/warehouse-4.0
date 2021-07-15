@@ -32,6 +32,15 @@ public class PathFinderEventTest extends TestCase {
         PathFinderEvent.enqueue(this.configuration.simulation, 0, this.configuration.controller);
     }
 
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        this.configuration = null;
+        this.simulation = null;
+        this.controller = null;
+        this.mobile = null;
+    }
+
     public void testNoTriggerIfNoMovingMobiles() {
         assertEquals(1, this.configuration.simulation.queueSize());
         this.simulation.run(0);

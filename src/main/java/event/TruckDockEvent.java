@@ -6,7 +6,7 @@ import agent.Stock;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
-import util.Vector3D;
+import util.*;
 import warehouse.Mission;
 import warehouse.Pallet;
 
@@ -39,7 +39,8 @@ public class TruckDockEvent extends Event {
 
         this.truck.dock();
 
-        Vector3D delta = new Vector3D(0, this.controller.getConfiguration().palletSize);
+        Vector3D deltaX = new Vector3D(this.controller.getConfiguration().palletSize, 0);
+        Vector3D deltaY = new Vector3D(0, this.controller.getConfiguration().palletSize);
 
         HashMap<Vector3D, Pallet> toUnload = this.truck.getToUnload();
         HashMap<Vector3D, Mission> unloadMissions = new HashMap<>();
@@ -62,10 +63,30 @@ public class TruckDockEvent extends Event {
             this.controller.add(mission);
             this.stock.lock(endPosition);
 
-            Vector3D previousPosition = palletPosition.subtract(delta);
-            if (unloadMissions.containsKey(previousPosition)) {
-                Mission previousMission = unloadMissions.get(previousPosition);
-                mission.startAfterPickup(previousMission);
+            switch (this.truck.getType()) {
+                case BACK:
+                    Vector3D abovePosition = palletPosition.subtract(deltaY);
+                    if (unloadMissions.containsKey(abovePosition)) {
+                        Mission aboveMission = unloadMissions.get(abovePosition);
+                        mission.addStartCondition(new MissionPickedUpCondition(aboveMission));
+                    }
+                case SIDES:
+                    DisjunctionCondition startCondition = new DisjunctionCondition();
+                    Vector3D leftPosition = palletPosition.subtract(deltaX);
+                    if (unloadMissions.containsKey(leftPosition)) {
+                        Mission leftMission = unloadMissions.get(leftPosition);
+                        startCondition.add(new MissionPickedUpCondition(leftMission));
+                    } else {
+                        startCondition.add(Condition.emptyCondition);
+                    }
+                    Vector3D rightPosition = palletPosition.add(deltaX);
+                    if (unloadMissions.containsKey(rightPosition)) {
+                        Mission rightMission = unloadMissions.get(rightPosition);
+                        startCondition.add(new MissionPickedUpCondition(rightMission));
+                    } else {
+                        startCondition.add(Condition.emptyCondition);
+                    }
+                    mission.addStartCondition(startCondition);
             }
 
             unloadMissions.put(palletPosition, mission);
@@ -92,13 +113,27 @@ public class TruckDockEvent extends Event {
             this.stock.lock(startPosition);
 
             for (Mission unloadMission : unloadMissions.values()) {
-                mission.startAfterPickup(unloadMission);
+                mission.addStartCondition(new MissionPickedUpCondition(unloadMission));
             }
 
-            Vector3D previousPosition = palletPosition.add(delta);
-            if (loadMissions.containsKey(previousPosition)) {
-                Mission previousMission = loadMissions.get(previousPosition);
-                mission.startAfterEnd(previousMission);
+            switch (this.truck.getType()) {
+                case BACK:
+                    Vector3D belowPosition = palletPosition.add(deltaY);
+                    if (loadMissions.containsKey(belowPosition)) {
+                        Mission belowMission = loadMissions.get(belowPosition);
+                        mission.addStartCondition(new MissionDoneCondition(belowMission));
+                    }
+                case SIDES:
+                    Vector3D leftPosition = palletPosition.subtract(deltaX);
+                    Vector3D rightPosition = palletPosition.add(deltaX);
+                    if (loadMissions.containsKey(leftPosition) && !loadMissions.containsKey(rightPosition)) {
+                        Mission leftMission = loadMissions.get(leftPosition);
+                        mission.addStartCondition(new MissionDoneCondition(leftMission));
+                    }
+                    if (loadMissions.containsKey(rightPosition) && !loadMissions.containsKey(leftPosition)) {
+                        Mission rightMission = loadMissions.get(rightPosition);
+                        mission.addStartCondition(new MissionDoneCondition(rightMission));
+                    }
             }
 
             loadMissions.put(palletPosition, mission);

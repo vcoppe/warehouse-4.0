@@ -6,9 +6,9 @@ A warehouse simulation environment with unit-load products, used to experiment w
 
 Simulation:
 - Different types of mobiles: speed, restricted access (space and time)
-- Different trucks for indoor/outdoor docks
 - Deal with pallet obstruction (lock positions in time?)
 - Battery of shuttles and charging zone
+- Cross-docking
 
 Algorithms:
 - Storage location policies:
