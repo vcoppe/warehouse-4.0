@@ -1,5 +1,7 @@
 package agent;
 
+import graph.AccessibilityChecker;
+import graph.Graph;
 import observer.Observable;
 import util.Vector3D;
 import warehouse.Pallet;
@@ -16,12 +18,14 @@ public class Stock extends Observable {
     private final HashMap<Vector3D, Pallet> pallets;
     private final HashSet<Vector3D> lock;
     private final HashMap<Integer, Integer> quantities;
+    private final AccessibilityChecker accessibilityChecker;
     public final RuleBasedPalletPositionFilter filter;
 
-    public Stock() {
+    public Stock(Graph graph) {
         super();
         this.pallets = new HashMap<>();
         this.lock = new HashSet<>();
+        this.accessibilityChecker = new AccessibilityChecker(this, graph);
         this.filter = new RuleBasedPalletPositionFilter(this);
         this.stockPositions = new ArrayList<>();
         this.bufferPositions = new ArrayList<>();
@@ -44,10 +48,11 @@ public class Stock extends Observable {
         }
         this.pallets.put(position, pallet);
         this.unlock(position);
-        if (pallet.getType() != Pallet.FREE.getType()) {
+        if (pallet != Pallet.FREE) {
             this.quantities.computeIfPresent(pallet.getType(), (key, val) -> val + 1);
             this.quantities.putIfAbsent(pallet.getType(), 0);
         }
+        this.accessibilityChecker.add(position);
         this.changed();
     }
 
@@ -57,6 +62,7 @@ public class Stock extends Observable {
         }
         this.pallets.put(position, Pallet.FREE);
         this.unlock(position);
+        this.accessibilityChecker.remove(position);
         this.changed();
     }
 
@@ -79,9 +85,10 @@ public class Stock extends Observable {
     public void lock(Vector3D position) {
         this.lock.add(position);
         Pallet pallet = this.pallets.get(position);
-        if (pallet != null && pallet.getType() != Pallet.FREE.getType()) {
+        if (pallet != null && pallet != Pallet.FREE) {
             this.quantities.computeIfPresent(pallet.getType(), (key, val) -> val - 1);
         }
+        this.accessibilityChecker.lock(position);
     }
 
     public void unlock(Vector3D position) {
@@ -140,7 +147,10 @@ public class Stock extends Observable {
                 if (rule.matches(pallet)) {
                     for (Vector3D position : rule.getPositions()) {
                         Pallet stockPallet = this.stock.get(position);
-                        if (stockPallet != null && stockPallet.getType() == pallet.getType() && !this.stock.isLocked(position)) {
+                        if (stockPallet != null &&
+                                stockPallet.getType() == pallet.getType() &&
+                                !this.stock.isLocked(position) &&
+                                this.stock.accessibilityChecker.check(position)) {
                             positions.add(position);
                         }
                     }
@@ -160,7 +170,10 @@ public class Stock extends Observable {
             if (positions.isEmpty()) {
                 for (Vector3D position : this.stock.getStockPositions()) {
                     Pallet stockPallet = this.stock.get(position);
-                    if (stockPallet != null && stockPallet.getType() == pallet.getType() && !this.stock.isLocked(position)) {
+                    if (stockPallet != null &&
+                            stockPallet.getType() == pallet.getType() &&
+                            !this.stock.isLocked(position) &&
+                            this.stock.accessibilityChecker.check(position)) {
                         positions.add(position);
                     }
                 }
@@ -182,7 +195,8 @@ public class Stock extends Observable {
 
                 if (rule.matches(pallet)) {
                     for (Vector3D position : rule.getPositions()) {
-                        if (this.stock.isFree(position)) {
+                        if (this.stock.isFree(position) &&
+                                this.stock.accessibilityChecker.check(position)) {
                             positions.add(position);
                         }
                     }
@@ -201,7 +215,8 @@ public class Stock extends Observable {
             // if no match, return any possible position
             if (positions.isEmpty()) {
                 for (Vector3D position : this.stock.getStockPositions()) {
-                    if (this.stock.isFree(position)) {
+                    if (this.stock.isFree(position) &&
+                            this.stock.accessibilityChecker.check(position)) {
                         positions.add(position);
                     }
                 }

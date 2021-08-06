@@ -42,4 +42,31 @@ public class ReservationTableTest extends TestCase {
         assertEquals(5 * ReservationTable.timeMargin, table.nextAvailability(this.positions[0], 0, 0));
     }
 
+    public void testMerge() {
+        ReservationTable table = new ReservationTable();
+
+        assertTrue(table.isAvailable(this.positions[0], 0, 0));
+        assertEquals(0.0, table.nextAvailability(this.positions[0], 0, 0));
+
+        table.reserve(this.positions[0], 0, 1);
+
+        assertTrue(table.isAvailable(this.positions[0], 0, 1));
+        assertEquals(0.0, table.nextAvailability(this.positions[0], 0, 1));
+        assertFalse(table.isAvailable(this.positions[0], 0, 0));
+        assertEquals(2 * ReservationTable.timeMargin, table.nextAvailability(this.positions[0], 0, 0));
+
+        table.reserve(this.positions[0], 1, 1);
+
+        assertTrue(table.isAvailable(this.positions[0], 0, 1));
+        assertEquals(0.0, table.nextAvailability(this.positions[0], 0, 1));
+        assertFalse(table.isAvailable(this.positions[0], 0, 0));
+        assertEquals(1 + 2 * ReservationTable.timeMargin, table.nextAvailability(this.positions[0], 0, 0));
+
+        assertEquals(1, table.reservations.get(this.positions[0]).size());
+
+        table.reserve(this.positions[0], 100, 1);
+
+        assertEquals(2, table.reservations.get(this.positions[0]).size());
+    }
+
 }

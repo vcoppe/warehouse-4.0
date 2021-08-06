@@ -20,6 +20,10 @@ public class Edge implements Comparable<Edge> {
         this.condition = new ConjunctionCondition();
     }
 
+    public Vector3D from() {
+        return this.from;
+    }
+
     public Vector3D to() {
         return this.to;
     }

@@ -3,6 +3,7 @@ package graph;
 import util.DoublePrecisionConstraint;
 import util.Vector3D;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
 
@@ -10,8 +11,8 @@ public class ReservationTable {
 
     public final static double timeMargin = 1.5;
 
-    private final HashMap<Vector3D, TreeSet<Reservation>> reservations;
-    private final HashMap<Vector3D, GraphConstraint> constraints;
+    protected final HashMap<Vector3D, TreeSet<Reservation>> reservations;
+    protected final HashMap<Vector3D, GraphConstraint> constraints;
 
     public ReservationTable() {
         this.reservations = new HashMap<>();
@@ -48,7 +49,22 @@ public class ReservationTable {
         if (!this.reservations.containsKey(position)) {
             this.reservations.put(position, new TreeSet<>());
         }
+
         Reservation reservation = new Reservation(start, end, id);
+        ArrayList<Reservation> toDelete = new ArrayList<>();
+
+        // merge with overlapping reservations of same mobile
+        for (Reservation other : this.reservations.get(position)) {
+            if (other.start >= reservation.end) break;
+            if (reservation.mobileId == other.mobileId &&
+                    reservation.start < other.end && reservation.end >= other.start) {
+                toDelete.add(other);
+                reservation.start = Math.min(reservation.start, other.start);
+                reservation.end = Math.max(reservation.end, other.end);
+            }
+        }
+
+        this.reservations.get(position).removeAll(toDelete);
         this.reservations.get(position).add(reservation);
     }
 

@@ -9,8 +9,6 @@ import java.util.HashMap;
 public class Truck extends Observable {
 
     private final Type type;
-    ;
-
     private static int TRUCK_ID = 0;
     private final int id;
     private static final double speed = 50;

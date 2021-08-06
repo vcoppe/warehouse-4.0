@@ -20,9 +20,18 @@ public class Graph {
         this.prev = new HashMap<>();
     }
 
-    public Vector2D getWeight(Vector3D u, Vector3D v) {
+    public Edge getEdge(Vector3D u, Vector3D v) {
         Edge e = this.g.get(u).floor(new Edge(u, v));
         if (e != null && e.to.equals(v)) {
+            return e;
+        } else {
+            return null;
+        }
+    }
+
+    public Vector2D getWeight(Vector3D u, Vector3D v) {
+        Edge e = this.getEdge(u, v);
+        if (e != null) {
             return e.weight;
         } else {
             return new Vector2D(Integer.MAX_VALUE, Integer.MAX_VALUE);

@@ -56,6 +56,10 @@ public class Warehouse {
         this.graph.removeEdge(p1, p2);
     }
 
+    public Edge getEdge(Vector3D p1, Vector3D p2) {
+        return this.graph.getEdge(p1, p2);
+    }
+
     public Vector2D getDistance(Vector3D p1, Vector3D p2) {
         return this.graph.getShortestPath(p1, p2);
     }

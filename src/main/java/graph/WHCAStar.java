@@ -23,6 +23,8 @@ public class WHCAStar {
     private final Random random;
     private final HashMap<Integer, HashSet<Vector3D>> resumableClosed;
 
+    private boolean debug = true, noPath;
+
     public WHCAStar() {
         this.table = new ReservationTable();
         this.lastRoute = new HashMap<>();
@@ -47,6 +49,8 @@ public class WHCAStar {
     public void computePaths(double time, ArrayList<Mobile> mobiles, Graph graph) {
         boolean solution = false;
 
+        int count = 0;
+
         while (!solution) {
             solution = true;
 
@@ -66,15 +70,26 @@ public class WHCAStar {
 
             ArrayList<Mobile> orderedMobiles = this.orderMobiles(time, mobiles);
 
+            if (count == 1000) noPath = true;
+
             for (Mobile mobile : orderedMobiles) {
                 if (!this.computePath(time, mobile)) {
                     System.out.println("No path was found");
+                    if (debug && noPath) {
+                        System.out.println("For mobile " + mobile.getId());
+                        for (Mobile m : orderedMobiles) {
+                            System.out.println(m.getId() + ": " + m.getPositionAt(time) + " -> " + m.getTargetPosition());
+                        }
+                    }
                     solution = false;
                     break;
                 }
             }
-        }
 
+            if (noPath) (new java.util.Scanner(System.in)).nextLine();
+
+            count++;
+        }
     }
 
     private ArrayList<Mobile> orderMobiles(double time, ArrayList<Mobile> mobiles) {
@@ -120,6 +135,10 @@ public class WHCAStar {
         h.put(pair.second.first, pair.second.second + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
         pq.add(new Pair<>(pair.second.first, h.get(pair.second.first)));
 
+        if (debug && noPath) {
+            System.out.println("path for mobile " + mobile.getId());
+        }
+
         while (!pq.isEmpty()) {
             Pair<Vector3D, Double> p = pq.poll();
 
@@ -128,6 +147,10 @@ public class WHCAStar {
 
             if (estimateU > h.get(u)) { // not the shortest path anymore
                 continue;
+            }
+
+            if (debug && noPath) {
+                System.out.println("reached pos " + u);
             }
 
             if (u.equals(endPosition)) {
@@ -141,16 +164,26 @@ public class WHCAStar {
                 Vector3D v = edge.to;
                 Vector2D w = edge.weight;
 
-                if (!edge.canCross(distU, mobile)) continue;
+                if (!edge.canCross(distU, mobile)) {
+                    if (debug && noPath) {
+                        System.out.println("cannot cross edge to pos " + v);
+                    }
+                    continue;
+                }
 
                 double edgeDist = DoublePrecisionConstraint.round(w.getX() * mobile.getSpeed() + w.getY() * Lift.speed);
                 double otherDist = DoublePrecisionConstraint.round(distU + edgeDist);
 
                 if (otherDist < time + W) { // check for collisions only within the time window
                     if (!this.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
+                        if (debug && noPath) System.out.println("pos " + v + " is occupied at time " + otherDist);
                         otherDist = this.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
+                        if (debug && noPath) System.out.println("soonest time to go there : " + otherDist);
                         if (!this.table.isAvailable(u, dist.get(u), DoublePrecisionConstraint.round(otherDist - edgeDist), mobile.getId())) {
-                            continue; // mobile cannot wait until in current position the next position is available
+                            if (debug && noPath) {
+                                System.out.println("cannot wait long enough to reach " + v);
+                            }
+                            continue; // mobile cannot wait in current position until the next position is available
                         }
                     }
                 }
@@ -158,6 +191,7 @@ public class WHCAStar {
                 if (!dist.containsKey(v) || otherDist < dist.get(v)) {
                     dist2D = this.reverseResumableAStar(mobile, v, startPosition);
                     double estimateV = DoublePrecisionConstraint.round(otherDist + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
+                    //if (debug && noPath) System.out.println(v + " at estimated dist " + estimateV);
                     dist.put(v, otherDist);
                     h.put(v, estimateV);
                     prev.put(v, u);
@@ -204,8 +238,16 @@ public class WHCAStar {
                     this.table.reserve(u, timeU, mobile.getId());
                 }
             } else {
-                if (timeU - time > 0) this.window = Math.min(this.window, timeU - time); // shrink window to the earliest finished mission
+                if (timeU - time > 0)
+                    this.window = Math.min(this.window, timeU - time); // shrink window to the earliest finished mission
                 this.table.reserve(u, timeU, timeU + W, mobile.getId());
+            }
+        }
+
+        if (debug && noPath) {
+            System.out.println("set path for mobile " + mobile.getId() + ":");
+            for (Pair<Vector3D, Double> p : path) {
+                System.out.println(p.first + " , " + p.second);
             }
         }
 

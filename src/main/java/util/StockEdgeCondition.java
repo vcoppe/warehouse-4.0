@@ -21,7 +21,7 @@ public class StockEdgeCondition extends Condition {
         // empty robots can go below pallets
 
         Pallet pallet = this.stock.get(this.edge.to());
-        if (pallet == Pallet.FREE) {
+        if (pallet == null || pallet == Pallet.FREE) {
             return true;
         }
 

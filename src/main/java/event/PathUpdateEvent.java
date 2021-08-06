@@ -44,7 +44,7 @@ public class PathUpdateEvent extends Event {
                 } else if (mobile.atDrop()) {
                     Event event = new MobileMissionEndEvent(this.simulation, this.time, this.controller, mobile);
                     this.simulation.enqueueEvent(event);
-                } // TODO check if at lift
+                }
             }
         }
 
