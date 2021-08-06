@@ -54,6 +54,7 @@ public class TruckDockEvent extends Event {
             Vector3D startPosition = this.truck.getPosition().add(palletPosition);
             Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock);
 
+            // TODO check for unaccessible free locations
             if (endPosition == null) {
                 this.simulation.logger.warning("FAILURE! Warehouse is full, cannot handle more pallets.");
                 return;
@@ -103,6 +104,7 @@ public class TruckDockEvent extends Event {
             Vector3D endPosition = this.truck.getPosition().add(palletPosition);
             Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
 
+            // TODO check for unaccessible pallets
             if (startPosition == null) {
                 this.simulation.logger.warning("FAILURE! Missing pallets to load truck.");
                 return;
