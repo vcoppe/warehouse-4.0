@@ -45,6 +45,8 @@ public class Warehouse {
             if (p2.getY() < 0 || p2.getY() >= this.depth) return null;
             if (p2.getZ() < 0 || p2.getZ() >= this.height) return null;
         }
+        Edge edge = this.graph.getEdge(p1, p2);
+        if (edge != null) return edge;
         return this.graph.addEdge(p1, p2);
     }
 

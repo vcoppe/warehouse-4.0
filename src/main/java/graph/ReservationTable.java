@@ -5,6 +5,7 @@ import util.Vector3D;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeSet;
 
 public class ReservationTable {
@@ -19,6 +20,11 @@ public class ReservationTable {
         this.constraints = new HashMap<>();
     }
 
+    public ReservationTable(HashMap<Vector3D, GraphConstraint> constraints) {
+        this.reservations = new HashMap<>();
+        this.constraints = constraints;
+    }
+
     public void addGraphConstraint(GraphConstraint constraint) {
         for (Vector3D position : constraint.getPositions()) {
             this.constraints.put(position, constraint);
@@ -29,35 +35,43 @@ public class ReservationTable {
         this.reservations.clear();
     }
 
-    public void reserve(Vector3D position, double time, int id) {
-        this.reserveWithMargin(position, DoublePrecisionConstraint.round(time - timeMargin), DoublePrecisionConstraint.round(time + timeMargin), id);
-    }
-
-    public void reserve(Vector3D position, double start, double end, int id) {
-        this.reserveWithMargin(position, DoublePrecisionConstraint.round(start - timeMargin), DoublePrecisionConstraint.round(end + timeMargin), id);
-    }
-
-    private void reserveWithMargin(Vector3D position, double start, double end, int id) {
-        if (this.constraints.containsKey(position)) {
-            this.constraints.get(position).reserveWithMargin(this, position, start, end, id);
-        } else {
-            this.reserveWithMarginHelper(position, start, end, id);
+    public ReservationTable clone() {
+        ReservationTable clone = new ReservationTable(this.constraints);
+        for (Map.Entry<Vector3D, TreeSet<Reservation>> entry : this.reservations.entrySet()) {
+            clone.reservations.put(entry.getKey(), new TreeSet<>(entry.getValue()));
         }
+        return clone;
     }
 
-    protected void reserveWithMarginHelper(Vector3D position, double start, double end, int id) {
+    public Reservation reserve(Vector3D position, double time, int id) {
+        return this.reserveWithMargin(position, DoublePrecisionConstraint.round(time - timeMargin), DoublePrecisionConstraint.round(time + timeMargin), id);
+    }
+
+    public Reservation reserve(Vector3D position, double start, double end, int id) {
+        return this.reserveWithMargin(position, DoublePrecisionConstraint.round(start - timeMargin), DoublePrecisionConstraint.round(end + timeMargin), id);
+    }
+
+    private Reservation reserveWithMargin(Vector3D position, double start, double end, int id) {
+//        if (this.constraints.containsKey(position)) {
+//            this.constraints.get(position).reserveWithMargin(this, position, start, end, id);
+//        } else {
+        return this.reserveWithMarginHelper(position, start, end, id);
+//        }
+    }
+
+    protected Reservation reserveWithMarginHelper(Vector3D position, double start, double end, int id) {
         if (!this.reservations.containsKey(position)) {
             this.reservations.put(position, new TreeSet<>());
         }
 
-        Reservation reservation = new Reservation(start, end, id);
+        Reservation reservation = new Reservation(position, start, end, id);
         ArrayList<Reservation> toDelete = new ArrayList<>();
 
         // merge with overlapping reservations of same mobile
         for (Reservation other : this.reservations.get(position)) {
-            if (other.start >= reservation.end) break;
+            if (other.start > reservation.end) break;
             if (reservation.mobileId == other.mobileId &&
-                    reservation.start < other.end && reservation.end >= other.start) {
+                    reservation.start <= other.end && reservation.end >= other.start) {
                 toDelete.add(other);
                 reservation.start = Math.min(reservation.start, other.start);
                 reservation.end = Math.max(reservation.end, other.end);
@@ -66,6 +80,8 @@ public class ReservationTable {
 
         this.reservations.get(position).removeAll(toDelete);
         this.reservations.get(position).add(reservation);
+
+        return reservation;
     }
 
     public boolean isAvailable(Vector3D position, double time, int id) {
@@ -78,18 +94,38 @@ public class ReservationTable {
 
     private boolean isAvailableWithMargin(Vector3D position, double start, double end, int id) {
         if (this.constraints.containsKey(position)) {
-            return this.constraints.get(position).isAvailableWithMargin(this, position, start, end, id);
+            return this.constraints.get(position).firstConflictWithMargin(this, position, start, end, id) == null;
         } else {
-            return this.isAvailableWithMarginHelper(position, start, end, id);
+            return this.isAvailableWithMarginWithMarginHelper(position, start, end, id);
         }
     }
 
-    protected boolean isAvailableWithMarginHelper(Vector3D position, double start, double end, int id) {
+    protected boolean isAvailableWithMarginWithMarginHelper(Vector3D position, double start, double end, int id) {
+        return this.firstConflictWithMarginHelper(position, start, end, id) == null;
+    }
+
+    public Reservation firstConflict(Vector3D position, double time, int id) {
+        return this.firstConflictWithMargin(position, DoublePrecisionConstraint.round(time - timeMargin), DoublePrecisionConstraint.round(time + timeMargin), id);
+    }
+
+    public Reservation firstConflict(Vector3D position, double start, double end, int id) {
+        return this.firstConflictWithMargin(position, DoublePrecisionConstraint.round(start - timeMargin), DoublePrecisionConstraint.round(end + timeMargin), id);
+    }
+
+    private Reservation firstConflictWithMargin(Vector3D position, double start, double end, int id) {
+        if (this.constraints.containsKey(position)) {
+            return this.constraints.get(position).firstConflictWithMargin(this, position, start, end, id);
+        } else {
+            return this.firstConflictWithMarginHelper(position, start, end, id);
+        }
+    }
+
+    protected Reservation firstConflictWithMarginHelper(Vector3D position, double start, double end, int id) {
         if (!this.reservations.containsKey(position)) {
-            return true;
+            return null;
         }
 
-        Reservation key = new Reservation(start, end, id);
+        /*Reservation key = new Reservation(start, end, id);
         Reservation before = this.reservations.get(position).floor(key);
         Reservation after = this.reservations.get(position).higher(key);
 
@@ -97,7 +133,16 @@ public class ReservationTable {
             return false;
         }
 
-        return after == null || after.mobileId == id || !(after.start < end);
+        return after == null || after.mobileId == id || !(after.start < end);*/
+
+        for (Reservation reservation : this.reservations.get(position)) {
+            if (reservation.start > end) break;
+            if (reservation.end > start && reservation.start < end && reservation.mobileId != id) {
+                return reservation;
+            }
+        }
+
+        return null;
     }
 
     public double nextAvailability(Vector3D position, double time, int id) {
@@ -123,26 +168,19 @@ public class ReservationTable {
             return from;
         }
 
-        Reservation key = new Reservation(from, from + duration, id);
+        double start = from;
 
-        Reservation before = this.reservations.get(position).floor(key);
-        Reservation after = this.reservations.get(position).higher(key);
+        for (Reservation reservation : this.reservations.get(position)) {
+            if (reservation.mobileId == id) continue;
 
-        while (true) {
-            while (after != null && after.mobileId == id) {
-                after = this.reservations.get(position).higher(after);
+            if (reservation.start - start >= duration) {
+                return start;
             }
 
-            if (before == null || before.mobileId == id) {
-                if (after == null || after.start - from >= duration) {
-                    return from;
-                }
-            } else if (after == null || after.start - Math.max(before.end, from) >= duration) {
-                return Math.max(before.end, from);
-            }
-
-            before = after;
-            after = this.reservations.get(position).higher(after);
+            start = Math.max(start, reservation.end);
         }
+
+        return start;
     }
+
 }

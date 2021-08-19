@@ -75,8 +75,8 @@ public class Configuration {
     private Warehouse createWarehouse(int width, int depth, int height) {
         Warehouse warehouse = new Warehouse(width, depth, height);
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < depth; y++) {
+        for (int x = 0; x < width; x += this.palletSize) {
+            for (int y = 0; y < depth; y += this.palletSize) {
                 warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x + this.palletSize, y, 0));
                 warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x - this.palletSize, y, 0));
                 warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y + this.palletSize, 0));
@@ -431,6 +431,10 @@ public class Configuration {
         int cnt = 0;
         for (int x = x1; x < x2; x += this.palletSize) {
             for (int y = y1; y < y2; y += this.palletSize) {
+                if (x + this.palletSize < x2)
+                    edges.add(this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x + this.palletSize, y, 0), true));
+                if (x - this.palletSize >= x1)
+                    edges.add(this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x - this.palletSize, y, 0), true));
                 if (y + this.palletSize < y2)
                     edges.add(this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y + this.palletSize, 0), true));
                 edges.add(this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y - this.palletSize, 0), true));
@@ -495,10 +499,20 @@ public class Configuration {
 
         for (Vector3D position : startBuffer) {
             this.stock.addBufferPosition(position);
+
+            for (Edge reverseEdge : this.warehouse.getGraph().getReverseEdges(position)) {
+                Edge edge = this.warehouse.getGraph().getEdge(reverseEdge.to(), position);
+                if (edge != null) edge.addCrossCondition(new StockEdgeCondition(this.stock, edge));
+            }
         }
 
         for (Vector3D position : endBuffer) {
             this.stock.addBufferPosition(position);
+
+            for (Edge reverseEdge : this.warehouse.getGraph().getReverseEdges(position)) {
+                Edge edge = this.warehouse.getGraph().getEdge(reverseEdge.to(), position);
+                if (edge != null) edge.addCrossCondition(new StockEdgeCondition(this.stock, edge));
+            }
         }
 
         this.productionLines.add(new ProductionLine(this.stock, new Vector3D(x1, y1), x2 - x1, y2 - y1, capacity, startBuffer, endBuffer));

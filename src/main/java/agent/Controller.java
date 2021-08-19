@@ -3,6 +3,7 @@ package agent;
 import brain.MobileMissionSelector;
 import brain.PalletPositionSelector;
 import brain.TruckDockSelector;
+import graph.PathFinder;
 import graph.WHCAStar;
 import observer.Observable;
 import warehouse.Configuration;
@@ -20,7 +21,7 @@ public class Controller extends Observable {
     private final Configuration configuration;
     private final Warehouse warehouse;
     private final Stock stock;
-    private final WHCAStar pathFinder;
+    private final PathFinder pathFinder;
     private final ArrayList<ProductionLine> productionLines;
     private final ArrayList<Dock> docks;
     private final ArrayList<Lift> lifts;
@@ -38,7 +39,7 @@ public class Controller extends Observable {
         this.warehouse = configuration.warehouse;
         this.stock = configuration.stock;
         this.productionLines = configuration.productionLines;
-        this.pathFinder = new WHCAStar();
+        this.pathFinder = new WHCAStar(configuration.warehouse.getGraph());
         this.docks = configuration.docks;
         this.lifts = configuration.lifts;
         this.allMobiles = configuration.mobiles;
@@ -63,7 +64,7 @@ public class Controller extends Observable {
         return this.productionLines;
     }
 
-    public WHCAStar getPathFinder() {
+    public PathFinder getPathFinder() {
         return this.pathFinder;
     }
 

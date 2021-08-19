@@ -2,7 +2,7 @@ package event;
 
 import agent.Controller;
 import agent.Mobile;
-import graph.WHCAStar;
+import graph.PathFinder;
 import simulation.Event;
 import simulation.Simulation;
 import warehouse.Warehouse;
@@ -13,7 +13,7 @@ public class PathFinderEvent extends Event {
 
     private final Controller controller;
     private final Warehouse warehouse;
-    private final WHCAStar pathFinder;
+    private final PathFinder pathFinder;
     private double lastEventTime;
 
     private PathFinderEvent(Simulation simulation, double time, Controller controller) {
@@ -62,9 +62,9 @@ public class PathFinderEvent extends Event {
             }
         }
 
-        this.pathFinder.computePaths(this.time, this.controller.getAllMobiles(), this.warehouse.getGraph());
+        this.pathFinder.computePaths(this.time, this.controller.getAllMobiles());
 
         // update paths at the end of the window
-        PathUpdateEvent.enqueue(this.simulation, this.time + this.pathFinder.getWindow(), this.controller);
+        PathUpdateEvent.enqueue(this.simulation, this.pathFinder.getNextUpdateTime(), this.controller);
     }
 }

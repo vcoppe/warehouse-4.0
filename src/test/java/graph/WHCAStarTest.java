@@ -35,11 +35,11 @@ public class WHCAStarTest extends TestCase {
         this.mobile.start(new Mission(0, null, null, null, this.positions[0], this.positions[10]));
         this.mobile.pickUp();
 
-        WHCAStar pathFinder = new WHCAStar();
+        WHCAStar pathFinder = new WHCAStar(graph);
         ArrayList<Mobile> mobiles = new ArrayList<>();
         mobiles.add(this.mobile);
 
-        pathFinder.computePaths(0, mobiles, graph);
+        pathFinder.computePaths(0, mobiles);
 
         ArrayList<Pair<Vector3D, Double>> path = this.mobile.getPath();
 

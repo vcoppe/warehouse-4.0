@@ -1,11 +1,17 @@
 package graph;
 
+import util.Vector3D;
+
+import java.util.Objects;
+
 public class Reservation implements Comparable<Reservation> {
 
+    Vector3D position;
     int mobileId;
     double start, end;
 
-    public Reservation(double start, double end, int id) {
+    public Reservation(Vector3D position, double start, double end, int id) {
+        this.position = position;
         this.start = start;
         this.end = end;
         this.mobileId = id;
@@ -17,5 +23,20 @@ public class Reservation implements Comparable<Reservation> {
             return Double.compare(this.end, other.end);
         }
         return Double.compare(this.start, other.start);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Reservation that = (Reservation) o;
+        return mobileId == that.mobileId &&
+                Double.compare(that.start, start) == 0 &&
+                Double.compare(that.end, end) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mobileId, start, end);
     }
 }

@@ -21,6 +21,9 @@ public class Graph {
     }
 
     public Edge getEdge(Vector3D u, Vector3D v) {
+        if (!this.g.containsKey(u)) {
+            return null;
+        }
         Edge e = this.g.get(u).floor(new Edge(u, v));
         if (e != null && e.to.equals(v)) {
             return e;
@@ -139,7 +142,7 @@ public class Graph {
 
         if (dist == null) {
             System.out.println("No path between " + s + " and " + t);
-            //System.exit(0);
+            System.exit(0);
         }
 
         return dist;
