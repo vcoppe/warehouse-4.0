@@ -60,8 +60,8 @@ public class Configuration {
         ArrayList<Vector3D> productionLineStartBuffer = new ArrayList<>();
         ArrayList<Vector3D> productionLineEndBuffer = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            productionLineStartBuffer.add(new Vector3D(productionLineX - 2 * this.palletSize + i / 5 * this.palletSize, productionLineY + (i % 5) * this.palletSize));
-            productionLineEndBuffer.add(new Vector3D(productionLineX + (i % 5) * this.palletSize, productionLineY + productionLineDepth + i / 5 * this.palletSize));
+            productionLineStartBuffer.add(new Vector3D(productionLineX - (i / 2 + 1) * this.palletSize, productionLineY + (1 + 2 * (i % 2)) * this.palletSize));
+            productionLineEndBuffer.add(new Vector3D(productionLineX + (1 + 2 * (i % 2)) * this.palletSize, productionLineY + productionLineDepth + i / 2 * this.palletSize));
         }
 
         this.addProductionLine(productionLineX, productionLineY, productionLineX + productionLineWidth, productionLineY + productionLineDepth, 10, productionLineStartBuffer, productionLineEndBuffer);

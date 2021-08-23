@@ -11,7 +11,7 @@ import java.util.*;
 
 public class WHCAStar extends PathFinder {
 
-    public static final int W = 30;
+    public static final int W = 30, H = 60;
 
     private final Random random;
 
@@ -50,7 +50,7 @@ public class WHCAStar extends PathFinder {
 
             ArrayList<Mobile> orderedMobiles = this.orderMobiles(time, mobiles);
 
-            if (count == 1000) noPath = true;
+            if (count == 50) noPath = true;
 
             for (Mobile mobile : orderedMobiles) {
                 if (!this.computePath(time, mobile)) {
@@ -154,7 +154,7 @@ public class WHCAStar extends PathFinder {
                 double edgeDist = DoublePrecisionConstraint.round(w.getX() * mobile.getSpeed() + w.getY() * Lift.speed);
                 double otherDist = DoublePrecisionConstraint.round(distU + edgeDist);
 
-                if (otherDist < time + W) { // check for collisions only within the time window
+                if (otherDist < time + H) { // check for collisions only within the time window
                     if (!this.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
                         if (debug && noPath) System.out.println("pos " + v + " is occupied at time " + otherDist);
                         otherDist = this.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
@@ -219,7 +219,7 @@ public class WHCAStar extends PathFinder {
                 }
             } else {
                 if (timeU > time) this.nextUpdateTime = Math.min(this.nextUpdateTime, timeU);
-                this.table.reserve(u, timeU, timeU + W, mobile.getId());
+                this.table.reserve(u, timeU, timeU + H, mobile.getId());
             }
         }
 

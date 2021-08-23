@@ -11,7 +11,6 @@ import warehouse.Mission;
 import warehouse.Pallet;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 
 public class TruckDockEvent extends Event {
@@ -45,7 +44,6 @@ public class TruckDockEvent extends Event {
         HashMap<Vector3D, Pallet> toUnload = this.truck.getToUnload();
         HashMap<Vector3D, Mission> unloadMissions = new HashMap<>();
         ArrayList<Vector3D> unloadPositions = new ArrayList<>(toUnload.keySet());
-        unloadPositions.sort(Comparator.comparingInt(Vector3D::getY));
 
         // scan pallets to load and unload
         for (Vector3D palletPosition : unloadPositions) {
@@ -63,6 +61,12 @@ public class TruckDockEvent extends Event {
             Mission mission = new Mission(this.time, pallet, this.truck, null, startPosition, endPosition);
             this.controller.add(mission);
             this.stock.lock(endPosition);
+
+            unloadMissions.put(palletPosition, mission);
+        }
+
+        for (Vector3D palletPosition : unloadPositions) {
+            Mission mission = unloadMissions.get(palletPosition);
 
             switch (this.truck.getType()) {
                 case BACK:
@@ -89,14 +93,11 @@ public class TruckDockEvent extends Event {
                     }
                     mission.addStartCondition(startCondition);
             }
-
-            unloadMissions.put(palletPosition, mission);
         }
 
         HashMap<Vector3D, Pallet> toLoad = this.truck.getToLoad();
         HashMap<Vector3D, Mission> loadMissions = new HashMap<>();
         ArrayList<Vector3D> loadPositions = new ArrayList<>(toLoad.keySet());
-        loadPositions.sort((p1, p2) -> p2.getY() - p1.getY());
 
         for (Vector3D palletPosition : loadPositions) {
             Pallet pallet = toLoad.get(palletPosition);
@@ -118,6 +119,12 @@ public class TruckDockEvent extends Event {
                 mission.addStartCondition(new MissionPickedUpCondition(unloadMission));
             }
 
+            loadMissions.put(palletPosition, mission);
+        }
+
+        for (Vector3D palletPosition : loadPositions) {
+            Mission mission = loadMissions.get(palletPosition);
+
             switch (this.truck.getType()) {
                 case BACK:
                     Vector3D belowPosition = palletPosition.add(deltaY);
@@ -127,18 +134,20 @@ public class TruckDockEvent extends Event {
                     }
                 case SIDES:
                     Vector3D leftPosition = palletPosition.subtract(deltaX);
+                    Vector3D leftPosition2 = leftPosition.subtract(deltaX);
                     Vector3D rightPosition = palletPosition.add(deltaX);
-                    if (loadMissions.containsKey(leftPosition) && !loadMissions.containsKey(rightPosition)) {
+                    Vector3D rightPosition2 = rightPosition.add(deltaX);
+
+                    if (loadMissions.containsKey(leftPosition) && loadMissions.containsKey(leftPosition2)) {
                         Mission leftMission = loadMissions.get(leftPosition);
                         mission.addStartCondition(new MissionDoneCondition(leftMission));
                     }
-                    if (loadMissions.containsKey(rightPosition) && !loadMissions.containsKey(leftPosition)) {
+
+                    if (loadMissions.containsKey(rightPosition) && loadMissions.containsKey(rightPosition2)) {
                         Mission rightMission = loadMissions.get(rightPosition);
                         mission.addStartCondition(new MissionDoneCondition(rightMission));
                     }
             }
-
-            loadMissions.put(palletPosition, mission);
         }
 
         Event event = new ControllerEvent(this.simulation, this.time, this.controller);

@@ -32,8 +32,8 @@ public class Main extends Application {
         ArrayList<Vector3D> productionLineStartBuffer = new ArrayList<>();
         ArrayList<Vector3D> productionLineEndBuffer = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            productionLineStartBuffer.add(new Vector3D(productionLineX - 2 * this.configuration.palletSize + i / 5 * this.configuration.palletSize, productionLineY + (i % 5) * this.configuration.palletSize));
-            productionLineEndBuffer.add(new Vector3D(productionLineX + (i % 5) * this.configuration.palletSize, productionLineY + productionLineDepth + i / 5 * this.configuration.palletSize));
+            productionLineStartBuffer.add(new Vector3D(productionLineX - (i / 2 + 1) * this.configuration.palletSize, productionLineY + (1 + 2 * (i % 2)) * this.configuration.palletSize));
+            productionLineEndBuffer.add(new Vector3D(productionLineX + (1 + 2 * (i % 2)) * this.configuration.palletSize, productionLineY + productionLineDepth + i / 2 * this.configuration.palletSize));
         }
 
         this.configuration.addProductionLine(productionLineX, productionLineY, productionLineX + productionLineWidth, productionLineY + productionLineDepth, 10, productionLineStartBuffer, productionLineEndBuffer);
@@ -41,7 +41,7 @@ public class Main extends Application {
         this.configuration.addStockSection(20, 20, 120, 120, 20, true);
         this.configuration.addStockSection(20, 150, 120, 250, 20, true);
 
-        this.configuration.addAutoStockSection(150, 20, 270, 200, 40, false, false, false, true, true);
+        this.configuration.addAutoStockSection(150, 20, 270, 200, 40, false, true, true, true, true);
 
         this.configuration.addStockSection(300, 20, 450, 160, 20, false);
 
