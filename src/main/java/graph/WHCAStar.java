@@ -66,7 +66,9 @@ public class WHCAStar extends PathFinder {
                 }
             }
 
-            if (noPath) (new java.util.Scanner(System.in)).nextLine();
+            if (noPath) {
+                (new java.util.Scanner(System.in)).nextLine();
+            }
 
             count++;
         }
@@ -159,7 +161,7 @@ public class WHCAStar extends PathFinder {
                         if (debug && noPath) System.out.println("pos " + v + " is occupied at time " + otherDist);
                         otherDist = this.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
                         if (debug && noPath) System.out.println("soonest time to go there : " + otherDist);
-                        if (!this.table.isAvailable(u, dist.get(u), DoublePrecisionConstraint.round(otherDist - edgeDist), mobile.getId())) {
+                        if (!this.table.isAvailable(u, distU, DoublePrecisionConstraint.round(otherDist - edgeDist), mobile.getId())) {
                             if (debug && noPath) {
                                 System.out.println("cannot wait long enough to reach " + v);
                             }

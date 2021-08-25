@@ -3,8 +3,8 @@ package agent;
 import brain.MobileMissionSelector;
 import brain.PalletPositionSelector;
 import brain.TruckDockSelector;
+import graph.ODID;
 import graph.PathFinder;
-import graph.WHCAStar;
 import observer.Observable;
 import warehouse.Configuration;
 import warehouse.Mission;
@@ -39,7 +39,7 @@ public class Controller extends Observable {
         this.warehouse = configuration.warehouse;
         this.stock = configuration.stock;
         this.productionLines = configuration.productionLines;
-        this.pathFinder = new WHCAStar(configuration.warehouse.getGraph());
+        this.pathFinder = new ODID(configuration.warehouse.getGraph());
         this.docks = configuration.docks;
         this.lifts = configuration.lifts;
         this.allMobiles = configuration.mobiles;

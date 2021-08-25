@@ -216,5 +216,10 @@ public class Mobile extends Observable {
         this.path = path;
         this.pathTime = time;
         this.changed();
+
+        /*System.out.println("Set path for mobile " + this.getId());
+        for (Pair<Vector3D,Double> pair : this.path) {
+            System.out.println(pair.first + " " + pair.second);
+        }*/
     }
 }

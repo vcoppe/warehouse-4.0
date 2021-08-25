@@ -41,7 +41,7 @@ public class Main extends Application {
         this.configuration.addStockSection(20, 20, 120, 120, 20, true);
         this.configuration.addStockSection(20, 150, 120, 250, 20, true);
 
-        this.configuration.addAutoStockSection(150, 20, 270, 200, 40, false, true, true, true, true);
+        this.configuration.addAutoStockSection(150, 20, 270, 200, 40, false, false, false, true, true);
 
         this.configuration.addStockSection(300, 20, 450, 160, 20, false);
 
