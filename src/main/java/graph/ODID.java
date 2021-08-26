@@ -11,7 +11,9 @@ import java.util.*;
 
 public class ODID extends PathFinder {
 
-    private static int W = 30, H = 40;
+    private static int H = 40;
+    private static int TOL = 0;
+    private static int END_MARGIN = 5;
 
     private static HashMap<Integer, Mobile> map = new HashMap<>();
     private static ReservationTable avoidanceTable;
@@ -38,10 +40,18 @@ public class ODID extends PathFinder {
             // reserve current position
             Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
             if (pair.first.first.equals(pair.second.first)) {
-                this.table.reserve(pair.first.first, pair.first.second, pair.second.second, mobile.getId());
+                if (pair.second.first.equals(mobile.getTargetPosition()) && mobile.isAvailable()) {
+                    this.table.reserve(pair.first.first, pair.first.second, Double.MAX_VALUE / 2, mobile.getId());
+                } else {
+                    this.table.reserve(pair.first.first, pair.first.second, pair.second.second, mobile.getId());
+                }
             } else {
                 this.table.reserve(pair.first.first, pair.first.second, mobile.getId());
-                this.table.reserve(pair.second.first, pair.second.second, mobile.getId());
+                if (pair.second.first.equals(mobile.getTargetPosition()) && mobile.isAvailable()) {
+                    this.table.reserve(pair.second.first, pair.second.second, Double.MAX_VALUE / 2, mobile.getId());
+                } else {
+                    this.table.reserve(pair.second.first, pair.second.second, mobile.getId());
+                }
             }
         }
 
@@ -52,6 +62,8 @@ public class ODID extends PathFinder {
                 System.out.println("ODID: No greedy path found.");
                 System.exit(0);
             }
+
+            this.setAndCheckPaths(time, node, group, avoidanceTable);
         }
 
         HashSet<ODIDConflict> pastConflicts = new HashSet<>();
@@ -79,12 +91,20 @@ public class ODID extends PathFinder {
                 }
 
                 if (pastConflicts.contains(conflict)) {
+                    System.out.println("ODID: Found past conflict, merging A and B");
                     ODIDGroup merged = node.merge(groupA, groupB);
                     this.computePath(time, node, merged, this.table.clone(), Double.MAX_VALUE);
 
                     pastConflicts.clear();
                 } else {
                     pastConflicts.add(conflict);
+
+                    // replan shorter path first
+                    if (node.dist.get(groupA).get(node.end.get(groupA)).time > node.dist.get(groupB).get(node.end.get(groupB)).time) {
+                        ODIDGroup tmp = groupA;
+                        groupA = groupB;
+                        groupB = tmp;
+                    }
 
                     System.out.println("Mobiles in groups:");
                     System.out.print("\tA:");
@@ -100,7 +120,7 @@ public class ODID extends PathFinder {
                     ODIDNode replanA = node.clone();
 
                     System.out.println("Trying to replan group A");
-                    if (this.computePath(time, replanA, groupA, constraintsB, node.dist.get(groupA).get(node.end.get(groupA)).time)) {
+                    if (this.computePath(time, replanA, groupA, constraintsB, node.dist.get(groupA).get(node.end.get(groupA)).time + TOL * groupA.size())) {
                         node = replanA;
                     } else {
                         // try to replan group B
@@ -109,7 +129,7 @@ public class ODID extends PathFinder {
                         ODIDNode replanB = node.clone();
 
                         System.out.println("Trying to replan group B");
-                        if (this.computePath(time, replanB, groupB, constraintsA, node.dist.get(groupB).get(node.end.get(groupB)).time)) {
+                        if (this.computePath(time, replanB, groupB, constraintsA, node.dist.get(groupB).get(node.end.get(groupB)).time + TOL * groupB.size())) {
                             node = replanB;
                         } else { // failed both replanning attempts
                             System.out.println("Merging A and B");
@@ -128,7 +148,7 @@ public class ODID extends PathFinder {
         boolean debug = false;
 
         HashMap<ODIDState, ODIDCost> dist = node.dist.get(group);
-        HashMap<ODIDState, Double> h = node.h.get(group);
+        HashMap<ODIDState, ODIDCost> h = node.h.get(group);
         HashMap<ODIDState, ODIDState> prev = node.prev.get(group);
 
         dist.clear();
@@ -153,7 +173,7 @@ public class ODID extends PathFinder {
 
         dist.put(startState, new ODIDCost(0, 0));
         prev.put(startState, prevState);
-        h.put(startState, groupEstimate);
+        h.put(startState, new ODIDCost(groupEstimate, 0));
         startState.table = table;
 
         pq.add(new Pair<>(startState, new ODIDCost(groupEstimate, 0)));
@@ -173,7 +193,7 @@ public class ODID extends PathFinder {
             ODIDState u = p.first;
             ODIDCost estimateU = p.second;
 
-            if (estimateU.time > h.get(u)) { // not the shortest path anymore
+            if (estimateU.compareTo(h.get(u)) > 0) { // not the shortest path anymore
                 if (debug) System.out.println("skipped");
                 continue;
             }
@@ -211,11 +231,11 @@ public class ODID extends PathFinder {
 
                 boolean target = positionV.equals(endState.positions.get(mobileId).first);
                 if (target) {
-                    endTimeV = DoublePrecisionConstraint.round(endTimeV + H);
+                    endTimeV = DoublePrecisionConstraint.round(endTimeV + END_MARGIN);
                 }
 
                 int nConflicts = costU.nConflicts;
-                if (timeV < time + H) {
+                //if (timeV < time + H) {
                     if (!u.table.isAvailable(positionV, timeV, endTimeV, mobileId)) { // position already occupied at that time
                         if (debug) System.out.println("pos " + positionV + " is occupied at time " + timeV);
                         timeV = u.table.nextAvailability(positionV, timeV, endTimeV, mobileId); // get soonest available time
@@ -224,32 +244,35 @@ public class ODID extends PathFinder {
                             if (debug) System.out.println("distU wait long enough to reach " + positionV);
                             continue; // mobile cannot wait in current position until the next position is available
                         }
-                        if (!avoidanceTable.isAvailable(positionU, timeU, DoublePrecisionConstraint.round(timeV - delta), mobileId))
-                            nConflicts++;
+                        Reservation conflict = avoidanceTable.firstConflict(positionU, timeU, DoublePrecisionConstraint.round(timeV - delta), mobileId);
+                        if (conflict != null && !node.group.get(conflict.mobileId).equals(group)) {
+                            nConflicts += node.group.get(conflict.mobileId).size();
+                        }
                     }
-                }
+                //}
 
                 ODIDState v = u.successor(mobileId, new Pair<>(positionV, timeV), target);
                 if (DoublePrecisionConstraint.round(timeV - timeU - delta) > 0)
                     v.table.reserve(positionU, timeU, DoublePrecisionConstraint.round(timeV - delta), mobileId);
-                if (!avoidanceTable.isAvailable(positionV, timeV, endTimeV, mobileId)) nConflicts++;
+                Reservation conflict = avoidanceTable.firstConflict(positionV, timeV, endTimeV, mobileId);
+                if (conflict != null && !node.group.get(conflict.mobileId).equals(group)) {
+                    nConflicts += node.group.get(conflict.mobileId).size();
+                }
 
                 ODIDCost costV = new ODIDCost(DoublePrecisionConstraint.round(costU.time + timeV - timeU), nConflicts);
 
-                if (!dist.containsKey(v) ||
-                        costV.time < dist.get(v).time ||
-                        (costV.time == dist.get(v).time && nConflicts < dist.get(v).nConflicts)) {
+                if (!dist.containsKey(v) || costV.compareTo(dist.get(v)) < 0) {
                     Vector2D prevDist2D = this.reverseResumableAStar(mobile, positionU, mobile.getPosition());
                     Vector2D dist2D = this.reverseResumableAStar(mobile, positionV, mobile.getPosition());
-                    double estimateV = DoublePrecisionConstraint.round(
+                    ODIDCost estimateV = new ODIDCost(DoublePrecisionConstraint.round(
                             estimateU.time + timeV - timeU +
                                     (dist2D.getX() - prevDist2D.getX()) * mobile.getSpeed() +
-                                    (dist2D.getY() - prevDist2D.getY()) * Lift.speed);
+                                    (dist2D.getY() - prevDist2D.getY()) * Lift.speed), nConflicts);
 
                     dist.put(v, costV);
                     h.put(v, estimateV);
                     prev.put(v, u);
-                    pq.add(new Pair<>(v, new ODIDCost(estimateV, nConflicts)));
+                    pq.add(new Pair<>(v, estimateV));
                 }
             }
         }
@@ -259,7 +282,7 @@ public class ODID extends PathFinder {
 
     private ODIDConflict setAndCheckPaths(double time, ODIDNode node, ReservationTable table) {
         ODIDConflict firstConflict = null;
-        this.nextUpdateTime = time + W;
+        this.nextUpdateTime = Double.MAX_VALUE; //time + W;
 
         for (ODIDGroup group : node.groups) {
             ODIDConflict conflict = this.setAndCheckPaths(time, node, group, table);
@@ -354,8 +377,10 @@ public class ODID extends PathFinder {
                     }
                 } else {
                     if (timeU > time) this.nextUpdateTime = Math.min(this.nextUpdateTime, timeU);
-                    Reservation conflict = table.firstConflict(u, timeU, timeU + H, mobile.getId());
-                    Reservation reservation = table.reserve(u, timeU, timeU + H, mobile.getId());
+                    Reservation conflict = table.firstConflict(u, timeU, timeU + END_MARGIN, mobile.getId());
+                    Reservation reservation = table.reserve(u, timeU, timeU + END_MARGIN, mobile.getId());
+                    //Reservation conflict = table.firstConflict(u, timeU, mobile.getId());
+                    //Reservation reservation = table.reserve(u, timeU, mobile.getId());
                     if (conflict != null && (firstConflict == null || conflict.start < firstConflict.reservations.first.start)) {
                         firstConflict = new ODIDConflict(conflict, reservation);
                     }
@@ -372,8 +397,9 @@ public class ODID extends PathFinder {
 
         public final double time;
         public final ArrayList<ODIDGroup> groups;
+        public final HashMap<Integer, ODIDGroup> group;
         public final HashMap<ODIDGroup, HashMap<ODIDState, ODIDCost>> dist;
-        public final HashMap<ODIDGroup, HashMap<ODIDState, Double>> h;
+        public final HashMap<ODIDGroup, HashMap<ODIDState, ODIDCost>> h;
         public final HashMap<ODIDGroup, HashMap<ODIDState, ODIDState>> prev;
         public final HashMap<ODIDGroup, ODIDState> initial;
         public final HashMap<ODIDGroup, ODIDState> start;
@@ -382,6 +408,7 @@ public class ODID extends PathFinder {
         public ODIDNode(double time, ArrayList<ODIDGroup> groups) {
             this.time = time;
             this.groups = groups;
+            this.group = new HashMap<>();
             this.dist = new HashMap<>();
             this.h = new HashMap<>();
             this.prev = new HashMap<>();
@@ -404,6 +431,7 @@ public class ODID extends PathFinder {
             HashMap<Integer, Pair<Vector3D, Double>> endPositions = new HashMap<>();
 
             for (Mobile mobile : group) {
+                this.group.put(mobile.getId(), group);
                 Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(this.time);
 
                 prevPositions.put(mobile.getId(), new Pair<>(pair.first.first, pair.first.second));
@@ -514,6 +542,10 @@ public class ODID extends PathFinder {
         public Iterator<Mobile> iterator() {
             return this.mobiles.iterator();
         }
+
+        public int size() {
+            return this.mobiles.size();
+        }
     }
 
     class ODIDState {
@@ -541,7 +573,7 @@ public class ODID extends PathFinder {
             positions.put(mobileId, position);
 
             ReservationTable table = this.table.clone();
-            if (target) table.reserve(position.first, position.second, position.second + H, mobileId);
+            if (target) table.reserve(position.first, position.second, position.second + END_MARGIN, mobileId);
             else table.reserve(position.first, position.second, mobileId);
 
             return new ODIDState(positions, table);
@@ -602,10 +634,15 @@ public class ODID extends PathFinder {
 
         @Override
         public int compareTo(ODIDCost other) {
+            /*if (this.nConflicts == other.nConflicts) {
+                return Double.compare(this.time, other.time);
+            }
+            return this.nConflicts - other.nConflicts;*/
             if (this.time == other.time) {
                 return this.nConflicts - other.nConflicts;
             }
             return Double.compare(this.time, other.time);
+            //return Double.compare(this.time + this.nConflicts, other.time + other.nConflicts);
         }
     }
 
