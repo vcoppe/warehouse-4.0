@@ -11,11 +11,11 @@ import java.util.*;
 
 public class ODID extends PathFinder {
 
-    private static int H = 40;
-    private static int TOL = 0;
-    private static int END_MARGIN = 5;
+    private static final int H = 40;
+    private static final int TOL = 0;
+    private static final int END_MARGIN = 5;
 
-    private static HashMap<Integer, Mobile> map = new HashMap<>();
+    static HashMap<Integer, Mobile> map = new HashMap<>();
     private static ReservationTable avoidanceTable;
 
     public ODID(Graph graph) {
@@ -145,7 +145,7 @@ public class ODID extends PathFinder {
     }
 
     private boolean computePath(double time, ODIDNode node, ODIDGroup group, ReservationTable table, double maxTime) {
-        boolean debug = false;
+        boolean debug = true;
 
         HashMap<ODIDState, ODIDCost> dist = node.dist.get(group);
         HashMap<ODIDState, ODIDCost> h = node.h.get(group);
@@ -548,7 +548,7 @@ public class ODID extends PathFinder {
         }
     }
 
-    class ODIDState {
+    static class ODIDState {
 
         HashMap<Integer, Pair<Vector3D, Double>> positions;
         ReservationTable table;
@@ -672,9 +672,7 @@ public class ODID extends PathFinder {
             if (this.reservations.second.start != other.reservations.second.start) return false;
             if (this.reservations.second.end != other.reservations.second.end) return false;
             if (this.reservations.second.mobileId != other.reservations.second.mobileId) return false;
-            if (!this.reservations.second.position.equals(other.reservations.second.position)) return false;
-
-            return true;
+            return this.reservations.second.position.equals(other.reservations.second.position);
         }
 
         @Override
