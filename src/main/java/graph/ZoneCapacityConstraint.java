@@ -9,6 +9,8 @@ public class ZoneCapacityConstraint extends GraphConstraint {
 
     int capacity;
 
+    // TODO create meta reservation tree
+
     public ZoneCapacityConstraint(Vector3D[] positions, int capacity) {
         super(positions);
         this.capacity = capacity;
