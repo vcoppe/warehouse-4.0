@@ -28,9 +28,9 @@ public class ConjunctionCondition extends Condition {
     }
 
     @Override
-    public boolean satisfied(double time, Mobile mobile) {
+    public boolean satisfied(Mobile mobile) {
         for (Condition condition : this.conditions) {
-            if (!condition.satisfied(time, mobile)) {
+            if (!condition.satisfied(mobile)) {
                 return false;
             }
         }

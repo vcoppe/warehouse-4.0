@@ -10,7 +10,7 @@ public class Condition {
         return true;
     }
 
-    public boolean satisfied(double time, Mobile mobile) {
+    public boolean satisfied(Mobile mobile) {
         return true;
     }
 

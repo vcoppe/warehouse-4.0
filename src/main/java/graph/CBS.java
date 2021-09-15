@@ -10,6 +10,7 @@ import util.Vector3D;
 import java.util.*;
 
 public class CBS extends PathFinder {
+    boolean debug = true;
 
     public static final int W = 30;
 
@@ -48,18 +49,20 @@ public class CBS extends PathFinder {
         while (!pq.isEmpty()) {
             CBSNode node = pq.pollFirst();
 
-            System.out.println("Popped new node, with constraints:");
-            for (Map.Entry<Vector3D, TreeSet<Reservation>> entry : node.table.reservations.entrySet()) {
-                System.out.println("\tFor location " + entry.getKey());
-                for (Reservation reservation : entry.getValue()) {
-                    System.out.println("\tMobile " + reservation.mobileId + ": from " + reservation.start + " until " + reservation.end);
+            if (debug) {
+                System.out.println("Popped new node, with constraints:");
+                for (Map.Entry<Vector3D, TreeSet<Reservation>> entry : node.table.reservations.entrySet()) {
+                    System.out.println("\tFor location " + entry.getKey());
+                    for (Reservation reservation : entry.getValue()) {
+                        System.out.println("\tMobile " + reservation.mobileId + ": from " + reservation.start + " until " + reservation.end);
+                    }
                 }
             }
 
             CBSConflict conflict = this.firstConflict(time, node);
-            if (conflict == null || conflict.reservations.first.start >= time + W || conflict.reservations.second.start >= time + W) {
+            if (conflict == null/* || conflict.reservations.first.start >= time + W || conflict.reservations.second.start >= time + W*/) {
                 // set next update time to earliest destination time
-                this.nextUpdateTime = time + W;
+                this.nextUpdateTime = Double.MAX_VALUE;//time + W;
                 for (Mobile mobile : mobiles) {
                     double endTime = mobile.getPath().get(mobile.getPath().size() - 1).second;
                     if (endTime > time) this.nextUpdateTime = Math.min(this.nextUpdateTime, endTime);
@@ -77,9 +80,11 @@ public class CBS extends PathFinder {
                     conflict.reservations.second
             };
 
-            System.out.println("Conflict found:");
-            System.out.println("\tMobile " + conflictMobiles[0].getId() + ": " + conflictReservations[0].position + " from " + conflictReservations[0].start + " until " + conflictReservations[0].end);
-            System.out.println("\tMobile " + conflictMobiles[1].getId() + ": " + conflictReservations[1].position + " from " + conflictReservations[1].start + " until " + conflictReservations[1].end);
+            if (debug) {
+                System.out.println("Conflict found:");
+                System.out.println("\tMobile " + conflictMobiles[0].getId() + ": " + conflictReservations[0].position + " from " + conflictReservations[0].start + " until " + conflictReservations[0].end);
+                System.out.println("\tMobile " + conflictMobiles[1].getId() + ": " + conflictReservations[1].position + " from " + conflictReservations[1].start + " until " + conflictReservations[1].end);
+            }
 
             for (int i = 0; i < conflictMobiles.length; i++) {
                 if (node.table.reservations.containsKey(conflictReservations[1 - i].position) &&
@@ -97,7 +102,7 @@ public class CBS extends PathFinder {
                 boolean hasSolution = this.computePath(time, conflictMobiles[1 - i], succ);
 
                 if (hasSolution) {
-                    System.out.println("added successor!");
+                    if (debug) System.out.println("added successor!");
                     pq.add(succ);
                 }
             }
@@ -108,40 +113,38 @@ public class CBS extends PathFinder {
     }
 
     private boolean computePath(double time, Mobile mobile, CBSNode node) {
-        boolean debug = false;
-
         this.initReverseResumableAStar(mobile);
 
         Vector3D startPosition = mobile.getPosition();
         Vector3D endPosition = mobile.getTargetPosition();
 
-        HashMap<Vector3D, Double> dist = node.dist.get(mobile.getId());
-        HashMap<Vector3D, Double> h = node.h.get(mobile.getId());
+        HashMap<Vector3D, CBSCost> dist = node.dist.get(mobile.getId());
+        HashMap<Vector3D, CBSCost> h = node.h.get(mobile.getId());
         HashMap<Vector3D, Vector3D> prev = node.prev.get(mobile.getId());
 
         dist.clear();
         h.clear();
         prev.clear();
 
-        PriorityQueue<Pair<Vector3D, Double>> pq = new PriorityQueue<>(Comparator.comparing(Pair::getSecond));
+        PriorityQueue<Pair<Vector3D, CBSCost>> pq = new PriorityQueue<>(Comparator.comparing(Pair::getSecond));
 
         Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
 
-        dist.put(pair.second.first, pair.second.second);
+        dist.put(pair.second.first, new CBSCost(pair.second.second, 0));
         prev.put(pair.second.first, pair.first.first);
         Vector2D dist2D = this.reverseResumableAStar(mobile, pair.second.first, startPosition);
-        h.put(pair.second.first, pair.second.second + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
+        h.put(pair.second.first, new CBSCost(pair.second.second + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed, 0));
         pq.add(new Pair<>(pair.second.first, h.get(pair.second.first)));
 
         if (debug) System.out.println("path for mobile " + mobile.getId());
 
         while (!pq.isEmpty()) {
-            Pair<Vector3D, Double> p = pq.poll();
+            Pair<Vector3D, CBSCost> p = pq.poll();
 
             Vector3D u = p.first;
-            double estimateU = p.second;
+            CBSCost estimateU = p.second;
 
-            if (estimateU > h.get(u)) { // not the shortest path anymore
+            if (estimateU.compareTo(h.get(u)) > 0) { // not the shortest path anymore
                 continue;
             }
 
@@ -151,36 +154,44 @@ public class CBS extends PathFinder {
                 return true;
             }
 
-            double distU = dist.get(u);
+            CBSCost distU = dist.get(u);
 
             for (Edge edge : this.graph.getEdges(u)) {
                 Vector3D v = edge.to;
                 Vector2D w = edge.weight;
 
-                if (!edge.canCross(distU, mobile)) {
+                if (!edge.canCross(mobile)) {
                     if (debug) System.out.println("cannot cross edge to pos " + v);
                     continue;
                 }
 
                 double edgeDist = DoublePrecisionConstraint.round(w.getX() * mobile.getSpeed() + w.getY() * Lift.speed);
-                double otherDist = DoublePrecisionConstraint.round(distU + edgeDist);
+                double otherDist = DoublePrecisionConstraint.round(distU.time + edgeDist);
+                int nConflicts = distU.nConflicts;
 
-                if (otherDist < time + W) { // check for collisions only within the time window
-                    if (!node.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
-                        if (debug) System.out.println("pos " + v + " is occupied at time " + otherDist);
-                        otherDist = node.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
-                        if (debug) System.out.println("soonest time to go there : " + otherDist);
-                        if (!node.table.isAvailable(u, dist.get(u), DoublePrecisionConstraint.round(otherDist - edgeDist), mobile.getId())) {
-                            if (debug) System.out.println("cannot wait long enough to reach " + v);
-                            continue; // mobile cannot wait in current position until the next position is available
-                        }
+                //if (otherDist < time + W) { // check for collisions only within the time window
+                if (!node.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
+                    if (debug) System.out.println("pos " + v + " is occupied at time " + otherDist);
+                    otherDist = node.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
+                    if (debug) System.out.println("soonest time to go there : " + otherDist);
+                    if (!node.table.isAvailable(u, dist.get(u).time, DoublePrecisionConstraint.round(otherDist - edgeDist), mobile.getId())) {
+                        if (debug) System.out.println("cannot wait long enough to reach " + v);
+                        continue; // mobile cannot wait in current position until the next position is available
                     }
+                    Reservation conflict = this.table.firstConflict(u, distU.time, DoublePrecisionConstraint.round(otherDist - edgeDist), mobile.getId());
+                    if (conflict != null) nConflicts++;
                 }
+                //}
 
-                if (!dist.containsKey(v) || otherDist < dist.get(v)) {
+                Reservation conflict = this.table.firstConflict(v, otherDist, mobile.getId());
+                if (conflict != null) nConflicts++;
+
+                CBSCost distV = new CBSCost(otherDist, nConflicts);
+
+                if (!dist.containsKey(v) || distV.compareTo(dist.get(v)) < 0) {
                     dist2D = this.reverseResumableAStar(mobile, v, startPosition);
-                    double estimateV = DoublePrecisionConstraint.round(otherDist + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
-                    dist.put(v, otherDist);
+                    CBSCost estimateV = new CBSCost(DoublePrecisionConstraint.round(otherDist + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed), nConflicts);
+                    dist.put(v, distV);
                     h.put(v, estimateV);
                     prev.put(v, u);
                     pq.add(new Pair<>(v, estimateV));
@@ -206,7 +217,7 @@ public class CBS extends PathFinder {
         return firstConflict;
     }
 
-    private CBSConflict setAndCheckPath(double time, Mobile mobile, HashMap<Vector3D, Double> dist, HashMap<Vector3D, Vector3D> prev) {
+    private CBSConflict setAndCheckPath(double time, Mobile mobile, HashMap<Vector3D, CBSCost> dist, HashMap<Vector3D, Vector3D> prev) {
         CBSConflict firstConflict = null;
 
         Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
@@ -216,10 +227,10 @@ public class CBS extends PathFinder {
         ArrayList<Pair<Vector3D, Double>> path = new ArrayList<>();
 
         Vector3D u = endPosition;
-        path.add(new Pair<>(u, dist.get(u)));
+        path.add(new Pair<>(u, dist.get(u).time));
         while (!u.equals(startPosition)) {
             u = prev.get(u);
-            path.add(0, new Pair<>(u, dist.get(u)));
+            path.add(0, new Pair<>(u, dist.get(u).time));
         }
 
         if (!pair.first.first.equals(startPosition)) {
@@ -251,8 +262,8 @@ public class CBS extends PathFinder {
                     }
                 }
             } else {
-                Reservation conflict = this.table.firstConflict(u, timeU + W, mobile.getId());
-                Reservation reservation = this.table.reserve(u, timeU + W, mobile.getId());
+                Reservation conflict = this.table.firstConflict(u, timeU, timeU + W, mobile.getId());
+                Reservation reservation = this.table.reserve(u, timeU, timeU + W, mobile.getId());
                 if (conflict != null) {
                     firstConflict = new CBSConflict(conflict, reservation);
                 }
@@ -268,8 +279,8 @@ public class CBS extends PathFinder {
 
         public final ArrayList<Mobile> mobiles;
         public final ReservationTable table;
-        public final HashMap<Integer, HashMap<Vector3D, Double>> dist;
-        public final HashMap<Integer, HashMap<Vector3D, Double>> h;
+        public final HashMap<Integer, HashMap<Vector3D, CBSCost>> dist;
+        public final HashMap<Integer, HashMap<Vector3D, CBSCost>> h;
         public final HashMap<Integer, HashMap<Vector3D, Vector3D>> prev;
 
         public double value;
@@ -298,7 +309,7 @@ public class CBS extends PathFinder {
         public void computeValue() {
             this.value = Double.MIN_VALUE;
             for (Mobile mobile : mobiles) {
-                double endTime = this.dist.get(mobile.getId()).get(mobile.getTargetPosition());
+                double endTime = this.dist.get(mobile.getId()).get(mobile.getTargetPosition()).time;
                 this.value = Math.max(this.value, endTime);
             }
         }
@@ -317,8 +328,8 @@ public class CBS extends PathFinder {
 
         @Override
         public int compareTo(CBSNode other) {
-            if (this.value != other.value) {
-                return Double.compare(this.value, other.value);
+            if (this.getValue() != other.getValue()) {
+                return Double.compare(this.getValue(), other.getValue());
             }
 
             if (this.table.reservations.size() != other.table.reservations.size()) {
@@ -367,7 +378,7 @@ public class CBS extends PathFinder {
             if (o == null || getClass() != o.getClass()) return false;
             CBSNode other = (CBSNode) o;
 
-            if (this.value != other.value) {
+            if (this.getValue() != other.getValue()) {
                 return false;
             }
 
@@ -421,6 +432,25 @@ public class CBS extends PathFinder {
             else this.reservations = new Pair<>(r2, r1);
         }
 
+    }
+
+    class CBSCost implements Comparable<CBSCost> {
+
+        double time;
+        int nConflicts;
+
+        public CBSCost(double time, int nConflicts) {
+            this.time = time;
+            this.nConflicts = nConflicts;
+        }
+
+        @Override
+        public int compareTo(CBSCost other) {
+            if (this.time == other.time) {
+                return this.nConflicts - other.nConflicts;
+            }
+            return Double.compare(this.time, other.time);
+        }
     }
 
 }

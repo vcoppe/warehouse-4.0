@@ -17,7 +17,7 @@ public class StockEdgeCondition extends Condition {
     }
 
     @Override
-    public boolean satisfied(double time, Mobile mobile) {
+    public boolean satisfied(Mobile mobile) {
         // empty robots can go below pallets
 
         Pallet pallet = this.stock.get(this.edge.to());

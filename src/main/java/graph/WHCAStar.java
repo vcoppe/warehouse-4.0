@@ -11,7 +11,7 @@ import java.util.*;
 
 public class WHCAStar extends PathFinder {
 
-    public static final int W = 30, H = 60;
+    public static final int W = 30, H = 40;
 
     private final Random random;
 
@@ -100,34 +100,40 @@ public class WHCAStar extends PathFinder {
     private boolean computePath(double time, Mobile mobile) {
         this.initReverseResumableAStar(mobile);
 
+        Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
+
         Vector3D startPosition = mobile.getPosition();
         Vector3D endPosition = mobile.getTargetPosition();
 
-        HashMap<Vector3D, Double> dist = new HashMap<>();
-        HashMap<Vector3D, Double> h = new HashMap<>();
-        HashMap<Vector3D, Vector3D> prev = new HashMap<>();
+        HashMap<AStarState, Double> dist = new HashMap<>();
+        HashMap<AStarState, AStarState> prev = new HashMap<>();
 
-        PriorityQueue<Pair<Vector3D, Double>> pq = new PriorityQueue<>(Comparator.comparing(Pair::getSecond));
+        PriorityQueue<AStarState> pq = new PriorityQueue<>(Comparator.comparing(AStarState::getEstimate));
 
-        Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
-
-        dist.put(pair.second.first, pair.second.second);
-        prev.put(pair.second.first, pair.first.first);
         Vector2D dist2D = this.reverseResumableAStar(mobile, pair.second.first, startPosition);
-        h.put(pair.second.first, pair.second.second + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
-        pq.add(new Pair<>(pair.second.first, h.get(pair.second.first)));
+        if (dist2D == null) {
+            System.out.println("no path from " + pair.second.first + " to " + endPosition);
+            (new java.util.Scanner(System.in)).nextLine();
+        }
+        double startEstimate = DoublePrecisionConstraint.round(pair.second.second + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
+        AStarState initialState = new AStarState(pair.first.first, pair.first.second, 0);
+        AStarState startState = new AStarState(pair.second.first, pair.second.second, startEstimate);
+
+        dist.put(startState, pair.second.second);
+        prev.put(startState, initialState);
+        pq.add(startState);
 
         if (debug && noPath) {
             System.out.println("path for mobile " + mobile.getId());
         }
 
         while (!pq.isEmpty()) {
-            Pair<Vector3D, Double> p = pq.poll();
+            AStarState state = pq.poll();
 
-            Vector3D u = p.first;
-            double estimateU = p.second;
+            Vector3D u = state.position;
+            double distU = state.time;
 
-            if (estimateU > h.get(u)) { // not the shortest path anymore
+            if (distU > dist.get(state)) { // not the shortest path anymore
                 continue;
             }
 
@@ -136,17 +142,17 @@ public class WHCAStar extends PathFinder {
             }
 
             if (u.equals(endPosition)) {
-                this.setPath(time, mobile, dist, prev);
+                this.setPath(time, mobile, prev, state);
                 return true;
             }
 
-            double distU = dist.get(u);
+            double minDist = distU + 1;
 
             for (Edge edge : this.graph.getEdges(u)) {
                 Vector3D v = edge.to;
                 Vector2D w = edge.weight;
 
-                if (!edge.canCross(distU, mobile)) {
+                if (!edge.canCross(mobile)) {
                     if (debug && noPath) {
                         System.out.println("cannot cross edge to pos " + v);
                     }
@@ -155,10 +161,11 @@ public class WHCAStar extends PathFinder {
 
                 double edgeDist = DoublePrecisionConstraint.round(w.getX() * mobile.getSpeed() + w.getY() * Lift.speed);
                 double otherDist = DoublePrecisionConstraint.round(distU + edgeDist);
+                minDist = Math.min(minDist, otherDist);
 
                 if (otherDist < time + H) { // check for collisions only within the time window
                     if (!this.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
-                        if (debug && noPath) System.out.println("pos " + v + " is occupied at time " + otherDist);
+                        /*if (debug && noPath) System.out.println("pos " + v + " is occupied at time " + otherDist);
                         otherDist = this.table.nextAvailability(v, otherDist, mobile.getId()); // get soonest available time
                         if (debug && noPath) System.out.println("soonest time to go there : " + otherDist);
                         if (!this.table.isAvailable(u, distU, DoublePrecisionConstraint.round(otherDist - edgeDist), mobile.getId())) {
@@ -166,18 +173,32 @@ public class WHCAStar extends PathFinder {
                                 System.out.println("cannot wait long enough to reach " + v);
                             }
                             continue; // mobile cannot wait in current position until the next position is available
-                        }
+                        }*/
+                        continue;
                     }
                 }
 
-                if (!dist.containsKey(v) || otherDist < dist.get(v)) {
+                AStarState next = new AStarState(v, otherDist, 0);
+
+                if (!dist.containsKey(next) || otherDist < dist.get(next)) {
                     dist2D = this.reverseResumableAStar(mobile, v, startPosition);
-                    double estimateV = DoublePrecisionConstraint.round(otherDist + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
+                    if (dist2D == null) continue;
                     //if (debug && noPath) System.out.println(v + " at estimated dist " + estimateV);
-                    dist.put(v, otherDist);
-                    h.put(v, estimateV);
-                    prev.put(v, u);
-                    pq.add(new Pair<>(v, estimateV));
+                    next.h = DoublePrecisionConstraint.round(dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
+                    dist.put(next, otherDist);
+                    prev.put(next, state);
+                    pq.add(next);
+                }
+            }
+
+            // wait move
+            if (distU >= time + H || this.table.isAvailable(u, distU, minDist, mobile.getId())) { // check for collisions only within the time window
+                AStarState next = new AStarState(u, minDist, state.h);
+
+                if (!dist.containsKey(next) || minDist < dist.get(next)) {
+                    dist.put(next, minDist);
+                    prev.put(next, state);
+                    pq.add(next);
                 }
             }
         }
@@ -185,18 +206,19 @@ public class WHCAStar extends PathFinder {
         return false; // no path was found
     }
 
-    private void setPath(double time, Mobile mobile, HashMap<Vector3D, Double> dist, HashMap<Vector3D, Vector3D> prev) {
+    private void setPath(double time, Mobile mobile, HashMap<AStarState, AStarState> prev, AStarState endState) {
         Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
+        AStarState startState = new AStarState(pair.second.first, pair.second.second, 0);
         Vector3D startPosition = pair.second.first;
         Vector3D endPosition = mobile.getTargetPosition();
 
         ArrayList<Pair<Vector3D, Double>> path = new ArrayList<>();
 
-        Vector3D u = endPosition;
-        path.add(new Pair<>(u, dist.get(u)));
-        while (!u.equals(startPosition)) {
-            u = prev.get(u);
-            path.add(0, new Pair<>(u, dist.get(u)));
+        AStarState current = endState;
+        path.add(new Pair<>(current.position, current.time));
+        while (!current.equals(startState)) {
+            current = prev.get(current);
+            path.add(0, new Pair<>(current.position, current.time));
         }
 
         if (!pair.first.first.equals(startPosition)) {
@@ -205,7 +227,7 @@ public class WHCAStar extends PathFinder {
 
         // reserve path in table
         for (int i = path.size() - 1; i >= 0; i--) {
-            u = path.get(i).first;
+            Vector3D u = path.get(i).first;
             double timeU = path.get(i).second;
             if (i < path.size() - 1) {
                 Vector3D v = path.get(i + 1).first;
@@ -233,6 +255,34 @@ public class WHCAStar extends PathFinder {
         }
 
         mobile.setPath(time, path);
+    }
+
+    class AStarState {
+        Vector3D position;
+        double time, h;
+
+        public AStarState(Vector3D position, double time, double h) {
+            this.position = position;
+            this.time = time;
+            this.h = h;
+        }
+
+        public double getEstimate() {
+            return this.time + this.h;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AStarState that = (AStarState) o;
+            return Double.compare(that.time, this.time) == 0 && this.position.equals(that.position);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.position.getX(), this.position.getY(), this.position.getZ(), this.time);
+        }
     }
 
 }

@@ -28,7 +28,7 @@ public class DockEdgeCondition extends Condition {
     }
 
     @Override
-    public boolean satisfied(double time, Mobile mobile) {
+    public boolean satisfied(Mobile mobile) {
         Vector3D dockPosition = this.dock.getPosition();
         Vector3D mobilePosition = mobile.getPosition(); // start of path
         Truck truck = this.dock.getTruck();

@@ -92,6 +92,8 @@ public abstract class PathFinder {
                 Vector3D v = edge.to;
                 Vector2D w = edge.weight;
 
+                if (!this.graph.getEdge(v, u).canCross(mobile)) continue;
+
                 Vector2D otherDist = dist.get(u).add(w);
 
                 if (!dist.containsKey(v) || Vector2D.manhattanDistanceComparator.compare(otherDist, dist.get(v)) < 0) {
@@ -102,18 +104,7 @@ public abstract class PathFinder {
             }
         }
 
-        Vector3D startPosition = null;
-        for (Map.Entry<Vector3D, Vector2D> entry : dist.entrySet()) {
-            if (entry.getValue().getX() + entry.getValue().getY() <= 0) {
-                startPosition = entry.getKey();
-                break;
-            }
-        }
-
-        System.out.println("No path found in RRA* from " + endPosition + " to " + startPosition);
-        System.exit(0);
-
-        return new Vector2D(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        return null;
     }
 
 }

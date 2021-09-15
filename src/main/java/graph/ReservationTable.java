@@ -3,10 +3,7 @@ package graph;
 import util.DoublePrecisionConstraint;
 import util.Vector3D;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 
 public class ReservationTable {
 
@@ -39,6 +36,27 @@ public class ReservationTable {
         ReservationTable clone = new ReservationTable(this.constraints);
         for (Map.Entry<Vector3D, TreeSet<Reservation>> entry : this.reservations.entrySet()) {
             clone.reservations.put(entry.getKey(), new TreeSet<>(entry.getValue()));
+        }
+        return clone;
+    }
+
+    public ReservationTable clone(double time) {
+        double finalTime = time - timeMargin;
+        ReservationTable clone = new ReservationTable(this.constraints);
+        for (Map.Entry<Vector3D, TreeSet<Reservation>> entry : this.reservations.entrySet()) {
+            //TreeSet<Reservation> set = entry.getValue().stream().filter(r -> r.end > finalTime).collect(Collectors.toCollection(TreeSet::new));
+
+            TreeSet<Reservation> set = new TreeSet<>();
+            Iterator<Reservation> it = entry.getValue().descendingIterator();
+            while (it.hasNext()) {
+                Reservation reservation = it.next();
+                if (reservation.end > finalTime) {
+                    set.add(reservation);
+                } else break;
+            }
+            if (!set.isEmpty()) {
+                clone.reservations.put(entry.getKey(), set);
+            }
         }
         return clone;
     }

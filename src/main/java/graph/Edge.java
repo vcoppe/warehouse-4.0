@@ -41,8 +41,8 @@ public class Edge implements Comparable<Edge> {
         this.condition.add(condition);
     }
 
-    public boolean canCross(double time, Mobile mobile) {
-        return this.condition.satisfied(time, mobile);
+    public boolean canCross(Mobile mobile) {
+        return this.condition.satisfied(mobile);
     }
 
 }

@@ -62,7 +62,6 @@ public class ODID extends PathFinder {
                 System.out.println("ODID: No greedy path found.");
                 System.exit(0);
             }
-
             this.setAndCheckPaths(time, node, group, avoidanceTable);
         }
 
@@ -220,7 +219,7 @@ public class ODID extends PathFinder {
                 Vector3D positionV = edge.to;
                 Vector2D w = edge.weight;
 
-                if (!edge.canCross(timeU, mobile)) {
+                if (!edge.canCross(mobile)) {
                     if (debug) System.out.println("cannot cross edge to pos " + positionV);
                     continue;
                 }
@@ -552,18 +551,25 @@ public class ODID extends PathFinder {
 
         HashMap<Integer, Pair<Vector3D, Double>> positions;
         ReservationTable table;
-        int hash, mobileId;
+        int hash, mobileId, nextMobileId;
 
         public ODIDState(HashMap<Integer, Pair<Vector3D, Double>> positions, ReservationTable table) {
             this.positions = positions;
             this.table = table;
             this.hash = -1;
+            this.mobileId = -1;
+            this.nextMobileId = -1;
 
             double minTime = Double.MAX_VALUE;
             for (Map.Entry<Integer, Pair<Vector3D, Double>> entry : this.positions.entrySet()) {
-                if (!entry.getValue().first.equals(ODID.map.get(entry.getKey()).getTargetPosition()) && entry.getValue().second < minTime) {
-                    minTime = entry.getValue().second;
-                    this.mobileId = entry.getKey();
+                if (!entry.getValue().first.equals(ODID.map.get(entry.getKey()).getTargetPosition())) {
+                    if (entry.getValue().second < minTime) {
+                        minTime = entry.getValue().second;
+                        this.nextMobileId = this.mobileId;
+                        this.mobileId = entry.getKey();
+                    } else if (entry.getValue().second == minTime) {
+                        this.nextMobileId = entry.getKey();
+                    }
                 }
             }
         }
@@ -572,7 +578,10 @@ public class ODID extends PathFinder {
             HashMap<Integer, Pair<Vector3D, Double>> positions = new HashMap<>(this.positions);
             positions.put(mobileId, position);
 
-            ReservationTable table = this.table.clone();
+            double nextTime = position.second;
+            if (this.nextMobileId != -1) nextTime = Math.min(nextTime, this.positions.get(this.nextMobileId).second);
+
+            ReservationTable table = this.table.clone(nextTime);
             if (target) table.reserve(position.first, position.second, position.second + END_MARGIN, mobileId);
             else table.reserve(position.first, position.second, mobileId);
 
