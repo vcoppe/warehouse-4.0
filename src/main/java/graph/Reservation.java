@@ -17,6 +17,10 @@ public class Reservation implements Comparable<Reservation> {
         this.mobileId = id;
     }
 
+    public boolean conflicts(Reservation other) {
+        return this.mobileId != other.mobileId && this.start < other.end && this.end > other.start;
+    }
+
     @Override
     public int compareTo(Reservation other) {
         if (this.start == other.start) {
