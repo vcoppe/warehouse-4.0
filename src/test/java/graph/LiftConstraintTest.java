@@ -28,8 +28,6 @@ public class LiftConstraintTest extends TestCase {
         this.reservationTable.addGraphConstraint(constraint);
 
         assertTrue(this.reservationTable.isAvailable(this.positions[0], 0, 1, 0));
-        assertEquals(0.0, this.reservationTable.nextAvailability(this.positions[0], 0, 1, 0));
-        assertEquals(0.0, this.reservationTable.nextAvailability(this.positions[0], 0, 1, 1));
 
         this.reservationTable.reserve(this.positions[0], 0, 1, 0);
 
@@ -38,10 +36,7 @@ public class LiftConstraintTest extends TestCase {
         assertFalse(this.reservationTable.isAvailable(this.positions[0], 0, 1, 1));
         assertFalse(this.reservationTable.isAvailable(this.positions[1], 0, 1, 1));
 
-        assertEquals(0.0, this.reservationTable.nextAvailability(this.positions[0], 0, 1, 0));
-
         for (int i = 0; i < this.positions.length; i++) {
-            assertEquals(1 + i * Lift.speed + 2 * ReservationTable.timeMargin, this.reservationTable.nextAvailability(this.positions[i], 0, 1, 1));
             assertFalse(this.reservationTable.isAvailable(this.positions[i], -100, -i * Lift.speed - 2 * ReservationTable.timeMargin + 1, 1));
             assertTrue(this.reservationTable.isAvailable(this.positions[i], -100, -i * Lift.speed - 2 * ReservationTable.timeMargin, 1));
         }

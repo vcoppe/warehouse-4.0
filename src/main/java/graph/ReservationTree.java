@@ -7,6 +7,42 @@ public class ReservationTree {
 
     private Node root;
 
+    public ReservationTree() {
+    }
+
+    private ReservationTree(Node root) {
+        this.root = root;
+    }
+
+    private static boolean isAvailable(Node node, Reservation reservation) {
+        if (node == null) {
+            return true;
+        }
+
+        if (reservation.conflicts(node.reservation)) {
+            return false;
+        }
+
+        if (node.left != null && node.left.max > reservation.start) {
+            if (!isAvailable(node.left, reservation)) {
+                return false;
+            }
+        }
+
+        if (node.right != null && node.max > reservation.start && node.reservation.start < reservation.end) {
+            return isAvailable(node.right, reservation);
+        }
+
+        return true;
+    }
+
+    public ReservationTree clone() {
+        if (this.root == null) {
+            return null;
+        }
+        return new ReservationTree(this.root.clone());
+    }
+
     private static Node insert(Node node, Reservation reservation) {
         if (node == null) {
             node = new Node(reservation);
@@ -92,27 +128,8 @@ public class ReservationTree {
         return node.max;
     }
 
-    private static Reservation firstConflict(Node node, Reservation reservation) {
-        if (node == null) {
-            return null;
-        }
-
-        if (node.left != null && node.left.max > reservation.start) {
-            Reservation conflict = firstConflict(node.left, reservation);
-            if (conflict != null) {
-                return conflict;
-            }
-        }
-
-        if (reservation.conflicts(node.reservation)) {
-            return node.reservation;
-        }
-
-        if (node.right != null && node.max > reservation.start && node.reservation.start < reservation.end) {
-            return firstConflict(node.right, reservation);
-        }
-
-        return null;
+    public void insert(Reservation reservation) {
+        this.root = insert(this.root, reservation);
     }
 
     private static void allConflicts(Node node, Reservation reservation, ArrayList<Reservation> result) {
@@ -151,12 +168,8 @@ public class ReservationTree {
         }
     }
 
-    public void insert(Reservation reservation) {
-        this.root = insert(this.root, reservation);
-    }
-
-    public Reservation firstConflict(Reservation reservation) {
-        return firstConflict(this.root, reservation);
+    public boolean isAvailable(Reservation reservation) {
+        return isAvailable(this.root, reservation);
     }
 
     public ArrayList<Reservation> allConflicts(Reservation reservation) {
@@ -174,13 +187,27 @@ public class ReservationTree {
     static class Node {
         Node left, right;
         Reservation reservation;
-        double max;
         int height;
+        double max;
 
         public Node(Reservation reservation) {
             this.reservation = reservation;
-            this.max = reservation.end;
             this.height = 1;
+            this.max = reservation.end;
+        }
+
+        private Node(Reservation reservation, Node left, Node right, int height, double max) {
+            this.reservation = reservation;
+            this.left = left;
+            this.right = right;
+            this.height = height;
+            this.max = max;
+        }
+
+        public Node clone() {
+            Node left = this.left != null ? this.left.clone() : null;
+            Node right = this.right != null ? this.right.clone() : null;
+            return new Node(this.reservation, left, right, this.height, this.max);
         }
     }
 

@@ -21,24 +21,19 @@ public class ReservationTreeTest extends TestCase {
     }
 
     public void testFirstConflicts() {
-        Reservation r1 = new Reservation(position, 0, 10, 0);
+        this.tree.insert(new Reservation(position, 0, 10, 0));
+        this.tree.insert(new Reservation(position, 20, 30, 0));
+        this.tree.insert(new Reservation(position, 40, 50, 0));
 
-        this.tree.insert(r1);
+        assertTrue(this.tree.isAvailable(new Reservation(position, -10, 60, 0)));
 
-        assertNull(this.tree.firstConflict(new Reservation(position, 10, 20, 1)));
-        assertEquals(r1, this.tree.firstConflict(new Reservation(position, 2, 8, 1)));
-
-        this.tree.insert(new Reservation(position, 0, 20, 0));
-        this.tree.insert(new Reservation(position, 10, 20, 0));
-
-        Reservation r2 = new Reservation(position, -20, -10, 0);
-        Reservation r3 = new Reservation(position, -15, 20, 0);
-
-        this.tree.insert(r2);
-        this.tree.insert(r3);
-
-        assertEquals(r2, this.tree.firstConflict(new Reservation(position, -15, -5, 1)));
-        assertEquals(r3, this.tree.firstConflict(new Reservation(position, -10, 10, 1)));
+        assertTrue(this.tree.isAvailable(new Reservation(position, -10, 0, 1)));
+        assertFalse(this.tree.isAvailable(new Reservation(position, 0, 10, 1)));
+        assertTrue(this.tree.isAvailable(new Reservation(position, 10, 20, 1)));
+        assertFalse(this.tree.isAvailable(new Reservation(position, 20, 30, 1)));
+        assertTrue(this.tree.isAvailable(new Reservation(position, 30, 40, 1)));
+        assertFalse(this.tree.isAvailable(new Reservation(position, 40, 50, 1)));
+        assertTrue(this.tree.isAvailable(new Reservation(position, 50, 60, 1)));
     }
 
     public void testAllConflicts() {

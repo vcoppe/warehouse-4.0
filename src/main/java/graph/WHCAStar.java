@@ -15,7 +15,8 @@ public class WHCAStar extends PathFinder {
 
     private final Random random;
 
-    private boolean debug = true, noPath;
+    private final boolean debug = true;
+    private boolean noPath;
 
     public WHCAStar(Graph graph) {
         super(graph);
@@ -48,7 +49,9 @@ public class WHCAStar extends PathFinder {
                 }
             }
 
-            ArrayList<Mobile> orderedMobiles = this.orderMobiles(time, mobiles);
+            ArrayList<Mobile> orderedMobiles;
+            if (count == 0) orderedMobiles = this.heuristicOrderMobiles(time, mobiles);
+            else orderedMobiles = this.orderMobiles(time, mobiles);
 
             if (count == 50) noPath = true;
 
@@ -72,6 +75,25 @@ public class WHCAStar extends PathFinder {
 
             count++;
         }
+    }
+
+    private ArrayList<Mobile> heuristicOrderMobiles(double time, ArrayList<Mobile> mobiles) {
+        ArrayList<Mobile> staticMobiles = new ArrayList<>();
+        ArrayList<Mobile> otherMobiles = new ArrayList<>();
+
+        for (Mobile mobile : mobiles) {
+            if (mobile.getPositionAt(time).equals(mobile.getTargetPosition())) {
+                staticMobiles.add(mobile);
+            } else {
+                otherMobiles.add(mobile);
+            }
+        }
+
+        otherMobiles.sort(Comparator.comparing(m -> m.getCurrentPosition().manhattanDistance2D(m.getTargetPosition())));
+
+        staticMobiles.addAll(otherMobiles); // first plan static mobiles
+
+        return staticMobiles;
     }
 
     private ArrayList<Mobile> orderMobiles(double time, ArrayList<Mobile> mobiles) {
