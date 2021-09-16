@@ -7,15 +7,13 @@ import util.Vector3D;
 
 public class Mission {
 
-    private final Vector3D startPosition;
-
     private static int MISSION_ID = 0;
     private final int id;
     private final double initTime;
     private final Pallet pallet;
     private final Truck startTruck;
     private final Truck endTruck;
-    private final Vector3D endPosition;
+    private Vector3D startPosition, endPosition;
 
     public Mission(double initTime, Pallet pallet, Truck startTruck, Truck endTruck, Vector3D startPosition, Vector3D endPosition) {
         this.id = MISSION_ID++;
@@ -36,6 +34,10 @@ public class Mission {
 
     public Mission(double initTime, Pallet pallet, Vector3D startPosition, Vector3D endPosition) {
         this(initTime, pallet, null, null, startPosition, endPosition);
+    }
+
+    public void setStartPosition(Vector3D position) {
+        this.startPosition = position;
     }
 
     public Vector3D getStartPosition() {
@@ -60,6 +62,10 @@ public class Mission {
 
     public Truck getEndTruck() {
         return this.endTruck;
+    }
+
+    public void setEndPosition(Vector3D position) {
+        this.endPosition = position;
     }
 
     public Vector3D getEndPosition() {

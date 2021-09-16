@@ -118,8 +118,12 @@ public class Controller extends Observable {
         return this.missions;
     }
 
-    public ArrayList<Mission> getStartableMissions() {
-        return this.missions.stream().filter(Mission::canStart).collect(Collectors.toCollection(ArrayList::new));
+    public ArrayList<Mission> getIncompleteStartableMissions() {
+        return this.missions.stream().filter(m -> (m.getStartPosition() == null || m.getEndPosition() == null) && m.canStart()).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public ArrayList<Mission> getCompleteStartableMissions() {
+        return this.missions.stream().filter(m -> m.getStartPosition() != null && m.getEndPosition() != null && m.canStart()).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public void add(Mission mission) {

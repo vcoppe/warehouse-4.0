@@ -2,7 +2,6 @@ package event;
 
 import agent.Controller;
 import agent.Dock;
-import agent.Stock;
 import agent.Truck;
 import simulation.Event;
 import simulation.Simulation;
@@ -16,14 +15,12 @@ import java.util.HashMap;
 public class TruckDockEvent extends Event {
 
     private final Controller controller;
-    private final Stock stock;
     private final Truck truck;
     private final Dock dock;
 
     public TruckDockEvent(Simulation simulation, double time, Controller controller, Dock dock, Truck truck) {
         super(simulation, time);
         this.controller = controller;
-        this.stock = controller.getStock();
         this.dock = dock;
         this.truck = truck;
     }
@@ -50,17 +47,9 @@ public class TruckDockEvent extends Event {
             Pallet pallet = toUnload.get(palletPosition);
 
             Vector3D startPosition = this.truck.getPosition().add(palletPosition);
-            Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock);
 
-            // TODO check for unaccessible free locations
-            if (endPosition == null) {
-                this.simulation.logger.warning("FAILURE! Warehouse is full, cannot handle more pallets.");
-                return;
-            }
-
-            Mission mission = new Mission(this.time, pallet, this.truck, null, startPosition, endPosition);
+            Mission mission = new Mission(this.time, pallet, this.truck, null, startPosition, null);
             this.controller.add(mission);
-            this.stock.lock(endPosition);
 
             unloadMissions.put(palletPosition, mission);
         }
@@ -103,17 +92,9 @@ public class TruckDockEvent extends Event {
             Pallet pallet = toLoad.get(palletPosition);
 
             Vector3D endPosition = this.truck.getPosition().add(palletPosition);
-            Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
 
-            // TODO check for unaccessible pallets
-            if (startPosition == null) {
-                this.simulation.logger.warning("FAILURE! Missing pallets to load truck.");
-                return;
-            }
-
-            Mission mission = new Mission(this.time, pallet, null, this.truck, startPosition, endPosition);
+            Mission mission = new Mission(this.time, pallet, null, this.truck, null, endPosition);
             this.controller.add(mission);
-            this.stock.lock(startPosition);
 
             for (Mission unloadMission : unloadMissions.values()) {
                 mission.addStartCondition(new MissionPickedUpCondition(unloadMission));

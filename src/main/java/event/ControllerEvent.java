@@ -14,10 +14,12 @@ import java.util.stream.Collectors;
 public class ControllerEvent extends Event {
 
     private final Controller controller;
+    private final Stock stock;
 
     public ControllerEvent(Simulation simulation, double time, Controller controller) {
         super(simulation, time, Integer.MAX_VALUE-1); // set large id to have ControllerEvents at the end of each timestep
         this.controller = controller;
+        this.stock = controller.getStock();
     }
 
     @Override
@@ -30,14 +32,35 @@ public class ControllerEvent extends Event {
                         this.controller.getDocks().size(),
                         this.controller.getTrucks().size()));
 
+        // get incomplete startable missions and try to complete them
+        for (Mission mission : this.controller.getIncompleteStartableMissions()) {
+            if (mission.getStartPosition() == null) { // load mission
+                Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(mission.getPallet(), mission.getEndPosition(), this.stock);
+
+                // TODO check for unaccessible pallets
+                if (startPosition == null) continue;
+
+                mission.setStartPosition(startPosition);
+                this.stock.lock(startPosition);
+            } else { // unload mission
+                Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(mission.getPallet(), mission.getStartPosition(), this.stock);
+
+                // TODO check for unaccessible free locations
+                if (endPosition == null) continue;
+
+                mission.setEndPosition(endPosition);
+                this.stock.lock(endPosition);
+            }
+        }
+
         // match available mobiles with waiting missions
-        ArrayList<Pair<Mobile,Mission>> mobileMissionPairs = this.controller.mobileMissionSelector.matchMobileMission(
+        ArrayList<Pair<Mobile, Mission>> mobileMissionPairs = this.controller.mobileMissionSelector.matchMobileMission(
                 this.time,
                 this.controller.getAvailableMobiles(),
-                this.controller.getStartableMissions()
+                this.controller.getCompleteStartableMissions()
         );
 
-        for (Pair<Mobile,Mission> pair : mobileMissionPairs) {
+        for (Pair<Mobile, Mission> pair : mobileMissionPairs) {
             Mobile mobile = pair.first;
             Mission mission = pair.second;
 
