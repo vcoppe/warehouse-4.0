@@ -35,7 +35,7 @@ public class ControllerEvent extends Event {
         // get incomplete startable missions and try to complete them
         for (Mission mission : this.controller.getIncompleteStartableMissions()) {
             if (mission.getStartPosition() == null) { // load mission
-                Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(mission.getPallet(), mission.getEndPosition(), this.stock);
+                Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(mission.getPallet(), mission.getEndPosition(), this.stock.getStartPositions(mission.getPallet()));
 
                 // TODO check for unaccessible pallets
                 if (startPosition == null) continue;
@@ -43,7 +43,7 @@ public class ControllerEvent extends Event {
                 mission.setStartPosition(startPosition);
                 this.stock.lock(startPosition);
             } else { // unload mission
-                Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(mission.getPallet(), mission.getStartPosition(), this.stock);
+                Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(mission.getPallet(), mission.getStartPosition(), this.stock.getEndPositions(mission.getPallet()));
 
                 // TODO check for unaccessible free locations
                 if (endPosition == null) continue;

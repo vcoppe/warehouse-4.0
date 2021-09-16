@@ -47,7 +47,7 @@ public class ProductionEndEvent extends Event {
 
                 this.stock.add(startPosition, pallet);
 
-                Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock);
+                Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock.getEndPositions(pallet));
 
                 if (endPosition == null) {
                     this.simulation.logger.warning("FAILURE! Warehouse is full, cannot handle more pallets.");

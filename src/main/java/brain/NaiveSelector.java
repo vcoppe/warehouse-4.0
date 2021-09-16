@@ -2,7 +2,6 @@ package brain;
 
 import agent.Dock;
 import agent.Mobile;
-import agent.Stock;
 import agent.Truck;
 import util.Pair;
 import util.Vector3D;
@@ -23,13 +22,13 @@ public class NaiveSelector implements MobileMissionSelector, PalletPositionSelec
     }
 
     @Override
-    public Vector3D selectStartPosition(Pallet pallet, Vector3D endPosition, Stock stock) {
-        return stock.getStartPositions(pallet).get(0);
+    public Vector3D selectStartPosition(Pallet pallet, Vector3D endPosition, ArrayList<Vector3D> positions) {
+        return positions.get(0);
     }
 
     @Override
-    public Vector3D selectEndPosition(Pallet pallet, Vector3D startPosition, Stock stock) {
-        return stock.getEndPositions(pallet).get(0);
+    public Vector3D selectEndPosition(Pallet pallet, Vector3D startPosition, ArrayList<Vector3D> positions) {
+        return positions.get(0);
     }
 
     @Override

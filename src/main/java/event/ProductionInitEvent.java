@@ -45,7 +45,7 @@ public class ProductionInitEvent extends Event {
                     return;
                 }
 
-                Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock);
+                Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock.getStartPositions(pallet));
 
                 if (startPosition == null) {
                     this.simulation.logger.warning("FAILURE! Missing pallets to launch production.");
