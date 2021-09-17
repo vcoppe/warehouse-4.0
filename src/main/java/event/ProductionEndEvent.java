@@ -47,16 +47,8 @@ public class ProductionEndEvent extends Event {
 
                 this.stock.add(startPosition, pallet);
 
-                Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(pallet, startPosition, this.stock.getEndPositions(pallet));
-
-                if (endPosition == null) {
-                    this.simulation.logger.warning("FAILURE! Warehouse is full, cannot handle more pallets.");
-                    return;
-                }
-
-                Mission mission = new Mission(this.time, pallet, startPosition, endPosition);
+                Mission mission = new Mission(this.time, pallet, startPosition, null);
                 this.controller.add(mission);
-                this.stock.lock(endPosition);
             }
         }
 
