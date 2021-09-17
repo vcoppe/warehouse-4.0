@@ -6,6 +6,7 @@ import util.DoublePrecisionConstraint;
 import util.Pair;
 import util.Vector2D;
 import util.Vector3D;
+import warehouse.Configuration;
 
 import java.util.*;
 
@@ -169,8 +170,6 @@ public class WHCAStar extends PathFinder {
                 return true;
             }
 
-            double minDist = distU + 1;
-
             for (Edge edge : this.graph.getEdges(u)) {
                 Vector3D v = edge.to;
                 Vector2D w = edge.weight;
@@ -184,7 +183,6 @@ public class WHCAStar extends PathFinder {
 
                 double edgeDist = DoublePrecisionConstraint.round(w.getX() * mobile.getSpeed() + w.getY() * Lift.speed);
                 double otherDist = DoublePrecisionConstraint.round(distU + edgeDist);
-                minDist = Math.min(minDist, otherDist);
 
                 if (otherDist < time + H) { // check for collisions only within the time window
                     if (!this.table.isAvailable(v, otherDist, mobile.getId())) { // position already occupied at that time
@@ -192,7 +190,7 @@ public class WHCAStar extends PathFinder {
                     }
                 }
 
-                AStarCost costV = new AStarCost(otherDist, costU.movingTime + edgeDist);
+                AStarCost costV = new AStarCost(otherDist, costU.moves + 1);
                 AStarState next = new AStarState(v, costV, 0);
 
                 if (!dist.containsKey(next) || costV.compareTo(dist.get(next)) < 0) {
@@ -205,9 +203,11 @@ public class WHCAStar extends PathFinder {
                 }
             }
 
+            double distWaitU = DoublePrecisionConstraint.round(distU + mobile.getSpeed() * Configuration.palletSize);
+
             // wait move
-            if (distU >= time + H || this.table.isAvailable(u, distU, minDist, mobile.getId())) { // check for collisions only within the time window
-                AStarCost costWaitU = new AStarCost(minDist, costU.movingTime);
+            if (distU >= time + H || this.table.isAvailable(u, distU, distWaitU, mobile.getId())) { // check for collisions only within the time window
+                AStarCost costWaitU = new AStarCost(distWaitU, costU.moves);
                 AStarState next = new AStarState(u, costWaitU, state.h);
 
                 if (!dist.containsKey(next) || costWaitU.compareTo(dist.get(next)) < 0) {
@@ -310,17 +310,18 @@ public class WHCAStar extends PathFinder {
 
     class AStarCost implements Comparable<AStarCost> {
 
-        double time, movingTime;
+        double time;
+        int moves;
 
-        public AStarCost(double time, double movingTime) {
+        public AStarCost(double time, int moves) {
             this.time = time;
-            this.movingTime = movingTime;
+            this.moves = moves;
         }
 
         @Override
         public int compareTo(AStarCost other) {
             if (this.time == other.time) {
-                return Double.compare(this.movingTime, other.movingTime);
+                return this.moves - other.moves;
             }
             return Double.compare(this.time, other.time);
         }
