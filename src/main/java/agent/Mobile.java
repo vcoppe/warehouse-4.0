@@ -13,7 +13,7 @@ public class Mobile extends Observable {
 
     private static int MOBILE_ID = 0;
     private final int id;
-    private final double speed; // in second per distance unit
+    private static final double speed = 0.05; // in second per distance unit
     private Vector3D position, targetPosition;
     private double pathTime;
     private Mission mission;
@@ -26,15 +26,14 @@ public class Mobile extends Observable {
         this.position = position;
         this.targetPosition = position;
         this.mission = null;
-        this.speed = DoublePrecisionConstraint.round(0.05 + 0.01 * random.nextInt(3));
     }
 
     public int getId() {
         return this.id;
     }
 
-    public double getSpeed() {
-        return this.speed;
+    public static double getSpeed() {
+        return speed;
     }
 
     public boolean isAvailable() {
@@ -51,6 +50,14 @@ public class Mobile extends Observable {
 
     public ArrayList<Pair<Vector3D, Double>> getPath() {
         return this.path;
+    }
+
+    public double getPathEndTime() {
+        if (this.path == null || this.path.isEmpty()) {
+            return this.pathTime;
+        }
+
+        return this.path.get(this.path.size() - 1).second;
     }
 
     public double getPathTime() {
@@ -222,4 +229,5 @@ public class Mobile extends Observable {
             System.out.println(pair.first + " " + pair.second);
         }*/
     }
+
 }

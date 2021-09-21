@@ -28,6 +28,7 @@ public class MobileMissionStartEvent extends Event {
                         this.mission.getId()));
 
         this.mobile.start(this.mission);
+        this.mission.setExpectedStartTime(this.time);
 
         PathFinderEvent.enqueue(this.simulation, this.time, this.controller);
     }

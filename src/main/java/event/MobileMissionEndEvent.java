@@ -4,6 +4,7 @@ import agent.Controller;
 import agent.Mobile;
 import agent.Stock;
 import agent.Truck;
+import scheduling.TimeEstimationPropagator;
 import simulation.Event;
 import simulation.Simulation;
 import warehouse.Mission;
@@ -11,6 +12,7 @@ import warehouse.Mission;
 public class MobileMissionEndEvent extends Event {
 
     private final Controller controller;
+    private final TimeEstimationPropagator timeEstimationPropagator;
     private final Stock stock;
     private final Mobile mobile;
     private final Mission mission;
@@ -18,6 +20,7 @@ public class MobileMissionEndEvent extends Event {
     public MobileMissionEndEvent(Simulation simulation, double time, Controller controller, Mobile mobile) {
         super(simulation, time);
         this.controller = controller;
+        this.timeEstimationPropagator = controller.timeEstimationPropagator;
         this.stock = controller.getStock();
         this.mobile = mobile;
         this.mission = mobile.getMission();
@@ -33,6 +36,7 @@ public class MobileMissionEndEvent extends Event {
 
         this.mobile.drop();
         this.controller.add(this.mobile);
+        this.timeEstimationPropagator.remove(mission);
 
         // tell truck or stock that pallet has arrived at position
         if (this.mission.getEndTruck() != null) {

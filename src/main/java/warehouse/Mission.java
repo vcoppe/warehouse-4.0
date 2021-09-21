@@ -1,8 +1,8 @@
 package warehouse;
 
 import agent.Truck;
-import util.Condition;
-import util.ConjunctionCondition;
+import scheduling.ConjunctionConstraint;
+import scheduling.PrecedenceConstraint;
 import util.Vector3D;
 
 public class Mission {
@@ -13,24 +13,27 @@ public class Mission {
     private final Pallet pallet;
     private final Truck startTruck;
     private final Truck endTruck;
+    private final ConjunctionConstraint startConstraint, pickupConstraint, dropConstraint;
     private Vector3D startPosition, endPosition;
+    private double expectedStartTime, expectedPickUpTime, expectedEndTime;
+    private Status status;
 
     public Mission(double initTime, Pallet pallet, Truck startTruck, Truck endTruck, Vector3D startPosition, Vector3D endPosition) {
         this.id = MISSION_ID++;
         this.initTime = initTime;
+        this.expectedStartTime = Double.MAX_VALUE;
+        this.expectedPickUpTime = Double.MAX_VALUE;
+        this.expectedEndTime = Double.MAX_VALUE;
         this.pallet = pallet;
         this.startTruck = startTruck;
         this.endTruck = endTruck;
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.status = Status.WAITING;
-        this.startCondition = new ConjunctionCondition();
-        this.pickupCondition = new ConjunctionCondition();
-        this.dropCondition = new ConjunctionCondition();
+        this.startConstraint = new ConjunctionConstraint();
+        this.pickupConstraint = new ConjunctionConstraint();
+        this.dropConstraint = new ConjunctionConstraint();
     }
-
-    private Status status;
-    private final ConjunctionCondition startCondition, pickupCondition, dropCondition;
 
     public Mission(double initTime, Pallet pallet, Vector3D startPosition, Vector3D endPosition) {
         this(initTime, pallet, null, null, startPosition, endPosition);
@@ -50,6 +53,30 @@ public class Mission {
 
     public double getInitTime() {
         return this.initTime;
+    }
+
+    public double getExpectedStartTime() {
+        return this.expectedStartTime;
+    }
+
+    public void setExpectedStartTime(double expectedStartTime) {
+        this.expectedStartTime = expectedStartTime;
+    }
+
+    public double getExpectedPickUpTime() {
+        return this.expectedPickUpTime;
+    }
+
+    public void setExpectedPickUpTime(double expectedPickUpTime) {
+        this.expectedPickUpTime = expectedPickUpTime;
+    }
+
+    public double getExpectedEndTime() {
+        return this.expectedEndTime;
+    }
+
+    public void setExpectedEndTime(double expectedEndTime) {
+        this.expectedEndTime = expectedEndTime;
     }
 
     public Pallet getPallet() {
@@ -72,10 +99,14 @@ public class Mission {
         return this.endPosition;
     }
 
+    public boolean isComplete() {
+        return this.startPosition != null && this.endPosition != null;
+    }
+
     private enum Status {WAITING, STARTED, CARRYING, DONE}
 
     public boolean canStart() {
-        return this.startCondition.satisfied();
+        return this.startConstraint.satisfied();
     }
 
     public void start() {
@@ -91,7 +122,7 @@ public class Mission {
     }
 
     public boolean canPickUp() {
-        return this.pickupCondition.satisfied();
+        return this.pickupConstraint.satisfied();
     }
 
     public boolean pickedUp() {
@@ -99,7 +130,7 @@ public class Mission {
     }
 
     public boolean canDrop() {
-        return this.dropCondition.satisfied();
+        return this.dropConstraint.satisfied();
     }
 
     public void drop() {
@@ -110,8 +141,20 @@ public class Mission {
         return this.status.ordinal() >= Status.DONE.ordinal();
     }
 
-    public void addStartCondition(Condition condition) {
-        this.startCondition.add(condition);
+    public void addStartConstraint(PrecedenceConstraint constraint) {
+        this.startConstraint.add(constraint);
+    }
+
+    public ConjunctionConstraint getStartConstraint() {
+        return this.startConstraint;
+    }
+
+    public ConjunctionConstraint getPickupConstraint() {
+        return this.pickupConstraint;
+    }
+
+    public ConjunctionConstraint getDropConstraint() {
+        return this.dropConstraint;
     }
 
 }

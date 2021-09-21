@@ -3,9 +3,13 @@ package event;
 import agent.Controller;
 import agent.Dock;
 import agent.Truck;
+import scheduling.DisjunctionConstraint;
+import scheduling.MissionDoneConstraint;
+import scheduling.MissionPickedUpConstraint;
+import scheduling.PrecedenceConstraint;
 import simulation.Event;
 import simulation.Simulation;
-import util.*;
+import util.Vector3D;
 import warehouse.Mission;
 import warehouse.Pallet;
 
@@ -62,25 +66,25 @@ public class TruckDockEvent extends Event {
                     Vector3D abovePosition = palletPosition.subtract(deltaY);
                     if (unloadMissions.containsKey(abovePosition)) {
                         Mission aboveMission = unloadMissions.get(abovePosition);
-                        mission.addStartCondition(new MissionPickedUpCondition(aboveMission));
+                        mission.addStartConstraint(new MissionPickedUpConstraint(aboveMission));
                     }
                 case SIDES:
-                    DisjunctionCondition startCondition = new DisjunctionCondition();
+                    DisjunctionConstraint startCondition = new DisjunctionConstraint();
                     Vector3D leftPosition = palletPosition.subtract(deltaX);
                     if (unloadMissions.containsKey(leftPosition)) {
                         Mission leftMission = unloadMissions.get(leftPosition);
-                        startCondition.add(new MissionPickedUpCondition(leftMission));
+                        startCondition.add(new MissionPickedUpConstraint(leftMission));
                     } else {
-                        startCondition.add(Condition.emptyCondition);
+                        startCondition.add(PrecedenceConstraint.emptyConstraint);
                     }
                     Vector3D rightPosition = palletPosition.add(deltaX);
                     if (unloadMissions.containsKey(rightPosition)) {
                         Mission rightMission = unloadMissions.get(rightPosition);
-                        startCondition.add(new MissionPickedUpCondition(rightMission));
+                        startCondition.add(new MissionPickedUpConstraint(rightMission));
                     } else {
-                        startCondition.add(Condition.emptyCondition);
+                        startCondition.add(PrecedenceConstraint.emptyConstraint);
                     }
-                    mission.addStartCondition(startCondition);
+                    mission.addStartConstraint(startCondition);
             }
         }
 
@@ -97,7 +101,7 @@ public class TruckDockEvent extends Event {
             this.controller.add(mission);
 
             for (Mission unloadMission : unloadMissions.values()) {
-                mission.addStartCondition(new MissionPickedUpCondition(unloadMission));
+                mission.addStartConstraint(new MissionPickedUpConstraint(unloadMission));
             }
 
             loadMissions.put(palletPosition, mission);
@@ -111,7 +115,7 @@ public class TruckDockEvent extends Event {
                     Vector3D belowPosition = palletPosition.add(deltaY);
                     if (loadMissions.containsKey(belowPosition)) {
                         Mission belowMission = loadMissions.get(belowPosition);
-                        mission.addStartCondition(new MissionDoneCondition(belowMission));
+                        mission.addStartConstraint(new MissionDoneConstraint(belowMission));
                     }
                 case SIDES:
                     Vector3D leftPosition = palletPosition.subtract(deltaX);
@@ -121,12 +125,12 @@ public class TruckDockEvent extends Event {
 
                     if (loadMissions.containsKey(leftPosition) && loadMissions.containsKey(leftPosition2)) {
                         Mission leftMission = loadMissions.get(leftPosition);
-                        mission.addStartCondition(new MissionDoneCondition(leftMission));
+                        mission.addStartConstraint(new MissionDoneConstraint(leftMission));
                     }
 
                     if (loadMissions.containsKey(rightPosition) && loadMissions.containsKey(rightPosition2)) {
                         Mission rightMission = loadMissions.get(rightPosition);
-                        mission.addStartCondition(new MissionDoneCondition(rightMission));
+                        mission.addStartConstraint(new MissionDoneConstraint(rightMission));
                     }
             }
         }

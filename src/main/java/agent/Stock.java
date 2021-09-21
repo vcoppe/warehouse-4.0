@@ -1,8 +1,8 @@
 package agent;
 
-import graph.AccessibilityChecker;
-import graph.Graph;
 import observer.Observable;
+import pathfinding.AccessibilityChecker;
+import pathfinding.Graph;
 import util.Vector3D;
 import warehouse.Pallet;
 import warehouse.Rule;

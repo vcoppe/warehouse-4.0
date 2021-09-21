@@ -2,10 +2,12 @@ package agent;
 
 import brain.MobileMissionSelector;
 import brain.PalletPositionSelector;
+import brain.TravelTimeEstimator;
 import brain.TruckDockSelector;
-import graph.PathFinder;
-import graph.WHCAStar;
 import observer.Observable;
+import pathfinding.PathFinder;
+import pathfinding.WHCAStar;
+import scheduling.TimeEstimationPropagator;
 import warehouse.Configuration;
 import warehouse.Mission;
 import warehouse.Warehouse;
@@ -18,6 +20,8 @@ public class Controller extends Observable {
     public final MobileMissionSelector mobileMissionSelector;
     public final TruckDockSelector truckDockSelector;
     public final PalletPositionSelector palletPositionSelector;
+    public final TravelTimeEstimator travelTimeEstimator;
+    public final TimeEstimationPropagator timeEstimationPropagator;
     private final Configuration configuration;
     private final Warehouse warehouse;
     private final Stock stock;
@@ -35,6 +39,8 @@ public class Controller extends Observable {
         this.mobileMissionSelector = mobileMissionSelector;
         this.truckDockSelector = truckDockSelector;
         this.palletPositionSelector = palletPositionSelector;
+        this.travelTimeEstimator = configuration.travelTimeEstimator;
+        this.timeEstimationPropagator = new TimeEstimationPropagator(this.travelTimeEstimator);
         this.configuration = configuration;
         this.warehouse = configuration.warehouse;
         this.stock = configuration.stock;
@@ -119,15 +125,16 @@ public class Controller extends Observable {
     }
 
     public ArrayList<Mission> getIncompleteStartableMissions() {
-        return this.missions.stream().filter(m -> (m.getStartPosition() == null || m.getEndPosition() == null) && m.canStart()).collect(Collectors.toCollection(ArrayList::new));
+        return this.missions.stream().filter(m -> !m.isComplete() && m.canStart()).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public ArrayList<Mission> getCompleteStartableMissions() {
-        return this.missions.stream().filter(m -> m.getStartPosition() != null && m.getEndPosition() != null && m.canStart()).collect(Collectors.toCollection(ArrayList::new));
+        return this.missions.stream().filter(m -> m.isComplete() && m.canStart()).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public void add(Mission mission) {
         this.missions.add(mission);
+        this.timeEstimationPropagator.add(mission);
         this.changed();
     }
 

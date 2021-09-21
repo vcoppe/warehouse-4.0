@@ -2,12 +2,8 @@ package warehouse;
 
 import agent.*;
 import brain.*;
-import graph.Edge;
-import graph.LiftConstraint;
-import graph.ZoneCapacityConstraint;
+import pathfinding.*;
 import simulation.Simulation;
-import util.DockEdgeCondition;
-import util.StockEdgeCondition;
 import util.Vector3D;
 
 import java.util.ArrayList;
@@ -26,6 +22,7 @@ public class Configuration {
     public final MobileMissionSelector mobileMissionSelector;
     public final PalletPositionSelector palletPositionSelector;
     public final TruckDockSelector truckDockSelector;
+    public final TravelTimeEstimator travelTimeEstimator;
 
     public static final int palletSize = 10;
     public int dockWidth = 3 * palletSize;
@@ -46,6 +43,7 @@ public class Configuration {
         this.mobileMissionSelector = new MobileMissionMatchingSelector(this.warehouse);
         this.palletPositionSelector = new ClosestPositionSelector(this.warehouse);
         this.truckDockSelector = new NaiveSelector();
+        this.travelTimeEstimator = new SimpleEstimator(this.warehouse);
 
         this.controller = new Controller(this, this.mobileMissionSelector, this.truckDockSelector, this.palletPositionSelector);
     }

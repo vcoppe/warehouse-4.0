@@ -2,25 +2,29 @@ package event;
 
 import agent.Controller;
 import agent.Mobile;
-import graph.PathFinder;
+import brain.TravelTimeEstimator;
+import pathfinding.PathFinder;
+import scheduling.TimeEstimationPropagator;
 import simulation.Event;
 import simulation.Simulation;
-import warehouse.Warehouse;
+import warehouse.Mission;
 
 public class PathFinderEvent extends Event {
 
     private static PathFinderEvent instance;
 
     private final Controller controller;
-    private final Warehouse warehouse;
     private final PathFinder pathFinder;
+    private final TravelTimeEstimator travelTimeEstimator;
+    private final TimeEstimationPropagator timeEstimationPropagator;
     private double lastEventTime;
 
     private PathFinderEvent(Simulation simulation, double time, Controller controller) {
         super(simulation, time, Integer.MAX_VALUE); // set large id to have PathFinderEvents at the end of each timestep
         this.controller = controller;
-        this.warehouse = controller.getWarehouse();
         this.pathFinder = controller.getPathFinder();
+        this.travelTimeEstimator = controller.travelTimeEstimator;
+        this.timeEstimationPropagator = controller.timeEstimationPropagator;
     }
 
     public static void enqueue(Simulation simulation, double time, Controller controller) {
@@ -63,6 +67,21 @@ public class PathFinderEvent extends Event {
         }
 
         this.pathFinder.computePaths(this.time, this.controller.getAllMobiles());
+
+        for (Mobile mobile : this.controller.getAllMobiles()) {
+            Mission mission = mobile.getMission();
+            if (mission != null) {
+                // set expected pickup time, or end time
+                if (mission.pickedUp()) {
+                    mission.setExpectedEndTime(mobile.getPathEndTime());
+                } else {
+                    mission.setExpectedPickUpTime(mobile.getPathEndTime());
+                }
+            }
+        }
+
+        // propagate estimations
+        this.timeEstimationPropagator.propagate();
 
         // update paths at the end of the window
         PathUpdateEvent.enqueue(this.simulation, this.pathFinder.getNextUpdateTime(), this.controller);

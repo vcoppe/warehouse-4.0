@@ -2,8 +2,8 @@ package warehouse;
 
 import agent.Lift;
 import agent.Mobile;
-import graph.Edge;
-import graph.Graph;
+import pathfinding.Edge;
+import pathfinding.Graph;
 import util.DoublePrecisionConstraint;
 import util.Vector2D;
 import util.Vector3D;

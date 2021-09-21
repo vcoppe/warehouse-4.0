@@ -1,7 +1,7 @@
 package brain;
 
 import agent.Mobile;
-import graph.HungarianAlgorithm;
+import pathfinding.HungarianAlgorithm;
 import util.Pair;
 import util.Vector3D;
 import warehouse.Mission;
