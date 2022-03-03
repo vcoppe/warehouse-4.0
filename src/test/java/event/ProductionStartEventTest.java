@@ -36,7 +36,7 @@ public class ProductionStartEventTest extends TestCase {
             out.add(new Pair<>(new Pallet(3 + i), 1));
         }
 
-        this.production = new Production(in, out, 10, 1, 250);
+        this.production = new Production(this.productionLine, in, out, 10, 1, 250);
         this.productionLine.add(this.production);
         this.event = new ProductionStartEvent(this.configuration.simulation, 1, this.configuration.controller, this.productionLine, this.production);
     }

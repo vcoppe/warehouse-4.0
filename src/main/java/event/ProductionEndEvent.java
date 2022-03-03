@@ -55,8 +55,7 @@ public class ProductionEndEvent extends Event {
 
         this.productionLine.freeCapacity(this.production.getCapacity());
 
-        Event event = new ControllerEvent(this.simulation, this.time, this.controller);
-        this.simulation.enqueueEvent(event);
+        this.simulation.enqueueEvent(new ControllerEvent(this.simulation, this.time, this.controller));
     }
 
 }

@@ -36,7 +36,7 @@ public class ProductionEndEventTest extends TestCase {
             this.stock.add(new Vector3D(0, i * Configuration.palletSize), Pallet.FREE);
         }
 
-        this.production = new Production(in, out, 10, 1, 250);
+        this.production = new Production(this.productionLine, in, out, 10, 1, 250);
         this.productionLine.reserveCapacity(this.production.getCapacity());
         this.event = new ProductionEndEvent(this.configuration.simulation, 1, this.configuration.controller, this.productionLine, this.production);
     }

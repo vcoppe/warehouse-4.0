@@ -70,15 +70,10 @@ public class ProductionGeneratorEvent extends Event {
             out.add(new Pair<>(new Pallet(entry.getKey()), entry.getValue()));
         }
 
-        this.simulation.enqueueEvent(
-                new ProductionInitEvent(
-                        this.simulation,
-                        this.time,
-                        this.controller,
-                        this.productionLine,
-                        new Production(in, out, 20 + random.nextInt(50), 1, this.time + 100)
-                )
-        );
+        this.controller.add(new Production(this.productionLine, in, out, 20 + random.nextInt(50), 1, this.time + 100));
+
+        this.simulation.enqueueEvent(new ControllerEvent(this.simulation, this.time, this.controller));
+
         this.simulation.enqueueEvent(new ProductionGeneratorEvent(
                 this.simulation,
                 this.time + 200 + random.nextInt(200),

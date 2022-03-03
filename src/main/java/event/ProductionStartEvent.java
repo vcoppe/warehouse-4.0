@@ -53,7 +53,7 @@ public class ProductionStartEvent extends Event {
             }
         }
 
-        double endTime = this.time + this.production.getTime();
+        double endTime = this.time + this.production.getDuration();
         Event event = new ProductionEndEvent(this.simulation, endTime, this.controller, this.productionLine, this.production);
         this.simulation.enqueueEvent(event);
     }

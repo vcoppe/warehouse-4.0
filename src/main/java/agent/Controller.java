@@ -10,6 +10,7 @@ import pathfinding.WHCAStar;
 import scheduling.TimeEstimationPropagator;
 import warehouse.Configuration;
 import warehouse.Mission;
+import warehouse.Production;
 import warehouse.Warehouse;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class Controller extends Observable {
     private final ArrayList<Mobile> allMobiles;
     private final ArrayList<Mobile> availableMobiles;
     private final ArrayList<Mission> missions;
+    private final ArrayList<Production> productions;
 
     public Controller(Configuration configuration, MobileMissionSelector mobileMissionSelector, TruckDockSelector truckDockSelector, PalletPositionSelector palletPositionSelector) {
         super();
@@ -52,6 +54,7 @@ public class Controller extends Observable {
         this.availableMobiles = new ArrayList<>(configuration.mobiles);
         this.trucks = new ArrayList<>();
         this.missions = new ArrayList<>();
+        this.productions = new ArrayList<>();
     }
 
     public Configuration getConfiguration() {
@@ -140,6 +143,20 @@ public class Controller extends Observable {
 
     public void remove(Mission mission) {
         this.missions.remove(mission);
+        this.changed();
+    }
+
+    public ArrayList<Production> getProductions() {
+        return this.productions;
+    }
+
+    public void add(Production production) {
+        this.productions.add(production);
+        this.changed();
+    }
+
+    public void remove(Production production) {
+        this.productions.remove(production);
         this.changed();
     }
 

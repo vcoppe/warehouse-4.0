@@ -7,6 +7,7 @@ import util.Pair;
 import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Mission;
+import warehouse.Pallet;
 import warehouse.Production;
 
 import java.util.ArrayList;
@@ -33,6 +34,55 @@ public class ControllerEvent extends Event {
                         this.controller.getDocks().size(),
                         this.controller.getTrucks().size()));
 
+        // get waiting productions and try to initiate them
+        ArrayList<Production> productionsInitiated = new ArrayList<>();
+        for (Production production : this.controller.getProductions()) {
+            boolean feasible = true;
+            ArrayList<Mission> missions = new ArrayList<>();
+
+            for (Pair<Pallet, Integer> pair : production.getIn()) {
+                Pallet pallet = pair.first;
+                int quantity = pair.second;
+
+                for (int i = 0; i < quantity; i++) {
+                    Vector3D endPosition = production.getProductionLine().getStartBufferPosition();
+
+                    if (endPosition == null) {
+                        feasible = false;
+                        break;
+                    }
+
+                    Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock.getStartPositions(pallet));
+
+                    if (startPosition == null) {
+                        feasible = false;
+                        break;
+                    }
+
+                    missions.add(new Mission(this.time, pallet, startPosition, endPosition));
+                }
+
+                if (!feasible) {
+                    break;
+                }
+            }
+
+            if (feasible) {
+                productionsInitiated.add(production);
+                production.getProductionLine().add(production);
+
+                for (Mission mission : missions) {
+                    this.controller.add(mission);
+                    this.stock.lock(mission.getStartPosition());
+                    this.stock.lock(mission.getEndPosition());
+                }
+            }
+        }
+
+        for (Production production : productionsInitiated) {
+            this.controller.remove(production);
+        }
+
         // get incomplete startable missions and try to complete them
         for (Mission mission : this.controller.getIncompleteStartableMissions()) {
             if (mission.getStartPosition() == null) { // load mission
@@ -43,7 +93,7 @@ public class ControllerEvent extends Event {
 
                 mission.setStartPosition(startPosition);
                 this.stock.lock(startPosition);
-            } else { // unload mission
+            } else if (mission.getEndPosition() == null) { // unload mission
                 Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(mission.getPallet(), mission.getStartPosition(), this.stock.getEndPositions(mission.getPallet()));
 
                 // TODO check for unaccessible free locations

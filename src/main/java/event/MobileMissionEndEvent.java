@@ -52,8 +52,7 @@ public class MobileMissionEndEvent extends Event {
             this.stock.add(this.mission.getEndPosition(), this.mission.getPallet());
         }
 
-        Event event = new ControllerEvent(this.simulation, this.time, this.controller);
-        this.simulation.enqueueEvent(event);
+        this.simulation.enqueueEvent(new ControllerEvent(this.simulation, this.time, this.controller));
     }
 
 }

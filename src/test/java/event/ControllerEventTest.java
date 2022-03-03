@@ -45,7 +45,7 @@ public class ControllerEventTest extends TestCase {
 
             ArrayList<Pair<Pallet, Integer>> in = new ArrayList<>();
             in.add(new Pair<>(new Pallet(0), 1));
-            this.productions.add(new Production(in, new ArrayList<>(), 10, 3, 200));
+            this.productions.add(new Production(this.productionLine, in, new ArrayList<>(), 10, 3, 200));
         }
     }
 
@@ -155,6 +155,35 @@ public class ControllerEventTest extends TestCase {
         assertEquals(5, this.controller.getTrucks().size());
         assertEquals(5, this.configuration.simulation.queueSize());
         assertTrue(this.configuration.simulation.nextEvent() instanceof TruckCallEvent);
+    }
+
+    public void testAddProductionToProductionLine() {
+        Production production = this.productions.get(0);
+        this.controller.add(production);
+
+        for (Pair<Pallet, Integer> pair : production.getIn()) {
+            Pallet pallet = pair.first;
+            this.stock.add(this.stock.getEndPositions(pallet).get(0), pallet);
+        }
+
+        assertEquals(0, this.productionLine.getProductions().size());
+        this.event.run();
+        assertEquals(1, this.productionLine.getProductions().size());
+        assertEquals(production, this.productionLine.getProductions().get(0));
+    }
+
+    public void testGenerateMissions() {
+        Production production = this.productions.get(0);
+        this.controller.add(production);
+
+        for (Pair<Pallet, Integer> pair : production.getIn()) {
+            Pallet pallet = pair.first;
+            this.stock.add(this.stock.getEndPositions(pallet).get(0), pallet);
+        }
+
+        assertEquals(0, this.configuration.simulation.queueSize());
+        this.event.run();
+        assertEquals(production.getIn().size(), this.configuration.simulation.queueSize());
     }
 
     public void testStartProduction() {
