@@ -2,7 +2,6 @@ package event;
 
 import agent.Controller;
 import agent.Mobile;
-import brain.TravelTimeEstimator;
 import pathfinding.PathFinder;
 import scheduling.TimeEstimationPropagator;
 import simulation.Event;
@@ -15,7 +14,6 @@ public class PathFinderEvent extends Event {
 
     private final Controller controller;
     private final PathFinder pathFinder;
-    private final TravelTimeEstimator travelTimeEstimator;
     private final TimeEstimationPropagator timeEstimationPropagator;
     private double lastEventTime;
 
@@ -23,7 +21,6 @@ public class PathFinderEvent extends Event {
         super(simulation, time, Integer.MAX_VALUE); // set large id to have PathFinderEvents at the end of each timestep
         this.controller = controller;
         this.pathFinder = controller.getPathFinder();
-        this.travelTimeEstimator = controller.travelTimeEstimator;
         this.timeEstimationPropagator = controller.timeEstimationPropagator;
     }
 

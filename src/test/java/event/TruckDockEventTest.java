@@ -29,12 +29,12 @@ public class TruckDockEventTest extends TestCase {
 
         for (int i = 0; i < 5; i++) {
             toLoad.put(
-                    new Vector3D(0, i * this.configuration.palletSize),
+                    new Vector3D(0, i * Configuration.palletSize),
                     new Pallet(i)
             );
             this.configuration.stock.add(this.configuration.stock.getStockPositions().get(i), new Pallet(i)); // add pallets to load in the stock
             toUnload.put(
-                    new Vector3D(0, i * this.configuration.palletSize),
+                    new Vector3D(0, i * Configuration.palletSize),
                     new Pallet(5 + i)
             );
         }

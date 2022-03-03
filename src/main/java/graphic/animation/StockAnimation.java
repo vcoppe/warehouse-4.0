@@ -33,7 +33,7 @@ public class StockAnimation implements Observer<Stock> {
         PalletShape shape = new PalletShape(
                 position.getX(),
                 position.getY(),
-                this.configuration.palletSize,
+                Configuration.palletSize,
                 pallet.getType()
         );
         this.shapes.put(position, shape);
@@ -57,7 +57,7 @@ public class StockAnimation implements Observer<Stock> {
             Pallet pallet = stock.get(position);
             PalletShape palletShape = this.shapes.get(position);
 
-            if (position.getZ() == this.level * this.configuration.palletSize) {
+            if (position.getZ() == this.level * Configuration.palletSize) {
 
                 if (palletShape == null) {
                     palletShape = this.add(position, pallet);

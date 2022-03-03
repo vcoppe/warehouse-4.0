@@ -5,6 +5,7 @@ import simulation.Event;
 import simulation.Simulation;
 import util.Pair;
 import util.Vector3D;
+import warehouse.Configuration;
 import warehouse.Mission;
 import warehouse.Production;
 
@@ -91,9 +92,11 @@ public class ControllerEvent extends Event {
             this.controller.remove(dock);
         }
 
+        // send free mobiles to waiting zone
+        // TODO define a waiting zone?
         for (Mobile mobile : this.controller.getAvailableMobiles()) {
             if (mobile.isAvailable()) {
-                mobile.replace(new Vector3D(0, this.controller.getWarehouse().getDepth() - (mobile.getId() + 1) * this.controller.getConfiguration().palletSize * 2, 0));
+                mobile.replace(new Vector3D(0, this.controller.getWarehouse().getDepth() - (mobile.getId() + 1) * Configuration.palletSize * 2, 0));
             }
         }
 

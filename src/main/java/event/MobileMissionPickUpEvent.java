@@ -31,6 +31,8 @@ public class MobileMissionPickUpEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
+        // TODO send real duration to travel time estimator
+
         this.mobile.pickUp();
 
         // tell truck or stock that pallet has left the position

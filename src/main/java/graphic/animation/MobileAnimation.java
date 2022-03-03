@@ -39,7 +39,7 @@ public class MobileAnimation {
 
     public CompoundShape add(Mobile mobile) {
         CompoundShape shape = new CompoundShape(
-                new MobileShape(0, 0, this.configuration.palletSize),
+                new MobileShape(0, 0, Configuration.palletSize),
                 mobile.getPosition().getX(),
                 mobile.getPosition().getY()
         );
@@ -47,7 +47,7 @@ public class MobileAnimation {
         this.group.getChildren().add(shape.getShape());
 
 
-        PalletShape palletShape = new PalletShape(1, 1, this.configuration.palletSize - 2, 0);
+        PalletShape palletShape = new PalletShape(1, 1, Configuration.palletSize - 2, 0);
         palletShape.setEmptyMobile();
         shape.add(palletShape);
         this.palletShapes.put(mobile.getId(), palletShape);

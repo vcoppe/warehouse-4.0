@@ -34,6 +34,8 @@ public class MobileMissionEndEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
+        // TODO send real duration to travel time estimator
+
         this.mobile.drop();
         this.controller.add(this.mobile);
         this.timeEstimationPropagator.remove(mission);

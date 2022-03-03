@@ -74,7 +74,7 @@ public class TruckAnimation implements Observer<Controller> {
         PalletShape shape = new PalletShape(
                 position.getX(),
                 position.getY(),
-                this.configuration.palletSize,
+                Configuration.palletSize,
                 pallet.getType()
         );
 

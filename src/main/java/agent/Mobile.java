@@ -115,38 +115,6 @@ public class Mobile extends Observable {
         );
     }
 
-    /*public Pair<Double,Double> getDurationsAt(double time) {
-        boolean debug = time == 2009.5;
-        if (this.path == null || this.path.size() == 1) {
-            if (debug) System.out.println("mono path");
-            return new Pair<>(0.0, 0.0);
-        }
-
-        for (int i = 0; i < this.path.size(); i++) {
-            Pair<Vector3D, Double> current = this.path.get(i);
-            if (time <= current.second) {
-                Pair<Vector3D, Double> previous = (i - 1) < 0 ? current : this.path.get(i - 1);
-                Pair<Vector3D, Double> next = (i + 1) >= this.path.size() ? current : this.path.get(i + 1);
-
-                Vector2D distance1 = previous.first.manhattanDistance3D(current.first);
-                Vector2D distance2 = current.first.manhattanDistance3D(next.first);
-                double duration1 = current.second - previous.second - distance1.getX() * this.speed - distance1.getY() * Lift.speed;
-                double duration2 = next.second - current.second - distance2.getX() * this.speed - distance2.getY() * Lift.speed;
-
-                if (debug) {
-                    System.out.println("times: " + previous.second + " " + current.second + " " + next.second);
-                    System.out.println("path: "+ duration1 + " " + duration2);
-                }
-
-                return new Pair<>(duration1, duration2);
-            }
-        }
-
-        if (debug) System.out.println("périmé path");
-
-        return new Pair<>(0.0, 0.0);
-    }*/
-
     public Mission getMission() {
         return this.mission;
     }
@@ -223,11 +191,6 @@ public class Mobile extends Observable {
         this.path = path;
         this.pathTime = time;
         this.changed();
-
-        /*System.out.println("Set path for mobile " + this.getId());
-        for (Pair<Vector3D,Double> pair : this.path) {
-            System.out.println(pair.first + " " + pair.second);
-        }*/
     }
 
 }

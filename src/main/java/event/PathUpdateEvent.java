@@ -9,7 +9,7 @@ public class PathUpdateEvent extends Event {
 
     private static PathUpdateEvent instance;
 
-    private Controller controller;
+    private final Controller controller;
 
     private PathUpdateEvent(Simulation simulation, double time, Controller controller) {
         super(simulation, time, Integer.MIN_VALUE);

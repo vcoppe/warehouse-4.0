@@ -32,8 +32,8 @@ public class Main extends Application {
         ArrayList<Vector3D> productionLineStartBuffer = new ArrayList<>();
         ArrayList<Vector3D> productionLineEndBuffer = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            productionLineStartBuffer.add(new Vector3D(productionLineX - (i / 2 + 1) * this.configuration.palletSize, productionLineY + (1 + 2 * (i % 2)) * this.configuration.palletSize));
-            productionLineEndBuffer.add(new Vector3D(productionLineX + (1 + 2 * (i % 2)) * this.configuration.palletSize, productionLineY + productionLineDepth + i / 2 * this.configuration.palletSize));
+            productionLineStartBuffer.add(new Vector3D(productionLineX - (i / 2 + 1) * Configuration.palletSize, productionLineY + (1 + 2 * (i % 2)) * Configuration.palletSize));
+            productionLineEndBuffer.add(new Vector3D(productionLineX + (1 + 2 * (i % 2)) * Configuration.palletSize, productionLineY + productionLineDepth + i / 2 * Configuration.palletSize));
         }
 
         this.configuration.addProductionLine(productionLineX, productionLineY, productionLineX + productionLineWidth, productionLineY + productionLineDepth, 10, productionLineStartBuffer, productionLineEndBuffer);
@@ -49,7 +49,7 @@ public class Main extends Application {
         for (int i = 0; i < 3; i++)
             this.configuration.addIndoorDock(300 + i * this.configuration.dockWidth * 2, depth - this.configuration.truckDepth);
         for (int i = 0; i < 5; i++)
-            this.configuration.addMobile(new Vector3D(this.configuration.dockWidth * i, depth - this.configuration.palletSize));
+            this.configuration.addMobile(new Vector3D(this.configuration.dockWidth * i, depth - Configuration.palletSize));
 
         // disable JavaFX logging
         Logger logger = Logger.getLogger("javafx");

@@ -81,8 +81,8 @@ public class AnimationDashboard {
             LiftShape liftShape = new LiftShape(
                     lift.getPosition().getX(),
                     lift.getPosition().getY(),
-                    configuration.palletSize,
-                    configuration.palletSize
+                    Configuration.palletSize,
+                    Configuration.palletSize
             );
             this.add(liftShape);
         }
@@ -122,10 +122,8 @@ public class AnimationDashboard {
         autoPlay.setOnMouseClicked(e -> this.setAutoplay(autoPlay.isSelected()));
 
         Text levelText = new Text("Level");
-        Spinner<Integer> spinner = new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, this.configuration.warehouse.getHeight()/this.configuration.palletSize - 1, 0));
-        spinner.valueProperty().addListener((o,v,v2) -> {
-            this.stockAnimation.setLevel(v2);
-        });
+        Spinner<Integer> spinner = new Spinner<>(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, this.configuration.warehouse.getHeight() / Configuration.palletSize - 1, 0));
+        spinner.valueProperty().addListener((o, v, v2) -> this.stockAnimation.setLevel(v2));
 
         Pane animationPane = new Pane(this.group);
         Pane toolbar = new HBox(play, decreaseRate, increaseRate, autoPlay, levelText, spinner);

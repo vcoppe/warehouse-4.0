@@ -27,7 +27,7 @@ public class TruckCallEventTest extends TestCase {
 
         for (int i = 0; i < 5; i++) {
             toUnload.put(
-                    new Vector3D(0, i * this.configuration.palletSize),
+                    new Vector3D(0, i * Configuration.palletSize),
                     new Pallet(i)
             );
         }

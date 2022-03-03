@@ -17,7 +17,7 @@ public class LiftShape extends CompoundShape {
         this.add(new LiftCircleShape(x + width, y + height, radius));
     }
 
-    public class LiftCircleShape extends MyShape {
+    public static class LiftCircleShape extends MyShape {
 
         public LiftCircleShape(int x, int y, int radius) {
             super(x, y, radius, radius);
@@ -27,7 +27,7 @@ public class LiftShape extends CompoundShape {
 
     }
 
-    public class LiftRectangleShape extends MyShape {
+    public static class LiftRectangleShape extends MyShape {
 
         public LiftRectangleShape(int x, int y, int width, int height) {
             super(x, y, width, height);

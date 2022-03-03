@@ -40,6 +40,7 @@ public class ProductionInitEvent extends Event {
             for (int i=0; i<quantity; i++) {
                 Vector3D endPosition = this.productionLine.getStartBufferPosition();
 
+                // TODO handle buffer full
                 if (endPosition == null) {
                     this.simulation.logger.warning("FAILURE! Start buffer of production line is full.");
                     return;
@@ -47,6 +48,7 @@ public class ProductionInitEvent extends Event {
 
                 Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock.getStartPositions(pallet));
 
+                // TODO handle missing pallets
                 if (startPosition == null) {
                     this.simulation.logger.warning("FAILURE! Missing pallets to launch production.");
                     return;

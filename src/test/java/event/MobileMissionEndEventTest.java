@@ -37,7 +37,7 @@ public class MobileMissionEndEventTest extends TestCase {
 
         for (int i = 0; i < 5; i++) {
             Pair<Vector3D, Pallet> pair = new Pair<>(
-                    new Vector3D(0, i * this.configuration.palletSize),
+                    new Vector3D(0, i * Configuration.palletSize),
                     new Pallet(i)
             );
             toLoad.put(pair.first, pair.second);
@@ -49,7 +49,7 @@ public class MobileMissionEndEventTest extends TestCase {
             this.toUnload.add(pair);
 
             pair = new Pair<>(
-                    new Vector3D(3 * this.configuration.palletSize, i * this.configuration.palletSize),
+                    new Vector3D(3 * Configuration.palletSize, i * Configuration.palletSize),
                     new Pallet(i)
             );
             this.configuration.stock.lock(pair.first);

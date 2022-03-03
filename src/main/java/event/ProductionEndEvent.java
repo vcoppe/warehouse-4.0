@@ -40,6 +40,7 @@ public class ProductionEndEvent extends Event {
             for (int i=0; i<quantity; i++) {
                 Vector3D startPosition = this.productionLine.getEndBufferPosition();
 
+                // TODO handle full buffer
                 if (startPosition == null) {
                     this.simulation.logger.warning("FAILURE! End buffer of production line is full.");
                     return;

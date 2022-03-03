@@ -10,6 +10,7 @@ import scheduling.PrecedenceConstraint;
 import simulation.Event;
 import simulation.Simulation;
 import util.Vector3D;
+import warehouse.Configuration;
 import warehouse.Mission;
 import warehouse.Pallet;
 
@@ -39,8 +40,8 @@ public class TruckDockEvent extends Event {
 
         this.truck.dock();
 
-        Vector3D deltaX = new Vector3D(this.controller.getConfiguration().palletSize, 0);
-        Vector3D deltaY = new Vector3D(0, this.controller.getConfiguration().palletSize);
+        Vector3D deltaX = new Vector3D(Configuration.palletSize, 0);
+        Vector3D deltaY = new Vector3D(0, Configuration.palletSize);
 
         HashMap<Vector3D, Pallet> toUnload = this.truck.getToUnload();
         HashMap<Vector3D, Mission> unloadMissions = new HashMap<>();

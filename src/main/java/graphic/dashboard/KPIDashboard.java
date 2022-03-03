@@ -4,15 +4,14 @@ import agent.Controller;
 import agent.Truck;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart.*;
+import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.XYChart.Series;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import observer.Observer;
 import warehouse.Configuration;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 
 public class KPIDashboard implements Observer<Controller> {
 
@@ -70,7 +69,7 @@ public class KPIDashboard implements Observer<Controller> {
         }
     }
 
-    class TruckObserver implements Observer<Truck> {
+    static class TruckObserver implements Observer<Truck> {
 
         private final KPIDashboard kpiDashboard;
 
