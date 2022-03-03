@@ -112,7 +112,6 @@ public class ProductionEndEventTest extends TestCase {
             missionPallets.add(mission.getPallet());
 
             assertEquals(mission.getPallet().getType(), this.configuration.stock.get(mission.getStartPosition()).getType());
-            assertTrue(this.configuration.stock.isLocked(mission.getEndPosition()));
         }
 
         productionPallets.sort(Comparator.comparingInt(Pallet::getType));

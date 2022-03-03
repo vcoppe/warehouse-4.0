@@ -3,6 +3,7 @@ package event;
 import agent.ProductionLine;
 import junit.framework.TestCase;
 import util.Pair;
+import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Mission;
 import warehouse.Pallet;
@@ -28,7 +29,7 @@ public class ProductionInitEventTest extends TestCase {
         ArrayList<Pair<Pallet, Integer>> out = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             in.add(new Pair<>(new Pallet(i), 1));
-            this.configuration.stock.add(this.configuration.stock.getStockPositions().get(i), new Pallet(i)); // add to stock
+            this.configuration.stock.add(new Vector3D(2 * Configuration.palletSize, (3 + i) * Configuration.palletSize), new Pallet(i)); // add to stock
             out.add(new Pair<>(new Pallet(3 + i), 1));
         }
 

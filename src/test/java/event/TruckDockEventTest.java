@@ -79,7 +79,6 @@ public class TruckDockEventTest extends TestCase {
                     }
                 }
                 assertTrue(foundPallet);
-                assertTrue(this.configuration.stock.isLocked(mission.getEndPosition())); // reserve spot for pallet
             } else if (mission.getEndTruck() != null) { // load mission
                 boolean foundPallet = false;
                 for (Map.Entry<Vector3D, Pallet> entry : this.truck.getToLoad().entrySet()) {
@@ -93,7 +92,6 @@ public class TruckDockEventTest extends TestCase {
                     }
                 }
                 assertTrue(foundPallet);
-                assertTrue(this.configuration.stock.isLocked(mission.getStartPosition())); // reserve pallet in stock
             } else { // should not happen
                 fail();
             }

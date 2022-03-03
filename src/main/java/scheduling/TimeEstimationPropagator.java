@@ -35,6 +35,10 @@ public class TimeEstimationPropagator {
     }
 
     public void remove(Mission mission) {
+        if (!this.missions.containsValue(mission.getId())) {
+            return;
+        }
+
         // notify parents that mission is done
         for (int parent : this.parents.get(mission.getId())) {
             HashSet<Integer> parentChildren = this.children.get(parent);

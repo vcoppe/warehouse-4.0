@@ -7,12 +7,12 @@ import warehouse.Configuration;
 
 import java.util.HashMap;
 
-public class TruckDoneEventTest extends TestCase {
+public class TruckGoneEventTest extends TestCase {
 
     private Configuration configuration;
     private Dock dock;
     private Truck truck;
-    private TruckDoneEvent event;
+    private TruckGoneEvent event;
 
     public void setUp() throws Exception {
         super.setUp();
@@ -23,7 +23,7 @@ public class TruckDoneEventTest extends TestCase {
         this.dock.call(0, this.truck);
         this.configuration.controller.remove(this.dock); // mark as currently used
 
-        this.event = new TruckDoneEvent(this.configuration.simulation, 1, this.configuration.controller, this.dock, this.truck);
+        this.event = new TruckGoneEvent(this.configuration.simulation, 1, this.configuration.controller, this.dock, this.truck);
     }
 
     public void tearDown() throws Exception {
@@ -35,11 +35,23 @@ public class TruckDoneEventTest extends TestCase {
         this.event = null;
     }
 
-    public void testTriggerTruckGoneEvent() {
+    public void testAddDockToController() {
+        assertEquals(4, this.configuration.controller.getDocks().size());
+        this.event.run();
+        assertEquals(5, this.configuration.controller.getDocks().size());
+        assertEquals(this.dock, this.configuration.controller.getDocks().get(4));
+    }
+
+    public void testTriggerControllerEvent() {
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
         assertEquals(1, this.configuration.simulation.queueSize());
-        assertTrue(this.configuration.simulation.nextEvent() instanceof TruckGoneEvent);
+        assertTrue(this.configuration.simulation.nextEvent() instanceof ControllerEvent);
+    }
+
+    public void testSetDepartureTime() {
+        this.event.run();
+        assertEquals(this.event.getTime(), this.truck.getDepartureTime());
     }
 
 }

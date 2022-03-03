@@ -40,7 +40,7 @@ public class ControllerEventTest extends TestCase {
         this.trucks = new ArrayList<>();
         this.productions = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            this.missions.add(new Mission(0, new Pallet(0), new Vector3D(0, 0), new Vector3D(0, 0)));
+            this.missions.add(new Mission(0, new Pallet(0), new Vector3D(0, 0), null));
             this.trucks.add(new Truck(new Vector3D(0, 0), new HashMap<>(), new HashMap<>()));
 
             ArrayList<Pair<Pallet, Integer>> in = new ArrayList<>();
@@ -80,12 +80,19 @@ public class ControllerEventTest extends TestCase {
         this.controller.add(this.missions.get(0));
         this.controller.add(this.missions.get(1));
 
+        assertNull(this.missions.get(0).getEndPosition());
+        assertNull(this.missions.get(1).getEndPosition());
+
         assertEquals(5, this.controller.getAvailableMobiles().size());
         assertEquals(5, this.controller.getDocks().size());
         assertEquals(2, this.controller.getAllMissions().size());
         assertEquals(0, this.controller.getTrucks().size());
         assertEquals(0, this.configuration.simulation.queueSize());
         this.event.run();
+
+        assertNotNull(this.missions.get(0).getEndPosition());
+        assertNotNull(this.missions.get(1).getEndPosition());
+
         assertEquals(3, this.controller.getAvailableMobiles().size());
         assertEquals(5, this.controller.getDocks().size());
         assertEquals(0, this.controller.getAllMissions().size());
