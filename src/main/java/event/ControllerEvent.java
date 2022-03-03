@@ -59,7 +59,11 @@ public class ControllerEvent extends Event {
                         break;
                     }
 
-                    missions.add(new Mission(this.time, pallet, startPosition, endPosition));
+                    Mission mission = new Mission(this.time, pallet, startPosition, endPosition);
+                    this.controller.add(mission);
+                    this.stock.lock(mission.getStartPosition());
+                    this.stock.lock(mission.getEndPosition());
+                    missions.add(mission);
                 }
 
                 if (!feasible) {
@@ -70,11 +74,11 @@ public class ControllerEvent extends Event {
             if (feasible) {
                 productionsInitiated.add(production);
                 production.getProductionLine().add(production);
-
+            } else {
                 for (Mission mission : missions) {
-                    this.controller.add(mission);
-                    this.stock.lock(mission.getStartPosition());
-                    this.stock.lock(mission.getEndPosition());
+                    this.controller.remove(mission);
+                    this.stock.unlock(mission.getStartPosition());
+                    this.stock.unlock(mission.getEndPosition());
                 }
             }
         }
