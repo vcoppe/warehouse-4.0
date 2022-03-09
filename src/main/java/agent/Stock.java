@@ -50,9 +50,8 @@ public class Stock extends Observable {
         this.unlock(position);
         if (pallet != Pallet.FREE) {
             this.quantities.computeIfPresent(pallet.getType(), (key, val) -> val + 1);
-            this.quantities.putIfAbsent(pallet.getType(), 0);
+            this.quantities.putIfAbsent(pallet.getType(), 1);
         }
-        this.accessibilityChecker.add(position);
         this.changed();
     }
 
@@ -62,7 +61,6 @@ public class Stock extends Observable {
         }
         this.pallets.put(position, Pallet.FREE);
         this.unlock(position);
-        this.accessibilityChecker.remove(position);
         this.changed();
     }
 
@@ -88,7 +86,6 @@ public class Stock extends Observable {
         if (pallet != null && pallet != Pallet.FREE) {
             this.quantities.computeIfPresent(pallet.getType(), (key, val) -> val - 1);
         }
-        this.accessibilityChecker.lock(position);
     }
 
     public void unlock(Vector3D position) {

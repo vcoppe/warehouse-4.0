@@ -1,21 +1,35 @@
 package scheduling;
 
-public interface PrecedenceConstraint {
+import warehouse.Mission;
 
-    PrecedenceConstraint emptyConstraint = new PrecedenceConstraint() {
+import java.util.ArrayList;
+
+public abstract class PrecedenceConstraint {
+
+    public static final PrecedenceConstraint emptyConstraint = new PrecedenceConstraint() {
         @Override
-        public boolean satisfied() {
+        boolean satisfied() {
             return true;
         }
 
         @Override
-        public double expectedSatisfactionTime() {
-            return Double.MIN_VALUE;
+        double expectedSatisfactionTime() {
+            return 0;
         }
     };
 
-    boolean satisfied();
+    protected final ArrayList<Mission> precedingMissions;
 
-    double expectedSatisfactionTime();
+    public PrecedenceConstraint() {
+        this.precedingMissions = new ArrayList<>();
+    }
+
+    abstract boolean satisfied();
+
+    abstract double expectedSatisfactionTime();
+
+    public ArrayList<Mission> getPrecedingMissions() {
+        return this.precedingMissions;
+    }
 
 }

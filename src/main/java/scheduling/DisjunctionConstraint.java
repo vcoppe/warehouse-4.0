@@ -3,7 +3,7 @@ package scheduling;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class DisjunctionConstraint implements PrecedenceConstraint {
+public class DisjunctionConstraint extends PrecedenceConstraint {
 
     private final ArrayList<PrecedenceConstraint> constraints;
 
@@ -13,6 +13,7 @@ public class DisjunctionConstraint implements PrecedenceConstraint {
 
     public void add(PrecedenceConstraint constraint) {
         this.constraints.add(constraint);
+        this.precedingMissions.addAll(constraint.precedingMissions);
     }
 
     @Override

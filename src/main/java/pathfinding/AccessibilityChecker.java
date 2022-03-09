@@ -4,7 +4,6 @@ import agent.Stock;
 import util.Vector3D;
 import warehouse.Pallet;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
 
@@ -12,46 +11,13 @@ public class AccessibilityChecker {
 
     private final Stock stock;
     private final Graph graph;
-    private final HashMap<Vector3D, Vector3D> component;
-    private final HashMap<Vector3D, Boolean> accessible;
 
     public AccessibilityChecker(Stock stock, Graph graph) {
         this.stock = stock;
         this.graph = graph;
-        this.component = new HashMap<>();
-        this.accessible = new HashMap<>();
-    }
-
-    private void resetSet(Vector3D position) {
-        if (this.component.containsKey(position)) {
-            this.accessible.remove(this.component.get(position));
-            this.component.remove(position);
-        }
-    }
-
-    // must split components (add a new pallet -> can block)
-    public void add(Vector3D position) {
-        this.resetSet(position);
-    }
-
-    // must join components
-    public void remove(Vector3D position) {
-        this.resetSet(position);
-    }
-
-    public void lock(Vector3D position) {
-        this.resetSet(position);
     }
 
     public boolean check(Vector3D position) {
-        if (this.component.containsKey(position)) {
-            if (this.accessible.containsKey(this.component.get(position))) {
-                return this.accessible.get(this.component.get(position));
-            } else {
-                this.component.remove(position);
-            }
-        }
-
         Pallet pallet = this.stock.get(position);
         if (pallet == null) {
             return true;
@@ -79,7 +45,6 @@ public class AccessibilityChecker {
 
         stack.push(position);
         visited.add(position);
-        this.component.put(position, position);
 
         while (!stack.empty()) {
             Vector3D u = stack.pop();
@@ -89,7 +54,6 @@ public class AccessibilityChecker {
 
                 if (!visited.contains(v)) {
                     visited.add(v);
-                    this.component.put(v, position);
                     pallet = this.stock.get(v);
                     if (pallet == null) {
                         accesses++;
@@ -112,11 +76,7 @@ public class AccessibilityChecker {
             }
         }*/
 
-        boolean accessible = locks < accesses;// && (accesses > 1 || nextToPallet);
-
-        this.accessible.put(position, accessible);
-
-        return accessible;
+        return locks < accesses;// && (accesses > 1 || nextToPallet);
     }
 
 }

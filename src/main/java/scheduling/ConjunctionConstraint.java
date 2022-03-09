@@ -3,7 +3,7 @@ package scheduling;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class ConjunctionConstraint implements PrecedenceConstraint {
+public class ConjunctionConstraint extends PrecedenceConstraint {
 
     private final ArrayList<PrecedenceConstraint> constraints;
 
@@ -13,6 +13,7 @@ public class ConjunctionConstraint implements PrecedenceConstraint {
 
     public void add(PrecedenceConstraint constraint) {
         this.constraints.add(constraint);
+        this.precedingMissions.addAll(constraint.precedingMissions);
     }
 
     @Override
@@ -27,7 +28,7 @@ public class ConjunctionConstraint implements PrecedenceConstraint {
 
     @Override
     public double expectedSatisfactionTime() {
-        double expectedSatisfactionTime = Double.MIN_VALUE;
+        double expectedSatisfactionTime = 0;
         for (PrecedenceConstraint constraint : this.constraints) {
             expectedSatisfactionTime = Math.max(expectedSatisfactionTime, constraint.expectedSatisfactionTime());
         }

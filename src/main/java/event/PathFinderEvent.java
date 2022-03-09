@@ -2,6 +2,7 @@ package event;
 
 import agent.Controller;
 import agent.Mobile;
+import brain.TravelTimeEstimator;
 import pathfinding.PathFinder;
 import scheduling.TimeEstimationPropagator;
 import simulation.Event;
@@ -14,6 +15,7 @@ public class PathFinderEvent extends Event {
 
     private final Controller controller;
     private final PathFinder pathFinder;
+    private final TravelTimeEstimator travelTimeEstimator;
     private final TimeEstimationPropagator timeEstimationPropagator;
     private double lastEventTime;
 
@@ -21,6 +23,7 @@ public class PathFinderEvent extends Event {
         super(simulation, time, Integer.MAX_VALUE); // set large id to have PathFinderEvents at the end of each timestep
         this.controller = controller;
         this.pathFinder = controller.getPathFinder();
+        this.travelTimeEstimator = controller.travelTimeEstimator;
         this.timeEstimationPropagator = controller.timeEstimationPropagator;
     }
 
@@ -73,12 +76,19 @@ public class PathFinderEvent extends Event {
                     mission.setExpectedEndTime(mobile.getPathEndTime());
                 } else {
                     mission.setExpectedPickUpTime(mobile.getPathEndTime());
+                    mission.setExpectedEndTime(
+                            mission.getExpectedPickUpTime() +
+                                    this.travelTimeEstimator.estimate(
+                                            mission.getStartPosition(),
+                                            mission.getEndPosition()
+                                    )
+                    );
                 }
             }
         }
 
         // propagate estimations
-        this.timeEstimationPropagator.propagate();
+        this.timeEstimationPropagator.propagate(this.time);
 
         // update paths at the end of the window
         PathUpdateEvent.enqueue(this.simulation, this.pathFinder.getNextUpdateTime(), this.controller);

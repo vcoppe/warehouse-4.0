@@ -3,9 +3,9 @@ package scheduling;
 import brain.TravelTimeEstimator;
 import warehouse.Mission;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.TreeSet;
 
 /**
@@ -15,13 +15,10 @@ public class TimeEstimationPropagator {
 
     private final TravelTimeEstimator travelTimeEstimator;
     private final HashMap<Integer, Mission> missions;
-    private final HashMap<Integer, HashSet<Integer>> parents, children;
 
     public TimeEstimationPropagator(TravelTimeEstimator travelTimeEstimator) {
         this.travelTimeEstimator = travelTimeEstimator;
         this.missions = new HashMap<>();
-        this.parents = new HashMap<>();
-        this.children = new HashMap<>();
     }
 
     public void add(Mission mission) {
@@ -30,45 +27,38 @@ public class TimeEstimationPropagator {
         }
 
         this.missions.put(mission.getId(), mission);
-        this.parents.put(mission.getId(), new HashSet<>());
-        this.children.put(mission.getId(), new HashSet<>());
     }
 
     public void remove(Mission mission) {
-        if (!this.missions.containsValue(mission.getId())) {
-            return;
-        }
-
-        // notify parents that mission is done
-        for (int parent : this.parents.get(mission.getId())) {
-            HashSet<Integer> parentChildren = this.children.get(parent);
-            parentChildren.remove(mission.getId());
-            if (parentChildren.isEmpty()) { // parent has no more children, can delete it
-                this.missions.remove(parent);
-                this.parents.remove(parent);
-                this.children.remove(parent);
-            }
-        }
-
-        // delete mission if no children
-        if (this.children.get(mission.getId()).isEmpty()) {
-            this.missions.remove(mission.getId());
-            this.parents.remove(mission.getId());
-            this.children.remove(mission.getId());
-        }
+        this.missions.remove(mission.getId());
     }
 
-    public void propagate() {
+    public void propagate(double time) {
         TreeSet<Integer> open = new TreeSet<>();
 
+        HashMap<Integer, HashSet<Integer>> children = new HashMap<>();
         HashMap<Integer, Integer> countParents = new HashMap<>();
 
-        // get all missions that have no dependencies
-        for (Map.Entry<Integer, HashSet<Integer>> entry : this.parents.entrySet()) {
-            if (entry.getValue().isEmpty()) {
-                open.add(entry.getKey());
+        // get all missions that have no active dependencies
+        for (Mission mission : this.missions.values()) {
+            ArrayList<Mission> precedingMissions = mission.getPrecedingMissions();
+            int countParent = 0;
+            for (Mission parent : precedingMissions) {
+                if (this.missions.containsKey(parent.getId())) { // check that mission is still active
+                    countParent++;
+
+                    if (!children.containsKey(parent.getId())) {
+                        children.put(parent.getId(), new HashSet<>());
+                    }
+
+                    children.get(parent.getId()).add(mission.getId());
+                }
             }
-            countParents.put(entry.getKey(), entry.getValue().size());
+
+            if (countParent == 0) {
+                open.add(mission.getId());
+            }
+            countParents.put(mission.getId(), countParent);
         }
 
         // update expected end times in topological order
@@ -78,7 +68,10 @@ public class TimeEstimationPropagator {
 
             Mission mission = this.missions.get(u);
             if (!mission.started()) {
-                mission.setExpectedStartTime(mission.getStartConstraint().expectedSatisfactionTime());
+                mission.setExpectedStartTime(Math.max(
+                        time,
+                        mission.getStartConstraint().expectedSatisfactionTime()
+                ));
                 mission.setExpectedPickUpTime(Math.max(
                         mission.getExpectedStartTime(),
                         mission.getPickupConstraint().expectedSatisfactionTime()
@@ -93,9 +86,11 @@ public class TimeEstimationPropagator {
                 }
             }
 
-            for (int v : this.children.get(u)) {
-                if (countParents.compute(v, (key, value) -> value - 1) == 0) {
-                    open.add(v);
+            if (children.containsKey(u)) {
+                for (int v : children.get(u)) {
+                    if (countParents.compute(v, (key, value) -> value - 1) == 0) {
+                        open.add(v);
+                    }
                 }
             }
         }

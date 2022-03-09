@@ -2,12 +2,13 @@ package scheduling;
 
 import warehouse.Mission;
 
-public class MissionDoneConstraint implements PrecedenceConstraint {
+public class MissionDoneConstraint extends PrecedenceConstraint {
 
     private final Mission mission;
 
     public MissionDoneConstraint(Mission mission) {
         this.mission = mission;
+        this.precedingMissions.add(mission);
     }
 
     @Override

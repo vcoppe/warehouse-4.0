@@ -5,6 +5,8 @@ import scheduling.ConjunctionConstraint;
 import scheduling.PrecedenceConstraint;
 import util.Vector3D;
 
+import java.util.ArrayList;
+
 public class Mission {
 
     private static int MISSION_ID = 0;
@@ -155,6 +157,14 @@ public class Mission {
 
     public ConjunctionConstraint getDropConstraint() {
         return this.dropConstraint;
+    }
+
+    public ArrayList<Mission> getPrecedingMissions() {
+        ArrayList<Mission> precedingMissions = new ArrayList<>();
+        precedingMissions.addAll(this.startConstraint.getPrecedingMissions());
+        precedingMissions.addAll(this.pickupConstraint.getPrecedingMissions());
+        precedingMissions.addAll(this.dropConstraint.getPrecedingMissions());
+        return precedingMissions;
     }
 
 }

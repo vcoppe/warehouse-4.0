@@ -77,6 +77,7 @@ public class ControllerEvent extends Event {
             } else {
                 for (Mission mission : missions) {
                     this.controller.remove(mission);
+                    this.controller.timeEstimationPropagator.remove(mission);
                     this.stock.unlock(mission.getStartPosition());
                     this.stock.unlock(mission.getEndPosition());
                 }

@@ -4,6 +4,7 @@ import agent.Controller;
 import agent.Mobile;
 import agent.Stock;
 import agent.Truck;
+import brain.TravelTimeEstimator;
 import simulation.Event;
 import simulation.Simulation;
 import warehouse.Mission;
@@ -11,6 +12,7 @@ import warehouse.Mission;
 public class MobileMissionPickUpEvent extends Event {
 
     private final Controller controller;
+    private final TravelTimeEstimator travelTimeEstimator;
     private final Stock stock;
     private final Mobile mobile;
     private final Mission mission;
@@ -18,6 +20,7 @@ public class MobileMissionPickUpEvent extends Event {
     public MobileMissionPickUpEvent(Simulation simulation, double time, Controller controller, Mobile mobile) {
         super(simulation, time);
         this.controller = controller;
+        this.travelTimeEstimator = controller.travelTimeEstimator;
         this.stock = controller.getStock();
         this.mobile = mobile;
         this.mission = mobile.getMission();
@@ -31,8 +34,11 @@ public class MobileMissionPickUpEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        // TODO send real duration to travel time estimator
-
+        this.travelTimeEstimator.update(
+                this.mobile.getPosition(),
+                this.mission.getStartPosition(),
+                this.mission.getExpectedEndTime() - this.mission.getExpectedPickUpTime()
+        );
         this.mobile.pickUp();
 
         // tell truck or stock that pallet has left the position
