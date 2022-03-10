@@ -92,7 +92,7 @@ public class ProductionLine extends Observable {
                     if (!this.stock.isLocked(position)) {
                         Pallet bufferPallet = this.stock.get(position);
                         if (bufferPallet != null
-                                && bufferPallet.getType() == pallet.getType()
+                                && bufferPallet.getProduct() == pallet.getProduct()
                                 && !usedPallets.contains(bufferPallet.getId())
                                 && count < quantity) {
                             count++;
@@ -126,7 +126,7 @@ public class ProductionLine extends Observable {
             for (Vector3D position : this.startBuffer) {
                 if (!this.stock.isLocked(position)) {
                     Pallet bufferPallet = this.stock.get(position);
-                    if (bufferPallet != null && bufferPallet.getType() == pallet.getType()) {
+                    if (bufferPallet != null && bufferPallet.getProduct() == pallet.getProduct()) {
                         this.stock.lock(position);
                         count++;
                         if (count == quantity) {

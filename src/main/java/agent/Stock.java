@@ -14,7 +14,7 @@ import java.util.PriorityQueue;
 
 public class Stock extends Observable {
 
-    private final ArrayList<Vector3D> stockPositions, bufferPositions;
+    private final HashSet<Vector3D> stockPositions, bufferPositions;
     private final HashMap<Vector3D, Pallet> pallets;
     private final HashSet<Vector3D> lock;
     private final HashMap<Integer, Integer> quantities;
@@ -27,8 +27,8 @@ public class Stock extends Observable {
         this.lock = new HashSet<>();
         this.accessibilityChecker = new AccessibilityChecker(this, graph);
         this.filter = new RuleBasedPalletPositionFilter(this);
-        this.stockPositions = new ArrayList<>();
-        this.bufferPositions = new ArrayList<>();
+        this.stockPositions = new HashSet<>();
+        this.bufferPositions = new HashSet<>();
         this.quantities = new HashMap<>();
     }
 
@@ -49,8 +49,8 @@ public class Stock extends Observable {
         this.pallets.put(position, pallet);
         this.unlock(position);
         if (pallet != Pallet.FREE) {
-            this.quantities.computeIfPresent(pallet.getType(), (key, val) -> val + 1);
-            this.quantities.putIfAbsent(pallet.getType(), 1);
+            this.quantities.computeIfPresent(pallet.getProduct(), (key, val) -> val + 1);
+            this.quantities.putIfAbsent(pallet.getProduct(), 1);
         }
         this.changed();
     }
@@ -76,6 +76,10 @@ public class Stock extends Observable {
         return this.get(position) == Pallet.FREE && !this.isLocked(position);
     }
 
+    public boolean isAccessible(Vector3D position) {
+        return this.accessibilityChecker.check(position);
+    }
+
     public boolean isLocked(Vector3D position) {
         return this.lock.contains(position);
     }
@@ -84,12 +88,16 @@ public class Stock extends Observable {
         this.lock.add(position);
         Pallet pallet = this.pallets.get(position);
         if (pallet != null && pallet != Pallet.FREE) {
-            this.quantities.computeIfPresent(pallet.getType(), (key, val) -> val - 1);
+            this.quantities.computeIfPresent(pallet.getProduct(), (key, val) -> val - 1);
         }
     }
 
     public void unlock(Vector3D position) {
         this.lock.remove(position);
+        Pallet pallet = this.pallets.get(position);
+        if (pallet != null && pallet != Pallet.FREE) {
+            this.quantities.computeIfPresent(pallet.getProduct(), (key, val) -> val + 1);
+        }
     }
 
     public ArrayList<Vector3D> getStartPositions(Pallet pallet) {
@@ -104,11 +112,11 @@ public class Stock extends Observable {
         return new ArrayList<>(this.pallets.keySet());
     }
 
-    public ArrayList<Vector3D> getStockPositions() {
+    public HashSet<Vector3D> getStockPositions() {
         return this.stockPositions;
     }
 
-    public ArrayList<Vector3D> getBufferPositions() {
+    public HashSet<Vector3D> getBufferPositions() {
         return this.bufferPositions;
     }
 
@@ -145,7 +153,7 @@ public class Stock extends Observable {
                     for (Vector3D position : rule.getPositions()) {
                         Pallet stockPallet = this.stock.get(position);
                         if (stockPallet != null &&
-                                stockPallet.getType() == pallet.getType() &&
+                                stockPallet.getProduct() == pallet.getProduct() &&
                                 !this.stock.isLocked(position) &&
                                 this.stock.accessibilityChecker.check(position)) {
                             positions.add(position);
@@ -164,17 +172,17 @@ public class Stock extends Observable {
             }
 
             // if no match, return any possible position
-            if (positions.isEmpty()) {
+            /*if (positions.isEmpty()) {
                 for (Vector3D position : this.stock.getStockPositions()) {
                     Pallet stockPallet = this.stock.get(position);
                     if (stockPallet != null &&
-                            stockPallet.getType() == pallet.getType() &&
+                            stockPallet.getProduct() == pallet.getProduct() &&
                             !this.stock.isLocked(position) &&
                             this.stock.accessibilityChecker.check(position)) {
                         positions.add(position);
                     }
                 }
-            }
+            }*/
 
             return positions;
         }
@@ -210,14 +218,15 @@ public class Stock extends Observable {
             }
 
             // if no match, return any possible position
-            if (positions.isEmpty()) {
+            // careful because pallets out of position need to be retrievable with the filter too
+            /*if (positions.isEmpty()) {
                 for (Vector3D position : this.stock.getStockPositions()) {
                     if (this.stock.isFree(position) &&
                             this.stock.accessibilityChecker.check(position)) {
                         positions.add(position);
                     }
                 }
-            }
+            }*/
 
             return positions;
         }

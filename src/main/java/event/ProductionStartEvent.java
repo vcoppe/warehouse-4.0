@@ -39,7 +39,7 @@ public class ProductionStartEvent extends Event {
             int count = 0;
             for (Vector3D position : this.productionLine.getStartBuffer())
                 if (this.stock.isLocked(position)) {
-                    if (this.stock.get(position) != null && this.stock.get(position).getType() == pallet.getType()) {
+                    if (this.stock.get(position) != null && this.stock.get(position).getProduct() == pallet.getProduct()) {
                         this.stock.remove(position, pallet);
                         count++;
                         if (count == quantity) {

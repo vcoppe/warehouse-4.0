@@ -103,7 +103,7 @@ public class Truck extends Observable {
     public void add(Vector3D position, Pallet pallet) {
         Vector3D positionInTruck = position.subtract(this.position);
         Pallet palletInTruck = this.toLoad.get(positionInTruck);
-        if (pallet.getType() == palletInTruck.getType()) {
+        if (pallet.getProduct() == palletInTruck.getProduct()) {
             this.toLoad.remove(positionInTruck);
             this.currentLoad.put(positionInTruck, pallet);
             this.changed();
@@ -113,9 +113,9 @@ public class Truck extends Observable {
     public void remove(Vector3D position, Pallet pallet) {
         Vector3D positionInTruck = position.subtract(this.position);
         Pallet palletInTruck = this.toUnload.get(positionInTruck);
-        if (pallet.getType() == palletInTruck.getType()) {
+        if (pallet.getProduct() == palletInTruck.getProduct()) {
             this.toUnload.remove(positionInTruck);
-            if (pallet.getType() == this.currentLoad.get(positionInTruck).getType()) {
+            if (pallet.getProduct() == this.currentLoad.get(positionInTruck).getProduct()) {
                 this.currentLoad.remove(positionInTruck);
             }
             this.changed();

@@ -6,9 +6,9 @@ import java.util.Arrays;
 
 public class SLAPMIP {
 
-    private GRBEnv env;
-    private GRBModel model;
-    private GRBVar[][] x;
+    private final GRBEnv env;
+    private final GRBModel model;
+    private final GRBVar[][] x;
 
     public SLAPMIP(int n, int m, int l, int[] C, int[] S, double[] T, double[][] P, double[][] D) throws GRBException {
         env = new GRBEnv("slap.log");
@@ -16,18 +16,18 @@ public class SLAPMIP {
 
         x = new GRBVar[n][l];
 
-        for (int i=0; i<n; i++) {
-            for (int k=0; k<l; k++) {
+        for (int i = 0; i < n; i++) {
+            for (int k = 0; k < l; k++) {
                 double weightedDist = 0;
-                for (int j=0; j<m; j++) {
+                for (int j = 0; j < m; j++) {
                     weightedDist += P[i][j] * D[k][j];
                 }
-                x[i][k] = model.addVar(0, 1, T[i]/S[i] * C[k] * weightedDist, GRB.BINARY, "x_"+i+"_"+k);
+                x[i][k] = model.addVar(0, 1, T[i] / S[i] * C[k] * weightedDist, GRB.BINARY, "x_" + i + "_" + k);
             }
         }
 
         GRBLinExpr lhs;
-        for (int i=0; i<n; i++) {
+        for (int i = 0; i < n; i++) {
             lhs = new GRBLinExpr();
             for (int k=0; k<l; k++) {
                 lhs.addTerm(C[k], x[i][k]);
@@ -70,7 +70,7 @@ public class SLAPMIP {
         Arrays.fill(sol, -1);
         for (int j = 0; j < x[0].length; j++) {
             for (int i = 0; i < x.length; i++) {
-                int value = (int) x[i][j].get(GRB.DoubleAttr.X);
+                int value = (int) Math.round(x[i][j].get(GRB.DoubleAttr.X));
                 if (value == 1) {
                     sol[j] = i;
                 }

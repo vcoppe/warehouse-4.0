@@ -103,7 +103,7 @@ public class MobileMissionEndEventTest extends TestCase {
         assertTrue(this.configuration.stock.isLocked(endPosition));
         event.run();
         assertFalse(this.configuration.stock.isLocked(endPosition));
-        assertEquals(pallet.getType(), this.configuration.stock.get(endPosition).getType());
+        assertEquals(pallet.getProduct(), this.configuration.stock.get(endPosition).getProduct());
     }
 
     public void testAddPalletToTruck() {

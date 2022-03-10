@@ -75,12 +75,12 @@ public class ProductionEndEventTest extends TestCase {
             }
         }
 
-        productionPallets.sort(Comparator.comparingInt(Pallet::getType));
-        bufferPallets.sort(Comparator.comparingInt(Pallet::getType));
+        productionPallets.sort(Comparator.comparingInt(Pallet::getProduct));
+        bufferPallets.sort(Comparator.comparingInt(Pallet::getProduct));
 
         // buffer contain the correct pallets
         for (int i = 0; i < productionPallets.size(); i++) {
-            assertEquals(productionPallets.get(i).getType(), bufferPallets.get(i).getType());
+            assertEquals(productionPallets.get(i).getProduct(), bufferPallets.get(i).getProduct());
         }
     }
 
@@ -111,15 +111,15 @@ public class ProductionEndEventTest extends TestCase {
 
             missionPallets.add(mission.getPallet());
 
-            assertEquals(mission.getPallet().getType(), this.configuration.stock.get(mission.getStartPosition()).getType());
+            assertEquals(mission.getPallet().getProduct(), this.configuration.stock.get(mission.getStartPosition()).getProduct());
         }
 
-        productionPallets.sort(Comparator.comparingInt(Pallet::getType));
-        missionPallets.sort(Comparator.comparingInt(Pallet::getType));
+        productionPallets.sort(Comparator.comparingInt(Pallet::getProduct));
+        missionPallets.sort(Comparator.comparingInt(Pallet::getProduct));
 
         // missions contain the correct pallets
         for (int i = 0; i < productionPallets.size(); i++) {
-            assertEquals(productionPallets.get(i).getType(), missionPallets.get(i).getType());
+            assertEquals(productionPallets.get(i).getProduct(), missionPallets.get(i).getProduct());
         }
     }
 

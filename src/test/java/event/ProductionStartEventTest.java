@@ -69,12 +69,12 @@ public class ProductionStartEventTest extends TestCase {
             }
         }
 
-        productionPallets.sort(Comparator.comparingInt(Pallet::getType));
-        bufferPallets.sort(Comparator.comparingInt(Pallet::getType));
+        productionPallets.sort(Comparator.comparingInt(Pallet::getProduct));
+        bufferPallets.sort(Comparator.comparingInt(Pallet::getProduct));
 
         // buffer contain the correct pallets
         for (int i = 0; i < productionPallets.size(); i++) {
-            assertEquals(productionPallets.get(i).getType(), bufferPallets.get(i).getType());
+            assertEquals(productionPallets.get(i).getProduct(), bufferPallets.get(i).getProduct());
         }
 
         this.event.run();

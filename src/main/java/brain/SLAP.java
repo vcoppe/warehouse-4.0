@@ -1,32 +1,24 @@
 package brain;
 
 import gurobi.GRBException;
-import warehouse.Scenario;
 
-public class SLAP {
+public class SLAP extends ClusterLocationAssignment {
 
-    private final Scenario scenario;
-    private int[] assignment;
-
-    public SLAP(Scenario scenario) {
-        this.scenario = scenario;
-    }
-
-    public int[] getAssignment() {
-        return this.assignment;
-    }
-
-    public void solve() {
+    @Override
+    public int[] matchClustersToLocations(int nClusters, int nIOPoints, int nLocations, int[] locationCapacity, int[] clusterSpace, double[] clusterThroughput, double[][] clusterAffinity, double[][] locationIOPointDistance) {
         try {
-            SLAPMIP model = new SLAPMIP(this.scenario.nTypes, this.scenario.nIOPoints, this.scenario.nSlots, this.scenario.slotCapacity, this.scenario.nPalletsOfType, this.scenario.throughput, this.scenario.freq, this.scenario.dist);
+            double[][] freq = new double[nClusters][nIOPoints];
+            for (int i = 0; i < nClusters; i++) {
+                for (int j = 0; j < nIOPoints; j++) {
+                    freq[i][j] = 1.0 / nIOPoints;
+                }
+            }
+            SLAPMIP model = new SLAPMIP(nClusters, nIOPoints, nLocations, locationCapacity, clusterSpace, clusterThroughput, freq, locationIOPointDistance);
             model.solve();
-
-            this.assignment = model.getSolution();
+            return model.getSolution();
         } catch (GRBException e) {
             e.printStackTrace();
-            this.assignment = null;
+            return null;
         }
-
     }
-
 }

@@ -114,7 +114,7 @@ public class MobileMissionPickUpEventTest extends TestCase {
 
         MobileMissionPickUpEvent event = new MobileMissionPickUpEvent(this.configuration.simulation, 1, this.configuration.controller, this.mobile);
 
-        assertEquals(pallet.getType(), this.configuration.stock.get(startPosition).getType());
+        assertEquals(pallet.getProduct(), this.configuration.stock.get(startPosition).getProduct());
         event.run();
         assertEquals(Pallet.FREE, this.configuration.stock.get(startPosition));
     }

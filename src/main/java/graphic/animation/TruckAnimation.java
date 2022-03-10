@@ -75,7 +75,7 @@ public class TruckAnimation implements Observer<Controller> {
                 position.getX(),
                 position.getY(),
                 Configuration.palletSize,
-                pallet.getType()
+                pallet.getProduct()
         );
 
         this.shapes.get(truck.getId()).add(shape);
@@ -187,7 +187,7 @@ public class TruckAnimation implements Observer<Controller> {
 
                 PalletShape palletShape = this.palletShapes.get(truck.getId()).get(position);
                 if (palletShape != null) {
-                    palletShape.setType(pallet.getType());
+                    palletShape.setType(pallet.getProduct());
                 } else {
                     this.add(truck, position, pallet);
                 }

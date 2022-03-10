@@ -1,11 +1,12 @@
 package warehouse;
 
-import brain.SLAP;
+import brain.ClusterLocationAssignment;
+import brain.ProductClustering;
 import util.Vector3D;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Random;
 
 public class Scenario {
@@ -14,31 +15,32 @@ public class Scenario {
     // (later) distribution evolves over time
 
     private static final Random random = new Random(0);
-    public final int nSlots, nTypes, nIOPoints, nDocks;
-    public final ArrayList<Vector3D> slots;
-    public final int[] nPalletsOfType, slotCapacity;
-    public final double[][] dist, freq;
-    public final double[] throughput, dockThroughput, productionLineInThroughput, productionLineOutThroughput;
+    public final int nLocations, nProducts, nIOPoints, nDocks;
+    public final ArrayList<Vector3D> locations;
+    public final int[] productSpace, locationCapacity;
+    public final double[][] dist, freq, productAffinity;
+    public final double[] productThroughput, dockThroughput, productionLineInThroughput, productionLineOutThroughput;
     private final Configuration configuration;
-    private final HashMap<Integer, Rule> rules;
+    private ArrayList<Rule> rules;
 
-    public Scenario(Configuration configuration, int nTypes) {
+    public Scenario(Configuration configuration, int nProducts) {
         this.configuration = configuration;
-        this.nTypes = nTypes;
+        this.nProducts = nProducts;
 
         this.nDocks = this.configuration.docks.size();
         int nProductionLines = this.configuration.productionLines.size();
 
-        this.slots = this.configuration.stock.getStockPositions();
-        this.nSlots = this.slots.size();
-        this.slotCapacity = new int[this.nSlots];
-        Arrays.fill(this.slotCapacity, 1);
+        this.locations = new ArrayList<>(this.configuration.stock.getStockPositions());
+        Collections.sort(this.locations);
+        this.nLocations = this.locations.size();
+        this.locationCapacity = new int[this.nLocations];
+        Arrays.fill(this.locationCapacity, 1);
 
         this.nIOPoints = nDocks + nProductionLines * 2; // all docks + production lines (in + out)
 
-        this.dist = new double[this.nSlots][this.nIOPoints];
-        for (int i = 0; i < this.nSlots; i++) {
-            Vector3D p1 = this.slots.get(i);
+        this.dist = new double[this.nLocations][this.nIOPoints];
+        for (int i = 0; i < this.nLocations; i++) {
+            Vector3D p1 = this.locations.get(i);
             for (int j = 0; j < this.nIOPoints; j++) {
                 Vector3D p2;
                 if (j < nDocks) {
@@ -52,15 +54,16 @@ public class Scenario {
             }
         }
 
-        this.nPalletsOfType = new int[this.nTypes];
-        this.freq = new double[this.nTypes][this.nIOPoints];
-        this.throughput = new double[this.nTypes];
+        this.productSpace = new int[this.nProducts];
+        this.freq = new double[this.nProducts][this.nIOPoints];
+        this.productThroughput = new double[this.nProducts];
+        this.productAffinity = new double[this.nProducts][this.nProducts];
 
         int totalPallets = 0;
-        for (int i = 0; i < this.nTypes; i++) {
-            this.nPalletsOfType[i] = 1 + random.nextInt(this.nSlots - totalPallets - (this.nTypes - 1 - i));
-            totalPallets += this.nPalletsOfType[i];
-            this.throughput[i] = 10 * random.nextDouble() * this.nPalletsOfType[i];
+        for (int i = 0; i < this.nProducts; i++) {
+            this.productSpace[i] = 1 + random.nextInt(this.nLocations - totalPallets - (this.nProducts - 1 - i));
+            totalPallets += this.productSpace[i];
+            this.productThroughput[i] = 10 * random.nextDouble() * this.productSpace[i];
 
             double totalFreq = 0;
             for (int j = 0; j < this.nIOPoints; j++) {
@@ -70,25 +73,27 @@ public class Scenario {
             for (int j = 0; j < this.nIOPoints; j++) {
                 this.freq[i][j] /= totalFreq;
             }
-        }
 
-
-        this.dockThroughput = new double[this.nTypes];
-        this.productionLineInThroughput = new double[this.nTypes];
-        this.productionLineOutThroughput = new double[this.nTypes];
-        for (int i = 0; i < this.nTypes; i++) {
-            for (int j = 0; j < this.nIOPoints; j++) {
-                if (j < nDocks) {
-                    this.dockThroughput[i] += this.throughput[i] * this.freq[i][j];
-                } else if (j % 2 == 0) { // start
-                    this.productionLineInThroughput[i] += this.throughput[i] * this.freq[i][j];
-                } else { // end
-                    this.productionLineOutThroughput[i] += this.throughput[i] * this.freq[i][j];
-                }
+            for (int j = i + 1; j < this.nProducts; j++) {
+                this.productAffinity[i][j] = this.productAffinity[j][i] = random.nextDouble() * random.nextDouble();
             }
         }
 
-        this.rules = new HashMap<>();
+
+        this.dockThroughput = new double[this.nProducts];
+        this.productionLineInThroughput = new double[this.nProducts];
+        this.productionLineOutThroughput = new double[this.nProducts];
+        for (int i = 0; i < this.nProducts; i++) {
+            for (int j = 0; j < this.nIOPoints; j++) {
+                if (j < nDocks) {
+                    this.dockThroughput[i] += this.productThroughput[i] * this.freq[i][j];
+                } else if (j % 2 == 0) { // start
+                    this.productionLineInThroughput[i] += this.productThroughput[i] * this.freq[i][j];
+                } else { // end
+                    this.productionLineOutThroughput[i] += this.productThroughput[i] * this.freq[i][j];
+                }
+            }
+        }
     }
 
     public static int pickFromDistribution(double[] dist) {
@@ -114,45 +119,34 @@ public class Scenario {
     }
 
     public void createZones() {
-        SLAP slap = new SLAP(this);
-        slap.solve();
-
-        int[] assignment = slap.getAssignment();
-        ArrayList<Vector3D>[] typePositions = new ArrayList[this.nTypes];
-        for (int i = 0; i < this.nTypes; i++) {
-            typePositions[i] = new ArrayList<>();
-        }
-
-        for (int i = 0; i < this.nSlots; i++) {
-            if (assignment[i] != -1) {
-                typePositions[assignment[i]].add(this.slots.get(i));
-            }
-        }
-
-        for (int i = 0; i < this.nTypes; i++) {
-            int finalI = i;
-            Rule rule = new Rule(1, true, pallet -> pallet.getType() == finalI, typePositions[i]);
-            this.rules.put(i, rule);
-            this.configuration.stock.filter.add(rule);
+        int[] productCluster = configuration.productClustering.cluster(this.nProducts, this.productSpace, this.productThroughput, this.productAffinity);
+        int nClusters = ProductClustering.getNumberOfClusters(this.nProducts, productCluster);
+        int[] clusterSpace = ProductClustering.getClusterSpace(this.nProducts, nClusters, productCluster, this.productSpace);
+        double[] clusterThroughput = ProductClustering.getClusterThroughput(this.nProducts, nClusters, productCluster, this.productThroughput);
+        double[][] clusterAffinity = ProductClustering.getClusterAffinity(this.nProducts, nClusters, productCluster, this.productAffinity);
+        int[] assignment = configuration.clusterLocationAssignment.matchClustersToLocations(nClusters, this.nIOPoints, this.nLocations, this.locationCapacity, clusterSpace, clusterThroughput, clusterAffinity, this.dist);
+        this.rules = ClusterLocationAssignment.getRules(productCluster, assignment, this.locations.toArray(new Vector3D[0]));
+        for (Rule rule : this.rules) {
+            configuration.stock.filter.add(rule);
         }
     }
 
     public void initStock() {
-        for (int i = 0; i < this.nTypes; i++) {
-            int nPallets = this.nPalletsOfType[i] / 2 + random.nextInt(1 + this.nPalletsOfType[i] / 2);
+        for (int i = 0; i < this.nProducts; i++) {
+            int nPallets = this.productSpace[i] / 2 + random.nextInt(1 + this.productSpace[i] / 2);
             for (int j = 0; j < nPallets; j++) {
                 Pallet pallet = new Pallet(i);
-                int dock = this.nDocks;
-                while (dock >= this.nDocks) {
-                    dock = pickFromDistribution(this.freq[i]);
+                for (Rule rule : this.rules) {
+                    if (rule.matches(pallet)) {
+                        for (Vector3D position : rule.getPositions()) {
+                            if (this.configuration.stock.isFree(position)) {
+                                this.configuration.stock.add(position, pallet);
+                                break;
+                            }
+                        }
+                        break;
+                    }
                 }
-                /*Vector3D position = this.configuration.palletPositionSelector.selectEndPosition(
-                        pallet,
-                        this.configuration.docks.get(dock).getPosition(),
-                        this.configuration.stock
-                );*/
-                Vector3D position = this.rules.get(i).getPositions().get(j);
-                this.configuration.stock.add(position, pallet);
             }
         }
     }

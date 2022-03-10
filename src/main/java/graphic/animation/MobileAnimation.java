@@ -79,7 +79,7 @@ public class MobileAnimation {
             palletShape.setEmptyMobile();
         } else {
             if (mobile.getPosition().equals(mission.getStartPosition()) && mission.getPallet() != null) {
-                palletShape.setType(mission.getPallet().getType());
+                palletShape.setType(mission.getPallet().getProduct());
             } else {
                 palletShape.setEmptyMobile();
             }

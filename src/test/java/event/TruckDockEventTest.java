@@ -32,7 +32,7 @@ public class TruckDockEventTest extends TestCase {
                     new Vector3D(0, i * Configuration.palletSize),
                     new Pallet(i)
             );
-            this.configuration.stock.add(this.configuration.stock.getStockPositions().get(i), new Pallet(i)); // add pallets to load in the stock
+            this.configuration.stock.add(new Vector3D(0, i * Configuration.palletSize), new Pallet(i)); // add pallets to load in the stock
             toUnload.put(
                     new Vector3D(0, i * Configuration.palletSize),
                     new Pallet(5 + i)
@@ -72,7 +72,7 @@ public class TruckDockEventTest extends TestCase {
                     Vector3D position = entry.getKey();
                     Pallet pallet = entry.getValue();
                     if (position.add(this.truck.getPosition()).equals(mission.getStartPosition())) {
-                        assertEquals(pallet.getType(), mission.getPallet().getType());
+                        assertEquals(pallet.getProduct(), mission.getPallet().getProduct());
                         assertEquals(pallet.getId(), mission.getPallet().getId());
                         foundPallet = true;
                         break;
@@ -85,7 +85,7 @@ public class TruckDockEventTest extends TestCase {
                     Vector3D position = entry.getKey();
                     Pallet pallet = entry.getValue();
                     if (position.add(this.truck.getPosition()).equals(mission.getEndPosition())) {
-                        assertEquals(pallet.getType(), mission.getPallet().getType());
+                        assertEquals(pallet.getProduct(), mission.getPallet().getProduct());
                         assertEquals(pallet.getId(), mission.getPallet().getId());
                         foundPallet = true;
                         break;

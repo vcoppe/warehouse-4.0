@@ -66,17 +66,19 @@ public class AccessibilityChecker {
             }
         }
 
-        /*boolean nextToPallet = false;
-        for (Edge edge : this.graph.getReverseEdges(position)) {
-            Vector3D v = edge.to;
-            pallet = this.stock.get(v);
-            if (pallet != null && pallet != Pallet.FREE) {
-                nextToPallet = true;
-                break;
+        boolean nextToEnd = this.graph.getReverseEdges(position).size() == 1;
+        if (!nextToEnd) {
+            for (Edge edge : this.graph.getReverseEdges(position)) {
+                Vector3D v = edge.to;
+                pallet = this.stock.get(v);
+                if (pallet != null && pallet != Pallet.FREE) {
+                    nextToEnd = true;
+                    break;
+                }
             }
-        }*/
+        }
 
-        return locks < accesses;// && (accesses > 1 || nextToPallet);
+        return locks < accesses && (accesses > 1 || nextToEnd);
     }
 
 }

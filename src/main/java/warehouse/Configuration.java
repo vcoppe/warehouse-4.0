@@ -19,6 +19,8 @@ public class Configuration {
     public final ArrayList<Lift> lifts;
     public final ArrayList<Mobile> mobiles;
 
+    public final ProductClustering productClustering;
+    public final ClusterLocationAssignment clusterLocationAssignment;
     public final MobileMissionSelector mobileMissionSelector;
     public final PalletPositionSelector palletPositionSelector;
     public final TruckDockSelector truckDockSelector;
@@ -40,6 +42,8 @@ public class Configuration {
         this.lifts = new ArrayList<>();
         this.mobiles = new ArrayList<>();
 
+        this.productClustering = new DedicatedStorage();
+        this.clusterLocationAssignment = new SLAP();
         this.mobileMissionSelector = new MobileMissionMatchingSelector(this.warehouse);
         this.palletPositionSelector = new ClosestPositionSelector(this.warehouse);
         this.truckDockSelector = new NaiveSelector();

@@ -52,12 +52,13 @@ public class ControllerEvent extends Event {
                         break;
                     }
 
-                    Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, this.stock.getStartPositions(pallet));
-
-                    if (startPosition == null) {
+                    ArrayList<Vector3D> startPositions = this.stock.getStartPositions(pallet);
+                    if (startPositions.isEmpty()) {
                         feasible = false;
                         break;
                     }
+
+                    Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(pallet, endPosition, startPositions);
 
                     Mission mission = new Mission(this.time, pallet, startPosition, endPosition);
                     this.controller.add(mission);
@@ -91,18 +92,20 @@ public class ControllerEvent extends Event {
         // get incomplete startable missions and try to complete them
         for (Mission mission : this.controller.getIncompleteStartableMissions()) {
             if (mission.getStartPosition() == null) { // load mission
-                Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(mission.getPallet(), mission.getEndPosition(), this.stock.getStartPositions(mission.getPallet()));
-
+                ArrayList<Vector3D> startPositions = this.stock.getStartPositions(mission.getPallet());
                 // TODO check for unaccessible pallets
-                if (startPosition == null) continue;
+                if (startPositions.isEmpty()) continue;
+
+                Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(mission.getPallet(), mission.getEndPosition(), startPositions);
 
                 mission.setStartPosition(startPosition);
                 this.stock.lock(startPosition);
             } else if (mission.getEndPosition() == null) { // unload mission
-                Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(mission.getPallet(), mission.getStartPosition(), this.stock.getEndPositions(mission.getPallet()));
-
+                ArrayList<Vector3D> endPositions = this.stock.getEndPositions(mission.getPallet());
                 // TODO check for unaccessible free locations
-                if (endPosition == null) continue;
+                if (endPositions.isEmpty()) continue;
+
+                Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(mission.getPallet(), mission.getStartPosition(), endPositions);
 
                 mission.setEndPosition(endPosition);
                 this.stock.lock(endPosition);

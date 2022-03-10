@@ -30,7 +30,7 @@ public class PalletShape extends MyShape {
     }
 
     public void setType(int type) {
-        if (type == Pallet.FREE.getType()) {
+        if (type == Pallet.FREE.getProduct()) {
             this.shape.setFill(Color.WHITE);
             this.shape.setStroke(Color.GREY);
         } else {

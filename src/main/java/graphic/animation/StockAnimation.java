@@ -34,7 +34,7 @@ public class StockAnimation implements Observer<Stock> {
                 position.getX(),
                 position.getY(),
                 Configuration.palletSize,
-                pallet.getType()
+                pallet.getProduct()
         );
         this.shapes.put(position, shape);
         this.group.getChildren().add(shape.getShape());
@@ -63,7 +63,7 @@ public class StockAnimation implements Observer<Stock> {
                     palletShape = this.add(position, pallet);
                 }
 
-                palletShape.setType(pallet.getType());
+                palletShape.setType(pallet.getProduct());
             } else if (palletShape != null) {
                 this.remove(position, palletShape);
             }
