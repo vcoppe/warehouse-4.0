@@ -14,6 +14,7 @@ public class Mobile extends Observable {
     private static int MOBILE_ID = 0;
     private final int id;
     private static final double speed = 0.05; // in second per distance unit
+    private static final double loadedSpeedFactor = 2; // time factor when loaded
     private Vector3D position, targetPosition;
     private double pathTime;
     private Mission mission;
@@ -32,8 +33,20 @@ public class Mobile extends Observable {
         return this.id;
     }
 
-    public static double getSpeed() {
-        return speed;
+    public static double getSpeed(boolean loaded) {
+        if (loaded) {
+            return speed * loadedSpeedFactor;
+        } else {
+            return speed;
+        }
+    }
+
+    public double getSpeed() {
+        if (this.mission == null || !this.mission.pickedUp()) {
+            return getSpeed(false);
+        } else {
+            return getSpeed(true);
+        }
     }
 
     public boolean isAvailable() {

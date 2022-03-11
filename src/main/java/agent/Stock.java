@@ -171,19 +171,6 @@ public class Stock extends Observable {
                 }
             }
 
-            // if no match, return any possible position
-            /*if (positions.isEmpty()) {
-                for (Vector3D position : this.stock.getStockPositions()) {
-                    Pallet stockPallet = this.stock.get(position);
-                    if (stockPallet != null &&
-                            stockPallet.getProduct() == pallet.getProduct() &&
-                            !this.stock.isLocked(position) &&
-                            this.stock.accessibilityChecker.check(position)) {
-                        positions.add(position);
-                    }
-                }
-            }*/
-
             return positions;
         }
 
@@ -216,17 +203,6 @@ public class Stock extends Observable {
                     }
                 }
             }
-
-            // if no match, return any possible position
-            // careful because pallets out of position need to be retrievable with the filter too
-            /*if (positions.isEmpty()) {
-                for (Vector3D position : this.stock.getStockPositions()) {
-                    if (this.stock.isFree(position) &&
-                            this.stock.accessibilityChecker.check(position)) {
-                        positions.add(position);
-                    }
-                }
-            }*/
 
             return positions;
         }

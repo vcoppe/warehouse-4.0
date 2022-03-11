@@ -4,7 +4,7 @@ import util.Vector3D;
 
 public interface TravelTimeEstimator {
 
-    double estimate(Vector3D startPosition, Vector3D endPosition);
+    double estimate(Vector3D startPosition, Vector3D endPosition, boolean loaded);
 
     void update(Vector3D startPosition, Vector3D endPosition, double time);
 

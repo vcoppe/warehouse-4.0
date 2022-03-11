@@ -80,7 +80,8 @@ public class PathFinderEvent extends Event {
                             mission.getExpectedPickUpTime() +
                                     this.travelTimeEstimator.estimate(
                                             mission.getStartPosition(),
-                                            mission.getEndPosition()
+                                            mission.getEndPosition(),
+                                            true
                                     )
                     );
                 }

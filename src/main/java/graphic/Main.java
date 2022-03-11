@@ -1,5 +1,6 @@
 package graphic;
 
+import event.ProductionGeneratorEvent;
 import event.TruckGeneratorEvent;
 import graphic.dashboard.AnimationDashboard;
 import graphic.dashboard.KPIDashboard;
@@ -60,7 +61,7 @@ public class Main extends Application {
         scenario.initStock();
 
         this.configuration.simulation.enqueueEvent(new TruckGeneratorEvent(this.configuration.simulation, 0, this.configuration, scenario));
-        //this.configuration.simulation.enqueueEvent(new ProductionGeneratorEvent(this.configuration.simulation, 30, this.configuration, scenario, this.configuration.productionLines.get(0)));
+        this.configuration.simulation.enqueueEvent(new ProductionGeneratorEvent(this.configuration.simulation, 30, this.configuration, scenario, this.configuration.productionLines.get(0)));
     }
 
     @Override

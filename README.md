@@ -6,7 +6,6 @@ A warehouse simulation environment with unit-load products, used to experiment w
 
 Simulation:
 - Different types of mobiles: speed, restricted access (space and time)
-- Vary speed when carrying pallet
 - Buffers at docks and between zones dedicated to forklifts/robots
 - Battery of shuttles and charging zone
 - Cross-docking

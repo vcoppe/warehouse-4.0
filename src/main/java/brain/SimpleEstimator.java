@@ -15,9 +15,9 @@ public class SimpleEstimator implements TravelTimeEstimator {
     }
 
     @Override
-    public double estimate(Vector3D startPosition, Vector3D endPosition) {
+    public double estimate(Vector3D startPosition, Vector3D endPosition, boolean loaded) {
         Vector2D dist = this.warehouse.getDistance(startPosition, endPosition);
-        return dist.getX() * Mobile.getSpeed() + dist.getY() * Lift.speed;
+        return dist.getX() * Mobile.getSpeed(loaded) + dist.getY() * Lift.speed;
     }
 
     @Override

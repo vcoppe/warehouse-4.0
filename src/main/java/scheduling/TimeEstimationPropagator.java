@@ -81,7 +81,8 @@ public class TimeEstimationPropagator {
                 } else {
                     mission.setExpectedEndTime(mission.getExpectedPickUpTime() + this.travelTimeEstimator.estimate(
                             mission.getStartPosition(),
-                            mission.getEndPosition()
+                            mission.getEndPosition(),
+                            true
                     ));
                 }
             }
