@@ -2,7 +2,6 @@ package pathfinding;
 
 import agent.Mobile;
 import junit.framework.TestCase;
-import util.Pair;
 import util.Vector3D;
 import warehouse.Mission;
 
@@ -41,8 +40,8 @@ public class WHCAStarTest extends TestCase {
 
         pathFinder.computePaths(0, mobiles);
 
-        ArrayList<Pair<Vector3D, Double>> path = this.mobile.getPath();
+        Path path = this.mobile.getPath();
 
-        assertEquals(10 * this.mobile.getSpeed(), path.get(path.size() - 1).second);
+        assertEquals(10 * this.mobile.getSpeed(), path.getEndTimedPosition().second);
     }
 }

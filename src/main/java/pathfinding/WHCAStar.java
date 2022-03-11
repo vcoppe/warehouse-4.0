@@ -41,7 +41,7 @@ public class WHCAStar extends PathFinder {
             this.table.clear();
 
             for (Mobile mobile : mobiles) { // reserve current position
-                Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
+                Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
                 if (pair.first.first.equals(pair.second.first)) {
                     this.table.reserve(pair.first.first, pair.first.second, pair.second.second, mobile.getId());
                 } else {
@@ -123,7 +123,7 @@ public class WHCAStar extends PathFinder {
     private boolean computePath(double time, Mobile mobile) {
         this.initReverseResumableAStar(mobile);
 
-        Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
+        Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
 
         Vector3D startPosition = mobile.getPosition();
         Vector3D endPosition = mobile.getTargetPosition();
@@ -222,43 +222,45 @@ public class WHCAStar extends PathFinder {
     }
 
     private void setPath(double time, Mobile mobile, HashMap<AStarState, AStarState> prev, AStarState endState) {
-        Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
+        Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
         AStarState startState = new AStarState(pair.second.first, new AStarCost(pair.second.second, 0), 0);
         Vector3D startPosition = pair.second.first;
 
-        ArrayList<Pair<Vector3D, Double>> path = new ArrayList<>();
+        Path path = new Path();
 
         AStarState current = endState;
-        path.add(new Pair<>(current.position, current.cost.time));
+        path.add(current.position, current.cost.time);
         while (!current.equals(startState)) {
-            current = prev.get(current);
-            path.add(0, new Pair<>(current.position, current.cost.time));
+            AStarState previous = prev.get(current);
+            path.add(previous.position, previous.cost.time);
+
+            Vector2D w = this.graph.getWeight(previous.position, current.position);
+            if (DoublePrecisionConstraint.round(current.cost.time - previous.cost.time - w.getX() * mobile.getSpeed() - w.getY() * Lift.speed) > 0) {
+                double timeLeave = DoublePrecisionConstraint.round(current.cost.time - w.getX() * mobile.getSpeed() - w.getY() * Lift.speed);
+                path.add(previous.position, timeLeave);
+            }
+            current = previous;
         }
 
         if (!pair.first.first.equals(startPosition)) {
-            path.add(0, new Pair<>(pair.first.first, pair.first.second));
+            path.add(pair.first);
         }
 
-        // reserve path in table
-        for (int i = path.size() - 1; i >= 0; i--) {
-            Vector3D u = path.get(i).first;
-            double timeU = path.get(i).second;
-            if (i < path.size() - 1) {
-                Vector3D v = path.get(i + 1).first;
-                double timeV = path.get(i + 1).second;
-                Vector2D w = this.graph.getWeight(u, v);
-
-                if (DoublePrecisionConstraint.round(timeV - timeU - w.getX() * mobile.getSpeed() - w.getY() * Lift.speed) > 0) {
-                    double timeLeaveU = DoublePrecisionConstraint.round(timeV - w.getX() * mobile.getSpeed() - w.getY() * Lift.speed);
-                    path.add(i + 1, new Pair<>(u, timeLeaveU));
-                    this.table.reserve(u, timeU, timeLeaveU, mobile.getId());
-                } else {
-                    this.table.reserve(u, timeU, mobile.getId());
-                }
+        Pair<Vector3D, Double> previousTimedPosition = null;
+        for (Pair<Vector3D, Double> timedPosition : path) {
+            if (previousTimedPosition != null && previousTimedPosition.first == timedPosition.first) {
+                this.table.reserve(timedPosition.first, previousTimedPosition.second, timedPosition.second, mobile.getId());
             } else {
-                if (timeU > time) this.nextUpdateTime = Math.min(this.nextUpdateTime, timeU);
-                this.table.reserve(u, timeU, timeU + H, mobile.getId());
+                this.table.reserve(timedPosition.first, timedPosition.second, mobile.getId());
             }
+            previousTimedPosition = timedPosition;
+        }
+
+        if (previousTimedPosition != null) {
+            if (previousTimedPosition.second > time)
+                this.nextUpdateTime = Math.min(this.nextUpdateTime, previousTimedPosition.second);
+            // reserve extra buffer in last position
+            this.table.reserve(previousTimedPosition.first, previousTimedPosition.second, previousTimedPosition.second + H, mobile.getId());
         }
 
         if (debug && noPath) {

@@ -85,7 +85,7 @@ public class MobileAnimation {
             }
         }
 
-        List<Pair<Vector3D, Double>> path = mobile.getPath();
+        pathfinding.Path path = mobile.getPath();
 
         if (path == null) {
             return null;

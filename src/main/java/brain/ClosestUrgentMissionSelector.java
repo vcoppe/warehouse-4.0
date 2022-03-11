@@ -26,7 +26,7 @@ public class ClosestUrgentMissionSelector implements MobileMissionSelector {
             double shortestDist = Double.MAX_VALUE;
             Mission closestMission = null;
 
-            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
+            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
             Vector3D position = pair.second.first;
             double offset = pair.second.second - time;
 

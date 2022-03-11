@@ -27,7 +27,7 @@ public class MobileMissionMatchingSelector implements MobileMissionSelector {
 
         for (int i=0; i<mobiles.size(); i++) {
             Mobile mobile = mobiles.get(i);
-            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getPositionsAt(time);
+            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
             Vector3D position = pair.second.first;
             double offset = pair.second.second - time;
             for (int j = 0; j < missions.size(); j++) {

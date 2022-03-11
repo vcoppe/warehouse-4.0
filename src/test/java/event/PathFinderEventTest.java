@@ -3,13 +3,11 @@ package event;
 import agent.Controller;
 import agent.Mobile;
 import junit.framework.TestCase;
+import pathfinding.Path;
 import simulation.Simulation;
-import util.Pair;
 import util.Vector3D;
 import warehouse.Configuration;
 import warehouse.Mission;
-
-import java.util.ArrayList;
 
 public class PathFinderEventTest extends TestCase {
 
@@ -65,8 +63,8 @@ public class PathFinderEventTest extends TestCase {
         assertEquals(1, this.configuration.simulation.queueSize());
         assertTrue(this.configuration.simulation.nextEvent() instanceof PathUpdateEvent);
 
-        ArrayList<Pair<Vector3D, Double>> path = this.mobile.getPath();
-        assertEquals(this.mobile.getPosition(), path.get(0).first);
-        assertEquals(this.mobile.getTargetPosition(), path.get(path.size()-1).first);
+        Path path = this.mobile.getPath();
+        assertEquals(this.mobile.getPosition(), path.getStartTimedPosition().first);
+        assertEquals(this.mobile.getTargetPosition(), path.getEndTimedPosition().first);
     }
 }
