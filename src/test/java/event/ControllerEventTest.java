@@ -7,10 +7,7 @@ import agent.Truck;
 import junit.framework.TestCase;
 import util.Pair;
 import util.Vector3D;
-import warehouse.Configuration;
-import warehouse.Mission;
-import warehouse.Pallet;
-import warehouse.Production;
+import warehouse.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +29,7 @@ public class ControllerEventTest extends TestCase {
         this.configuration = new Configuration();
         this.controller = this.configuration.controller;
         this.stock = this.configuration.stock;
+        this.stock.filter.add(new Rule(0, true, pallet -> true, new ArrayList<>(this.stock.getStockPositions())));
         this.productionLine = this.configuration.productionLines.get(0);
 
         this.event = new ControllerEvent(this.configuration.simulation, 1, this.controller);
