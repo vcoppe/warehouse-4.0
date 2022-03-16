@@ -247,7 +247,7 @@ public class WHCAStar extends PathFinder {
         }
 
         Pair<Vector3D, Double> previousTimedPosition = null;
-        for (Pair<Vector3D, Double> timedPosition : path) {
+        for (Pair<Vector3D, Double> timedPosition : path.getTimedPositions()) {
             if (previousTimedPosition != null && previousTimedPosition.first == timedPosition.first) {
                 this.table.reserve(timedPosition.first, previousTimedPosition.second, timedPosition.second, mobile.getId());
             } else {
@@ -265,7 +265,7 @@ public class WHCAStar extends PathFinder {
 
         if (debug && noPath) {
             System.out.println("set path for mobile " + mobile.getId() + ":");
-            for (Pair<Vector3D, Double> p : path) {
+            for (Pair<Vector3D, Double> p : path.getTimedPositions()) {
                 System.out.println(p.first + " , " + p.second);
             }
         }

@@ -3,24 +3,28 @@ package pathfinding;
 import util.Pair;
 import util.Vector3D;
 
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.TreeSet;
 
-public class Path implements Iterable<Pair<Vector3D, Double>> {
+public class Path {
 
     private final TreeSet<Pair<Vector3D, Double>> path;
+    private ArrayList<Action> actions;
 
     public Path() {
         this.path = new TreeSet<>(Comparator.comparing(Pair::getSecond));
+        this.actions = null;
     }
 
     public void add(Vector3D position, Double time) {
         this.path.add(new Pair<>(position, time));
+        this.actions = null;
     }
 
     public void add(Pair<Vector3D, Double> timedPosition) {
         this.path.add(timedPosition);
+        this.actions = null;
     }
 
     public Pair<Vector3D, Double> getStartTimedPosition() {
@@ -36,9 +40,9 @@ public class Path implements Iterable<Pair<Vector3D, Double>> {
 
         double alpha = (pair.second.second - time) / (pair.second.second - pair.first.second);
         return new Vector3D(
-                (int) (alpha * pair.first.first.getX() + (1 - alpha) * pair.second.first.getX()),
-                (int) (alpha * pair.first.first.getY() + (1 - alpha) * pair.second.first.getY()),
-                (int) (alpha * pair.first.first.getZ() + (1 - alpha) * pair.second.first.getZ())
+                (int) Math.round(alpha * pair.first.first.getX() + (1 - alpha) * pair.second.first.getX()),
+                (int) Math.round(alpha * pair.first.first.getY() + (1 - alpha) * pair.second.first.getY()),
+                (int) Math.round(alpha * pair.first.first.getZ() + (1 - alpha) * pair.second.first.getZ())
         );
     }
 
@@ -72,8 +76,27 @@ public class Path implements Iterable<Pair<Vector3D, Double>> {
         return this.path.isEmpty();
     }
 
-    @Override
-    public Iterator<Pair<Vector3D, Double>> iterator() {
-        return this.path.iterator();
+    public double getCost() {
+        return this.path.last().second - this.path.first().second;
     }
+
+    public Iterable<Pair<Vector3D, Double>> getTimedPositions() {
+        return this.path;
+    }
+
+    public Iterable<Action> getActions() {
+        if (this.actions == null) {
+            this.actions = new ArrayList<>();
+
+            Pair<Vector3D, Double> previous = null;
+            for (Pair<Vector3D, Double> current : this.getTimedPositions()) {
+                if (previous != null) {
+                    this.actions.add(new Action(previous, current));
+                }
+                previous = current;
+            }
+        }
+        return this.actions;
+    }
+
 }
