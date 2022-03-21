@@ -9,28 +9,29 @@ import java.util.stream.Collectors;
 
 public class ConflictBasedSearch extends PathFinder {
 
+    // TODO define precision used everywhere
+
     private final static CollisionDetection<Mobile, Mobile> collisionDetection = new SimpleCollisionDetection();
+    private final SafeIntervalPathPlanning safeIntervalPathPlanning;
     private HashMap<Integer, Mobile> mobiles;
+    private double time;
 
     public ConflictBasedSearch(Graph graph) {
         super(graph);
+        this.safeIntervalPathPlanning = new SafeIntervalPathPlanning(graph);
     }
 
     private static Conflict getFirstConflict(Mobile m1, Path p1, Mobile m2, Path p2) {
         Iterator<Action> it1 = p1.getActions().iterator(), it2 = p2.getActions().iterator();
-        if (!it1.hasNext() || !it2.hasNext()) {
-            return null;
-        }
-
         Action a1 = it1.next(), a2 = it2.next();
         while (true) {
-            while (a1.endTime() < a2.startTime()) {
+            while (a1.endTime() <= a2.startTime()) {
                 if (!it1.hasNext()) {
                     return null;
                 }
                 a1 = it1.next();
             }
-            while (a2.endTime() < a1.startTime()) {
+            while (a2.endTime() <= a1.startTime()) {
                 if (!it2.hasNext()) {
                     return null;
                 }
@@ -55,13 +56,9 @@ public class ConflictBasedSearch extends PathFinder {
         }
     }
 
-    // add conflict avoidance table
-    public static Path safeIntervalPathPlanning(Mobile mobile, ArrayList<Constraint> constraints) {
-        return null;
-    }
-
     @Override
     public void computePaths(double time, ArrayList<Mobile> mobiles) {
+        this.time = time;
         this.mobiles = new HashMap<>();
 
         // init root node with shortest path for each mobile
@@ -69,7 +66,12 @@ public class ConflictBasedSearch extends PathFinder {
         for (Mobile mobile : mobiles) {
             this.mobiles.put(mobile.getId(), mobile);
 
-            Path path = safeIntervalPathPlanning(mobile, null);
+            Path path = this.safeIntervalPathPlanning.findPath(mobile, time, null);
+            if (path == null) {
+                System.out.println("CBS: infeasible problem.");
+                return;
+            }
+
             root.addPath(mobile, path);
             ArrayList<Conflict> newConflicts = this.findConflicts(root, mobile);
             if (newConflicts.size() == 1 && newConflicts.get(0).type == Conflict.Type.INFEASIBLE) {
@@ -85,10 +87,15 @@ public class ConflictBasedSearch extends PathFinder {
             ConstraintTreeNode node = queue.poll();
             Conflict conflict = node.conflicts.poll();
 
+            System.out.println("CBS: current cost=" + node.cost + ", queue size=" + queue.size());
+
             if (conflict == null) { // solution found
                 this.setPaths(time, mobiles, node);
+                System.out.println("CBS: no conflicts found!");
                 return;
             }
+
+            System.out.println("CBS: solving conflicts between " + conflict.mobiles[0].getId() + " and " + conflict.mobiles[1].getId());
 
             ArrayList<ConstraintTreeNode> children = new ArrayList<>();
             for (Mobile mobile : conflict.mobiles) {
@@ -97,7 +104,7 @@ public class ConflictBasedSearch extends PathFinder {
 
                 // check/merge constraints?
 
-                Path path = safeIntervalPathPlanning(mobile, child.getAllConstraints(mobile));
+                Path path = this.safeIntervalPathPlanning.findPath(mobile, time, child.getAllConstraints(mobile));
                 if (path != null) {
                     child.addPath(mobile, path);
 
@@ -111,7 +118,7 @@ public class ConflictBasedSearch extends PathFinder {
                 }
             }
 
-            // choose one of the children to get a positive constraint
+            // TODO choose one of the children to get a positive constraint
 
             queue.addAll(children);
         }
@@ -120,9 +127,17 @@ public class ConflictBasedSearch extends PathFinder {
     }
 
     private void setPaths(double time, ArrayList<Mobile> mobiles, ConstraintTreeNode node) {
+        this.nextUpdateTime = Double.MAX_VALUE;
+
         HashMap<Integer, Path> paths = node.getAllPaths();
         for (Mobile mobile : mobiles) {
-            mobile.setPath(time, paths.get(mobile.getId()));
+            Path path = paths.get(mobile.getId());
+            mobile.setPath(time, path);
+
+            double endTime = path.getEndTime();
+            if (endTime > time && endTime < this.nextUpdateTime) {
+                this.nextUpdateTime = endTime;
+            }
         }
     }
 
@@ -150,7 +165,7 @@ public class ConflictBasedSearch extends PathFinder {
                     }
                     ArrayList<Constraint> mobileConstraints = constraints.get(m.getId());
                     mobileConstraints.add(firstConflict.getConstraint(m));
-                    Path path = safeIntervalPathPlanning(m, mobileConstraints);
+                    Path path = this.safeIntervalPathPlanning.findPath(m, this.time, mobileConstraints);
                     mobileConstraints.remove(mobileConstraints.size() - 1);
 
                     if (path == null) overcost[i] = Double.MAX_VALUE;
@@ -240,7 +255,7 @@ public class ConflictBasedSearch extends PathFinder {
 
     }
 
-    private static class Constraint {
+    static class Constraint {
 
         boolean positive;
         Vector3D from, to;
@@ -256,6 +271,10 @@ public class ConflictBasedSearch extends PathFinder {
 
         public Constraint(Vector3D from, Vector3D to, double start, double end) {
             this(from, to, start, end, false);
+        }
+
+        public Constraint(Vector3D position, double start, double end) {
+            this(position, position, start, end, false);
         }
 
     }
@@ -341,7 +360,7 @@ public class ConflictBasedSearch extends PathFinder {
         }
 
         public void updateHeuristic() {
-            // this.h
+            // TODO heuristic based on conflicts
         }
 
         public double getEstimate() {

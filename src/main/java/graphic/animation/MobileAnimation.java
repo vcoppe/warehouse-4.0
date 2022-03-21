@@ -106,7 +106,7 @@ public class MobileAnimation {
         double cumulTime = 0, lastTime = time;
         boolean end = false;
 
-        for (Pair<Vector3D, Double> pair : path) {
+        for (Pair<Vector3D, Double> pair : path.getTimedPositions()) {
             Vector3D position = pair.first;
             double positionTime = pair.second;
 

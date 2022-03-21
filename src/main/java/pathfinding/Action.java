@@ -32,4 +32,8 @@ public class Action {
         return this.from.first == this.to.first;
     }
 
+    @Override
+    public String toString() {
+        return this.startTime() + " " + this.startPosition() + ", " + this.endTime() + " " + this.endPosition();
+    }
 }

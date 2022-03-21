@@ -14,6 +14,7 @@ public class WHCAStar extends PathFinder {
 
     public static final int W = 30, H = 40;
 
+    private final ReverseResumableAStar reverseResumableAStar;
     private final Random random;
 
     private final boolean debug = true;
@@ -21,6 +22,7 @@ public class WHCAStar extends PathFinder {
 
     public WHCAStar(Graph graph) {
         super(graph);
+        this.reverseResumableAStar = new ReverseResumableAStar(graph);
         this.random = new Random(0);
     }
 
@@ -121,7 +123,7 @@ public class WHCAStar extends PathFinder {
      * while avoiding other mobiles for which the path has already been computed
      */
     private boolean computePath(double time, Mobile mobile) {
-        this.initReverseResumableAStar(mobile);
+        this.reverseResumableAStar.init(mobile);
 
         Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
 
@@ -133,16 +135,12 @@ public class WHCAStar extends PathFinder {
 
         PriorityQueue<AStarState> pq = new PriorityQueue<>();
 
-        Vector2D dist2D = this.reverseResumableAStar(mobile, pair.second.first, startPosition);
-        if (dist2D == null) {
-            System.out.println("no path from " + pair.second.first + " to " + endPosition);
-            (new java.util.Scanner(System.in)).nextLine();
-        }
+        Vector2D dist2D = this.reverseResumableAStar.distance(mobile, pair.second.first, startPosition);
         double startEstimate = DoublePrecisionConstraint.round(pair.second.second + dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
-        AStarState initialState = new AStarState(pair.first.first, new AStarCost(pair.first.second, 0), 0);
-        AStarState startState = new AStarState(pair.second.first, new AStarCost(pair.second.second, 0), startEstimate);
+        AStarState initialState = new AStarState(pair.first.first, new AStarCost(pair.first.second, 0, 0));
+        AStarState startState = new AStarState(pair.second.first, new AStarCost(pair.second.second, startEstimate, 0));
 
-        dist.put(startState, new AStarCost(pair.second.second, 0));
+        dist.put(startState, new AStarCost(pair.second.second, startEstimate, 0));
         prev.put(startState, initialState);
         pq.add(startState);
 
@@ -155,7 +153,7 @@ public class WHCAStar extends PathFinder {
 
             Vector3D u = state.position;
             AStarCost costU = state.cost;
-            double distU = state.cost.time;
+            double distU = state.cost.g;
 
             if (costU.compareTo(dist.get(state)) > 0) { // not the shortest path anymore
                 continue;
@@ -190,13 +188,13 @@ public class WHCAStar extends PathFinder {
                     }
                 }
 
-                AStarCost costV = new AStarCost(otherDist, costU.moves + 1);
-                AStarState next = new AStarState(v, costV, 0);
+                AStarCost costV = new AStarCost(otherDist, 0, costU.moves + 1);
+                AStarState next = new AStarState(v, costV);
 
                 if (!dist.containsKey(next) || costV.compareTo(dist.get(next)) < 0) {
-                    dist2D = this.reverseResumableAStar(mobile, v, startPosition);
+                    dist2D = this.reverseResumableAStar.distance(mobile, v, startPosition);
                     if (dist2D == null) continue;
-                    next.h = DoublePrecisionConstraint.round(dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
+                    next.cost.h = DoublePrecisionConstraint.round(dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
                     dist.put(next, costV);
                     prev.put(next, state);
                     pq.add(next);
@@ -207,8 +205,8 @@ public class WHCAStar extends PathFinder {
 
             // wait move
             if (distU >= time + H || this.table.isAvailable(u, distU, distWaitU, mobile.getId())) { // check for collisions only within the time window
-                AStarCost costWaitU = new AStarCost(distWaitU, costU.moves);
-                AStarState next = new AStarState(u, costWaitU, state.h);
+                AStarCost costWaitU = new AStarCost(distWaitU, state.cost.h, costU.moves);
+                AStarState next = new AStarState(u, costWaitU);
 
                 if (!dist.containsKey(next) || costWaitU.compareTo(dist.get(next)) < 0) {
                     dist.put(next, costWaitU);
@@ -223,20 +221,20 @@ public class WHCAStar extends PathFinder {
 
     private void setPath(double time, Mobile mobile, HashMap<AStarState, AStarState> prev, AStarState endState) {
         Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
-        AStarState startState = new AStarState(pair.second.first, new AStarCost(pair.second.second, 0), 0);
+        AStarState startState = new AStarState(pair.second.first, new AStarCost(pair.second.second, 0, 0));
         Vector3D startPosition = pair.second.first;
 
         Path path = new Path();
 
         AStarState current = endState;
-        path.add(current.position, current.cost.time);
+        path.add(current.position, current.cost.g);
         while (!current.equals(startState)) {
             AStarState previous = prev.get(current);
-            path.add(previous.position, previous.cost.time);
+            path.add(previous.position, previous.cost.g);
 
             Vector2D w = this.graph.getWeight(previous.position, current.position);
-            if (DoublePrecisionConstraint.round(current.cost.time - previous.cost.time - w.getX() * mobile.getSpeed() - w.getY() * Lift.speed) > 0) {
-                double timeLeave = DoublePrecisionConstraint.round(current.cost.time - w.getX() * mobile.getSpeed() - w.getY() * Lift.speed);
+            if (DoublePrecisionConstraint.round(current.cost.g - previous.cost.g - w.getX() * mobile.getSpeed() - w.getY() * Lift.speed) > 0) {
+                double timeLeave = DoublePrecisionConstraint.round(current.cost.g - w.getX() * mobile.getSpeed() - w.getY() * Lift.speed);
                 path.add(previous.position, timeLeave);
             }
             current = previous;
@@ -273,19 +271,37 @@ public class WHCAStar extends PathFinder {
         mobile.setPath(time, path);
     }
 
-    class AStarState implements Comparable<AStarState> {
-        Vector3D position;
-        AStarCost cost;
-        double h;
+    static class AStarCost implements Comparable<AStarCost> {
 
-        public AStarState(Vector3D position, AStarCost cost, double h) {
-            this.position = position;
-            this.cost = cost;
+        double g, h;
+        int moves;
+
+        public AStarCost(double g, double h, int moves) {
+            this.g = g;
             this.h = h;
+            this.moves = moves;
         }
 
         public double getEstimate() {
-            return this.cost.time + this.h;
+            return this.g + this.h;
+        }
+
+        @Override
+        public int compareTo(AStarCost other) {
+            if (this.g == other.g) {
+                return Integer.compare(this.moves, other.moves);
+            }
+            return Double.compare(this.g, other.g);
+        }
+    }
+
+    class AStarState implements Comparable<AStarState> {
+        Vector3D position;
+        AStarCost cost;
+
+        public AStarState(Vector3D position, AStarCost cost) {
+            this.position = position;
+            this.cost = cost;
         }
 
         @Override
@@ -293,39 +309,20 @@ public class WHCAStar extends PathFinder {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             AStarState that = (AStarState) o;
-            return Double.compare(that.cost.time, this.cost.time) == 0 && this.position.equals(that.position);
+            return Double.compare(that.cost.g, this.cost.g) == 0 && this.position.equals(that.position);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.position.getX(), this.position.getY(), this.position.getZ(), this.cost.time);
+            return Objects.hash(this.position.getX(), this.position.getY(), this.position.getZ(), this.cost.g);
         }
 
         @Override
         public int compareTo(AStarState other) {
-            if (this.getEstimate() == other.getEstimate()) {
+            if (this.cost.getEstimate() == other.cost.getEstimate()) {
                 return this.cost.compareTo(other.cost);
             }
-            return Double.compare(this.getEstimate(), other.getEstimate());
-        }
-    }
-
-    class AStarCost implements Comparable<AStarCost> {
-
-        double time;
-        int moves;
-
-        public AStarCost(double time, int moves) {
-            this.time = time;
-            this.moves = moves;
-        }
-
-        @Override
-        public int compareTo(AStarCost other) {
-            if (this.time == other.time) {
-                return this.moves - other.moves;
-            }
-            return Double.compare(this.time, other.time);
+            return Double.compare(this.cost.getEstimate(), other.cost.getEstimate());
         }
     }
 

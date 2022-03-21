@@ -31,8 +31,24 @@ public class Path {
         return this.path.first();
     }
 
+    public double getStartTime() {
+        return this.path.first().second;
+    }
+
+    public Vector3D getStartPosition() {
+        return this.path.first().first;
+    }
+
     public Pair<Vector3D, Double> getEndTimedPosition() {
         return this.path.last();
+    }
+
+    public double getEndTime() {
+        return this.path.last().second;
+    }
+
+    public Vector3D getEndPosition() {
+        return this.path.last().first;
     }
 
     public Vector3D getPositionAt(double time) {
@@ -98,5 +114,4 @@ public class Path {
         }
         return this.actions;
     }
-
 }

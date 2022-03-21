@@ -6,6 +6,7 @@ import java.util.Objects;
 public class Vector2D implements Comparable<Vector2D> {
 
     public static final Comparator<Vector2D> manhattanDistanceComparator = Comparator.comparing(Vector2D::norm);
+    public static final Vector2D zero = new Vector2D(0, 0);
     private int x, y;
 
     public Vector2D(int x, int y) {
