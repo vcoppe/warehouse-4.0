@@ -49,7 +49,7 @@
             <groupId>com.gurobi</groupId>
             <artifactId>gurobi</artifactId>
             <scope>system</scope>
-            <version>9.1.2</version>
+            <version>9.5.2</version>
             <systemPath>${project.basedir}/gurobi.jar</systemPath>
         </dependency>
     </dependencies>

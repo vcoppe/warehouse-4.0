@@ -307,12 +307,6 @@ public class SafeIntervalPathPlanning {
                 if (successor.cost.g > maxTime) {
                     continue;
                 }
-                if (this.visited.contains(successor)) {
-                    continue;
-                }
-                if (this.distance.containsKey(successor) && state.cost.g >= this.distance.get(state).g) {
-                    continue;
-                }
 
                 this.distance.put(successor, successor.cost);
                 this.queue.add(successor);
@@ -377,7 +371,7 @@ public class SafeIntervalPathPlanning {
                     }
                 }
 
-                if (this.distance.containsKey(child) && childCost.compareTo(this.distance.get(child)) > 0) {
+                if (this.distance.containsKey(child) && childCost.compareTo(this.distance.get(child)) >= 0) {
                     continue;
                 }
 
