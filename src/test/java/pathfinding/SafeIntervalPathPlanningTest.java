@@ -7,7 +7,7 @@ import warehouse.Mission;
 
 import java.util.ArrayList;
 
-public class WHCAStarTest extends TestCase {
+public class SafeIntervalPathPlanningTest extends TestCase {
 
     private int n;
     private Vector3D[] positions;
@@ -29,19 +29,21 @@ public class WHCAStarTest extends TestCase {
 
         for (int i = 0; i < 10; i++) {
             graph.addEdge(this.positions[i], this.positions[i + 1]);
+            graph.addEdge(this.positions[i + 1], this.positions[i]);
         }
 
         this.mobile.start(new Mission(0, null, null, null, this.positions[0], this.positions[10]));
         this.mobile.pickUp();
 
-        WHCAStar pathFinder = new WHCAStar(graph);
         ArrayList<Mobile> mobiles = new ArrayList<>();
         mobiles.add(this.mobile);
 
-        pathFinder.computePaths(0, mobiles);
+        SafeIntervalPathPlanning pathFinder = new SafeIntervalPathPlanning(graph, mobiles);
+
+        pathFinder.computePath(0, this.mobile);
 
         Path path = this.mobile.getPath();
 
-        assertEquals(10 * this.mobile.getSpeed(), path.getEndTimedPosition().second);
+        assertEquals(10 * this.mobile.getSpeed(), path.getEndTimedPosition().second, 1e-3);
     }
 }

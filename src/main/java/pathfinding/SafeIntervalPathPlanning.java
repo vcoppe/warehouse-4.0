@@ -2,7 +2,6 @@ package pathfinding;
 
 import agent.Lift;
 import agent.Mobile;
-import pathfinding.ConflictBasedSearch.Constraint;
 import util.DoublePrecisionConstraint;
 import util.Pair;
 import util.Vector2D;
@@ -10,12 +9,10 @@ import util.Vector3D;
 
 import java.util.*;
 
-public class SafeIntervalPathPlanning {
+public class SafeIntervalPathPlanning extends PathFinder {
 
-    private final Graph graph;
     private final ReverseResumableAStar reverseResumableAStar;
-    private final HashMap<Vector3D, HashMap<Vector3D, TreeSet<Interval>>> collisionIntervals;
-    private final ArrayList<Constraint> landmarks;
+    private final HashMap<Vector3D, ArrayList<Interval>> safeIntervals;
     private final PriorityQueue<State> queue;
     private final HashMap<State, Cost> distance;
     private final HashSet<State> visited;
@@ -23,253 +20,85 @@ public class SafeIntervalPathPlanning {
 
     private Mobile mobile;
 
-    public SafeIntervalPathPlanning(Graph graph) {
-        this.graph = graph;
+    public SafeIntervalPathPlanning(Graph graph, ArrayList<Mobile> mobiles) {
+        super(graph, mobiles);
         this.reverseResumableAStar = new ReverseResumableAStar(graph);
-        this.collisionIntervals = new HashMap<>();
-        this.landmarks = new ArrayList<>();
+        this.safeIntervals = new HashMap<>();
         this.queue = new PriorityQueue<>();
         this.distance = new HashMap<>();
         this.visited = new HashSet<>();
         this.successors = new ArrayList<>();
     }
 
-    public Path findPath(Mobile mobile, double time, ArrayList<Constraint> constraints) {
+    @Override
+    protected Path findPath(double time, Mobile mobile) {
         this.mobile = mobile;
-        this.reverseResumableAStar.init(mobile); // TODO cannot use this if landmarks
+        this.safeIntervals.clear();
 
         Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
         Pair<Vector3D, Double> preStartTimedPosition = pair.first;
         Pair<Vector3D, Double> startTimedPosition = pair.second;
         Vector3D endPosition = mobile.getTargetPosition();
+        Vector3D chargingPosition = mobile.getChargingPosition();
 
-        if (constraints != null) {
-            this.addConstraints(constraints);
-        }
+        ArrayList<Landmark> landmarks = new ArrayList<>();
+        landmarks.add(new Landmark(startTimedPosition.first, startTimedPosition.second));
+        landmarks.add(new Landmark(endPosition, startTimedPosition.second));
+        landmarks.add(new Landmark(chargingPosition, startTimedPosition.second));
 
-        ArrayList<State> startStates = this.getStates(new Constraint(startTimedPosition.first, 0, Double.MAX_VALUE), true);
-        ArrayList<State> goalStates = this.getStates(new Constraint(endPosition, 0, Double.MAX_VALUE), false);
-        if (startStates.isEmpty() || goalStates.isEmpty()) {
+        State solution = this.findPath(landmarks);
+
+        if (solution == null) {
             return null;
         }
 
-        ArrayList<State> starts = new ArrayList<>();
-        State startState = startStates.get(0); // mobile must start immediately
-        startState.cost.g = time;
-        starts.add(startState);
-
-        for (Constraint landmark : this.landmarks) {
-            ArrayList<State> goals = this.getStates(landmark, false);
-            if (goals.isEmpty()) {
-                return null;
-            }
-
-            ArrayList<State> solutions = this.findPaths(starts, goals, goals.get(goals.size() - 1).interval.end);
-            if (solutions.isEmpty()) {
-                return null;
-            }
-
-            starts = this.getStates(landmark, true);
-            if (starts.isEmpty()) {
-                return null;
-            }
-
-            this.matchSolutionsWithStarts(solutions, starts);
-        }
-
-        ArrayList<State> goals = new ArrayList<>();
-        goals.add(goalStates.get(goalStates.size() - 1)); // mobile must stay there afterwards
-        ArrayList<State> solutions = this.findPaths(starts, goals, Double.MAX_VALUE);
-
-        if (solutions.isEmpty()) {
-            return null;
-        }
-
-        Path path = new Path();
-        State previous = null, current = solutions.get(0);
-        while (current != null) {
-            if (previous != null && previous.position != current.position) {
-                double edgeCost = this.getEdgeCost(current.position, previous.position);
-                if (current.cost.g + edgeCost < previous.cost.g) { // mobile waited there
-                    path.add(current.position, current.cost.g + edgeCost);
-                }
-            }
-
-            path.add(current.position, current.cost.g);
-
-            previous = current;
-            current = current.parent;
-        }
+        Path path = this.rebuildSolution(solution);
         path.add(preStartTimedPosition);
+        path.add(chargingPosition, Double.MAX_VALUE);
 
         return path;
     }
 
-    private void matchSolutionsWithStarts(ArrayList<State> solutions, ArrayList<State> starts) {
-        // match solutions with starts (! offset between the two)
-        // transfer cost
-        // set parent to get whole path at once
+    private State findPath(ArrayList<Landmark> landmarks) {
+        ArrayList<State> starts = this.getStates(landmarks.get(0), true);
 
-        Vector3D from = solutions.get(0).position, to = starts.get(0).position;
-        double edgeCost = this.getEdgeCost(from, to);
-        TreeSet<Interval> collisionIntervals = null;
-        if (this.collisionIntervals.containsKey(from) && this.collisionIntervals.get(from).containsKey(to)) {
-            collisionIntervals = this.collisionIntervals.get(from).get(to);
+        if (starts.isEmpty()) {
+            System.out.println("no start state");
+            return null;
+        } else {
+            State start = starts.get(0);
+            start.cost.g = landmarks.get(0).time;
         }
 
-        for (State solution : solutions) {
-            for (State start : starts) {
-                if (solution.cost.g + edgeCost > start.interval.end) {
-                    continue;
-                }
-                if (solution.cost.g + edgeCost < start.interval.start) {
-                    solution.cost.g = start.interval.start - edgeCost;
-                    if (solution.cost.g > solution.interval.end) {
-                        continue;
-                    }
-                }
-                if (collisionIntervals != null) {
-                    Interval key = new Interval(solution.cost.g, Double.MAX_VALUE);
-                    Interval collisionInterval = collisionIntervals.floor(key);
-                    if (collisionInterval != null) {
-                        if (solution.cost.g < collisionInterval.end) { // collision
-                            solution.cost.g = collisionInterval.end;
-
-                            if (solution.cost.g + edgeCost > start.interval.end || solution.cost.g > solution.interval.end) {
-                                continue;
-                            }
-                        }
-                    }
-                }
-
-                Cost startCost = new Cost(solution.cost.g + edgeCost, 0); // transfer cost of solution
-                if (start.parent == null || startCost.compareTo(start.cost) < 0) {
-                    start.parent = solution;
-                    start.cost = startCost;
-                }
-            }
-
+        for (int i = 1; i < landmarks.size(); i++) {
+            ArrayList<State> goals = this.getStates(landmarks.get(i), false);
+            starts = this.findPaths(starts, goals);
         }
 
-        // remove starts with no parent
-        for (int i = starts.size() - 1; i >= 0; i--) {
-            if (starts.get(i).parent == null) {
-                starts.remove(i);
-            }
-        }
-    }
-
-    private void addConstraints(ArrayList<Constraint> constraints) {
-        this.collisionIntervals.clear();
-        this.landmarks.clear();
-
-        for (Constraint constraint : constraints) {
-            if (constraint.positive) {
-                this.landmarks.add(constraint);
+        if (starts.isEmpty()) {
+            System.out.println("no goal state");
+            return null;
+        } else {
+            State goal = starts.get(starts.size() - 1);
+            if (goal.interval.end < Double.MAX_VALUE) {
+                System.out.println("cannot stay indefinitely");
+                return null;
             } else {
-                if (!this.collisionIntervals.containsKey(constraint.from)) {
-                    this.collisionIntervals.put(constraint.from, new HashMap<>());
-                }
-                HashMap<Vector3D, TreeSet<Interval>> collisionIntervalsFrom = this.collisionIntervals.get(constraint.from);
-                if (!collisionIntervalsFrom.containsKey(constraint.to)) {
-                    collisionIntervalsFrom.put(constraint.to, new TreeSet<>());
-                }
-                TreeSet<Interval> collisionIntervalsFromTo = collisionIntervalsFrom.get(constraint.to);
-                this.addCollisionInterval(collisionIntervalsFromTo, new Interval(constraint.start, constraint.end));
+                return goal;
             }
         }
-
-        this.landmarks.sort(Comparator.comparing(c -> c.start));
     }
 
-    private void addCollisionInterval(TreeSet<Interval> intervals, Interval interval) {
-        ArrayList<Interval> toRemove = new ArrayList<>();
-
-        for (Interval other : intervals) {
-            if (interval.overlaps(other)) {
-                interval.merge(other);
-                toRemove.add(other);
-            }
-        }
-
-        intervals.removeAll(toRemove);
-        intervals.add(interval);
-    }
-
-    private double getEdgeCost(Vector3D from, Vector3D to) {
-        Vector2D distance = from == to ? Vector2D.zero : this.graph.getWeight(from, to);
-        return DoublePrecisionConstraint.round(distance.getX() * this.mobile.getSpeed() + distance.getY() * Lift.speed);
-    }
-
-    private ArrayList<State> getStates(Constraint landmark, boolean startLandmark) {
-        Vector3D landmarkPosition = startLandmark ? landmark.to : landmark.from;
-        double offset = startLandmark ? 0 : this.getEdgeCost(landmark.from, landmark.to);
-        Interval stateInterval = new Interval(landmark.start + offset, Math.max(landmark.end, landmark.end + offset));
-
-        ArrayList<State> states = new ArrayList<>();
-        if (!this.collisionIntervals.containsKey(landmarkPosition) || !this.collisionIntervals.get(landmarkPosition).containsKey(landmarkPosition)) {
-            states.add(new State(landmarkPosition, 0, stateInterval));
-            return states;
-        }
-
-        int safeIntervalId = 0;
-        TreeSet<Interval> collisionIntervals = this.collisionIntervals.get(landmarkPosition).get(landmarkPosition);
-        for (Interval interval : collisionIntervals) {
-            if (stateInterval.start >= interval.end) {
-                safeIntervalId++;
-                continue;
-            }
-            if (stateInterval.end <= interval.start) {
-                break;
-            }
-            if (stateInterval.start < interval.start) {
-                states.add(new State(landmark.from, safeIntervalId, new Interval(stateInterval.start, interval.start)));
-            }
-            stateInterval.start = interval.end;
-            if (stateInterval.start >= stateInterval.end) {
-                break;
-            }
-            safeIntervalId++;
-        }
-
-        if (stateInterval.start < stateInterval.end) {
-            states.add(new State(landmark.from, collisionIntervals.size(), stateInterval));
-        }
-
-        return states;
-    }
-
-    private ArrayList<Interval> getSafeIntervals(Vector3D position) {
-        double current = 0;
-        ArrayList<Interval> intervals = new ArrayList<>();
-
-        if (!this.collisionIntervals.containsKey(position) || !this.collisionIntervals.get(position).containsKey(position)) {
-            intervals.add(new Interval(0, Double.MAX_VALUE));
-            return intervals;
-        }
-
-        TreeSet<Interval> collisionIntervals = this.collisionIntervals.get(position).get(position);
-        for (Interval interval : collisionIntervals) {
-            if (current < interval.start) {
-                intervals.add(new Interval(current, interval.start));
-            }
-            current = interval.end;
-        }
-
-        if (current < Double.MAX_VALUE) {
-            intervals.add(new Interval(current, Double.MAX_VALUE));
-        }
-
-        return intervals;
-    }
-
-    private ArrayList<State> findPaths(ArrayList<State> starts, ArrayList<State> goals, double maxTime) {
+    private ArrayList<State> findPaths(ArrayList<State> starts, ArrayList<State> goals) {
+        Vector3D startPosition = starts.get(0).position;
         Vector3D goalPosition = goals.get(0).position;
         ArrayList<State> solutions = new ArrayList<>();
 
         this.distance.clear();
         this.visited.clear();
         this.queue.clear();
+
+        this.reverseResumableAStar.init(startPosition, goalPosition);
 
         for (State start : starts) {
             this.queue.add(start);
@@ -304,10 +133,6 @@ public class SafeIntervalPathPlanning {
 
             ArrayList<State> successors = this.getSuccessors(state);
             for (State successor : successors) {
-                if (successor.cost.g > maxTime) {
-                    continue;
-                }
-
                 this.distance.put(successor, successor.cost);
                 this.queue.add(successor);
             }
@@ -326,49 +151,32 @@ public class SafeIntervalPathPlanning {
 
             Vector3D position = edge.to;
 
-            //Vector2D dist2D = this.reverseResumableAStar.distance(this.mobile, position, this.mobile.getPosition());
-            //if (dist2D == null) continue;
+            Vector2D dist2D = this.reverseResumableAStar.distance(this.mobile, position);
+            if (dist2D == null) continue;
 
             double edgeCost = this.getEdgeCost(edge.from, edge.to);
-            double h = 0;//DoublePrecisionConstraint.round(dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
-
-            TreeSet<Interval> collisionIntervals = null;
-            if (this.collisionIntervals.containsKey(parent.position) && this.collisionIntervals.get(parent.position).containsKey(position)) {
-                collisionIntervals = this.collisionIntervals.get(parent.position).get(position);
-            }
+            double h = DoublePrecisionConstraint.round(dist2D.getX() * this.mobile.getSpeed() + dist2D.getY() * Lift.speed);
 
             ArrayList<Interval> safeIntervals = this.getSafeIntervals(position);
             for (int intervalId = 0; intervalId < safeIntervals.size(); intervalId++) {
                 Interval safeInterval = safeIntervals.get(intervalId);
-                Cost childCost = new Cost(parent.cost.g + edgeCost, h);
-                if (childCost.g > safeInterval.end) {
+                Cost childCost = new Cost(DoublePrecisionConstraint.round(parent.cost.g + edgeCost), h);
+
+                // check if parent and child intervals are compatible with the move
+                if (parent.cost.g < safeInterval.start) { // safe interval needs to cover whole incoming move
+                    childCost.g = DoublePrecisionConstraint.round(safeInterval.start + edgeCost);
+                }
+                if (childCost.g > parent.interval.end) { // cannot wait at parent to reach this safe interval
                     continue;
                 }
-                if (childCost.g < safeInterval.start) {
-                    childCost.g = safeInterval.start;
-                    if (childCost.g - edgeCost > parent.interval.end) {
-                        continue; // cannot wait at parent to reach this safe interval
-                    }
+                if (DoublePrecisionConstraint.round(childCost.g + edgeCost) > safeInterval.end) { // safe interval needs to cover outgoing move too
+                    continue;
                 }
 
                 State child = new State(position, intervalId, safeInterval, childCost, parent);
 
                 if (this.visited.contains(child)) {
                     continue;
-                }
-
-                if (collisionIntervals != null) {
-                    Interval key = new Interval(childCost.g - edgeCost, Double.MAX_VALUE);
-                    Interval collisionInterval = collisionIntervals.floor(key);
-                    if (collisionInterval != null) {
-                        if (childCost.g - edgeCost < collisionInterval.end) { // collision
-                            childCost.g = collisionInterval.end + edgeCost;
-
-                            if (childCost.g - edgeCost > parent.interval.end || childCost.g > safeInterval.end) {
-                                continue;
-                            }
-                        }
-                    }
                 }
 
                 if (this.distance.containsKey(child) && childCost.compareTo(this.distance.get(child)) >= 0) {
@@ -382,35 +190,61 @@ public class SafeIntervalPathPlanning {
         return this.successors;
     }
 
-    private static class Interval implements Comparable<Interval> {
+    private Path rebuildSolution(State solution) {
+        Path path = new Path();
+        State previous = null, current = solution;
 
-        double start, end;
-
-        public Interval(double start, double end) {
-            this.start = start;
-            this.end = end;
-        }
-
-        public boolean overlaps(Interval other) {
-            return (this.start <= other.end) && (this.end >= other.start);
-        }
-
-        public void merge(Interval other) {
-            if (other.start < this.start) {
-                this.start = other.start;
+        while (current != null) {
+            if (previous != null && !previous.position.equals(current.position)) {
+                double edgeCost = this.getEdgeCost(current.position, previous.position);
+                if (DoublePrecisionConstraint.round(current.cost.g + edgeCost) < previous.cost.g) { // mobile waited there
+                    path.add(current.position, DoublePrecisionConstraint.round(previous.cost.g - edgeCost));
+                }
             }
-            if (other.end > this.end) {
-                this.end = other.end;
+
+            path.add(current.position, current.cost.g);
+
+            previous = current;
+            current = current.parent;
+        }
+
+        return path;
+    }
+
+    private ArrayList<State> getStates(Landmark landmark, boolean startLandmark) {
+        ArrayList<State> states = new ArrayList<>();
+
+        ArrayList<Interval> safeIntervals = this.getSafeIntervals(landmark.position);
+        for (int intervalId = 0; intervalId < safeIntervals.size(); intervalId++) {
+            Interval interval = safeIntervals.get(intervalId);
+            if (startLandmark) {
+                if (landmark.time >= interval.start && landmark.time <= interval.end) {
+                    states.add(new State(landmark.position, intervalId, interval));
+                }
+            } else {
+                if (landmark.time <= interval.end) {
+                    states.add(new State(landmark.position, intervalId, interval));
+                }
             }
         }
 
-        @Override
-        public int compareTo(Interval other) {
-            if (this.start == other.start) {
-                return Double.compare(this.end, other.end);
-            }
-            return Double.compare(this.start, other.start);
+        return states;
+    }
+
+    private ArrayList<Interval> getSafeIntervals(Vector3D position) {
+        if (this.safeIntervals.containsKey(position)) {
+            return this.safeIntervals.get(position);
         }
+
+        ArrayList<Interval> safeIntervals = this.table.getSafeIntervals(position);
+        this.safeIntervals.put(position, safeIntervals);
+
+        return safeIntervals;
+    }
+
+    private double getEdgeCost(Vector3D from, Vector3D to) {
+        Vector2D distance = from == to ? Vector2D.zero : this.graph.getWeight(from, to);
+        return DoublePrecisionConstraint.round(distance.getX() * this.mobile.getSpeed() + distance.getY() * Lift.speed);
     }
 
     static class State implements Comparable<State> {
@@ -471,6 +305,18 @@ public class SafeIntervalPathPlanning {
         @Override
         public int compareTo(Cost other) {
             return Double.compare(this.g, other.g);
+        }
+
+    }
+
+    private static class Landmark {
+
+        Vector3D position;
+        double time;
+
+        public Landmark(Vector3D position, double time) {
+            this.position = position;
+            this.time = time;
         }
 
     }

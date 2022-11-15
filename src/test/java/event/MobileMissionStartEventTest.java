@@ -23,8 +23,6 @@ public class MobileMissionStartEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        PathFinderEvent.reset();
-
         this.configuration = new Configuration();
         this.mobile = this.configuration.mobiles.get(0);
 
@@ -107,7 +105,6 @@ public class MobileMissionStartEventTest extends TestCase {
         assertEquals(0, this.configuration.simulation.queueSize());
         event.run();
         assertEquals(1, this.configuration.simulation.queueSize());
-        assertTrue(this.configuration.simulation.nextEvent() instanceof PathFinderEvent);
     }
 
 }

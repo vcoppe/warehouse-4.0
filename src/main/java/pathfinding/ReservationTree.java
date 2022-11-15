@@ -1,46 +1,50 @@
 package pathfinding;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.TreeSet;
 
 public class ReservationTree {
 
-    private Node root;
+    TreeSet<Reservation> reservations;
 
     public ReservationTree() {
+        this.reservations = new TreeSet<>();
     }
 
-    private ReservationTree(Node root) {
-        this.root = root;
+    public void remove(Reservation reservation) {
+        this.reservations.remove(reservation);
     }
 
-    private static boolean isAvailable(Node node, Reservation reservation) {
-        if (node == null) {
-            return true;
-        }
+    public void insert(Reservation reservation) {
+        this.reservations.add(reservation);
+    }
 
-        if (reservation.conflicts(node.reservation)) {
-            return false;
-        }
+    public ArrayList<Interval> getSafeIntervals() {
+        ArrayList<Interval> safeIntervals = new ArrayList<>();
+        double start = -Double.MAX_VALUE;
 
-        if (node.left != null && node.left.max > reservation.start) {
-            if (!isAvailable(node.left, reservation)) {
-                return false;
+        for (Reservation reservation : this.reservations) {
+            if (start < reservation.start) {
+                safeIntervals.add(new Interval(start, reservation.start));
+                start = reservation.end;
+            } else if (start <= reservation.end) {
+                start = reservation.end;
             }
         }
 
-        if (node.right != null && node.max > reservation.start && node.reservation.start < reservation.end) {
-            return isAvailable(node.right, reservation);
+        if (start < Double.MAX_VALUE) {
+            safeIntervals.add(new Interval(start, Double.MAX_VALUE));
         }
 
-        return true;
+        return safeIntervals;
     }
 
-    public ReservationTree clone() {
-        if (this.root == null) {
-            return null;
-        }
-        return new ReservationTree(this.root.clone());
+    /*private Node root;
+
+    public ReservationTree() {}
+
+    private ReservationTree(Node root) {
+        this.root = root;
     }
 
     private static Node insert(Node node, Reservation reservation) {
@@ -55,27 +59,63 @@ public class ReservationTree {
             node.right = insert(node.right, reservation);
         }
 
-        if (node.max < reservation.end) {
-            node.max = reservation.end;
+        updateHeightAndMax(node);
+
+        return rebalance(node);
+    }
+
+    public void insert(Reservation reservation) {
+        this.root = insert(this.root, reservation);
+    }
+
+    private static Node remove(Node node, Reservation reservation) {
+        if (node == null) {
+            return null;
         }
 
-        node.height = Math.max(height(node.left), height(node.right));
-
-        int diff = height(node.left) - height(node.right);
-
-        if (diff < -1) {
-            if (reservation.start < node.right.reservation.start) {
-                node.right = rightRotate(node.right);
-                return leftRotate(node);
+        if (node.reservation == reservation) {
+            if (node.left == null && node.right == null) {
+                return null;
+            } else if (node.left == null) {
+                return node.right;
+            } else if (node.right == null) {
+                return node.left;
             } else {
-                return leftRotate(node);
+                Node minimum = findMinimum(node.right);
+                node.reservation = minimum.reservation;
+                node.right = remove(node.right, minimum.reservation);
             }
-        } else if (diff > 1) {
-            if (reservation.start < node.left.reservation.start) {
+        } else if (reservation.start < node.reservation.start) {
+            node.left = remove(node.left, reservation);
+        } else {
+            node.right = remove(node.right, reservation);
+        }
+
+        updateHeightAndMax(node);
+
+        return rebalance(node);
+    }
+
+    public void remove(Reservation reservation) {
+        this.root = remove(this.root, reservation);
+    }
+
+    private static Node rebalance(Node node) {
+        int balance = balance(node);
+
+        if (balance < -1) {
+            if (balance(node.left) <= 0) {
                 return rightRotate(node);
             } else {
                 node.left = leftRotate(node.left);
                 return rightRotate(node);
+            }
+        } else if (balance > 1) {
+            if (balance(node.right) >= 0) {
+                return leftRotate(node);
+            } else {
+                node.right = rightRotate(node.right);
+                return leftRotate(node);
             }
         }
 
@@ -89,11 +129,8 @@ public class ReservationTree {
         newParent.right = originalParent;
         originalParent.left = transferredNode;
 
-        originalParent.height = Math.max(height(originalParent.left), height(originalParent.right)) + 1;
-        newParent.height = Math.max(height(newParent.left), height(newParent.right)) + 1;
-
-        originalParent.max = Math.max(originalParent.reservation.end, Math.max(max(originalParent.left), max(originalParent.right)));
-        newParent.max = Math.max(newParent.reservation.end, Math.max(max(newParent.left), max(newParent.right)));
+        updateHeightAndMax(originalParent);
+        updateHeightAndMax(newParent);
 
         return newParent;
     }
@@ -105,13 +142,23 @@ public class ReservationTree {
         newParent.left = originalParent;
         originalParent.right = transferredNode;
 
-        originalParent.height = Math.max(height(originalParent.left), height(originalParent.right)) + 1;
-        newParent.height = Math.max(height(newParent.left), height(newParent.right)) + 1;
-
-        originalParent.max = Math.max(originalParent.reservation.end, Math.max(max(originalParent.left), max(originalParent.right)));
-        newParent.max = Math.max(newParent.reservation.end, Math.max(max(newParent.left), max(newParent.right)));
+        updateHeightAndMax(originalParent);
+        updateHeightAndMax(newParent);
 
         return newParent;
+    }
+
+    private static Node findMinimum(Node node) {
+        Node current = node;
+        while (current.left != null) {
+            current = current.left;
+        }
+        return current;
+    }
+
+    private static void updateHeightAndMax(Node node) {
+        node.height = Math.max(height(node.left), height(node.right)) + 1;
+        node.max = Math.max(node.reservation.end, Math.max(max(node.left), max(node.right)));
     }
 
     private static int height(Node node) {
@@ -128,60 +175,73 @@ public class ReservationTree {
         return node.max;
     }
 
-    public void insert(Reservation reservation) {
-        this.root = insert(this.root, reservation);
+    private static int balance(Node node) {
+        return height(node.right) - height(node.left);
     }
 
-    private static void allConflicts(Node node, Reservation reservation, ArrayList<Reservation> result) {
+    public ReservationTree clone() {
+        if (this.root == null) {
+            return null;
+        }
+        return new ReservationTree(this.root.clone());
+    }
+
+    public ArrayList<Interval> getSafeIntervals() {
+        ArrayList<Interval> collisionIntervals = this.getCollisionIntervals();
+
+        ArrayList<Interval> safeIntervals = new ArrayList<>();
+        double current = - Double.MAX_VALUE;
+        for (Interval interval : collisionIntervals) {
+            if (current < interval.start) {
+                safeIntervals.add(new Interval(current, interval.start));
+            }
+            current = interval.end;
+        }
+
+        if (current < Double.MAX_VALUE) {
+            safeIntervals.add(new Interval(current, Double.MAX_VALUE));
+        }
+
+        return safeIntervals;
+    }
+
+    public ArrayList<Interval> getCollisionIntervals() {
+        ArrayList<Interval> collisionIntervals = new ArrayList<>();
+
+        Optional<Interval> last = computeCollisionIntervals(this.root, Optional.empty(), collisionIntervals);
+
+        if (last.isPresent()) {
+            collisionIntervals.add(last.get());
+        }
+
+        return collisionIntervals;
+    }
+
+    private static Optional<Interval> computeCollisionIntervals(Node node, Optional<Interval> interval, ArrayList<Interval> collisionIntervals) {
         if (node == null) {
-            return;
+            return interval;
         }
 
-        if (reservation.conflicts(node.reservation)) {
-            result.add(node.reservation);
+        interval = computeCollisionIntervals(node.left, interval, collisionIntervals);
+
+        Interval fromNode = new Interval(node.reservation.start, node.reservation.end);
+        if (interval.isEmpty()) {
+            interval = Optional.of(fromNode);
+        } else {
+            Interval current = interval.get();
+
+            if (current.overlaps(fromNode)) {
+                current.merge(fromNode);
+                interval = Optional.of(current);
+            } else {
+                collisionIntervals.add(current);
+                interval = Optional.of(fromNode);
+            }
         }
 
-        if (node.left != null && node.left.max > reservation.start) {
-            allConflicts(node.left, reservation, result);
-        }
+        interval = computeCollisionIntervals(node.right, interval, collisionIntervals);
 
-        if (node.right != null && node.max > reservation.start && node.reservation.start < reservation.end) {
-            allConflicts(node.right, reservation, result);
-        }
-    }
-
-    private static void allConflictingMobileIds(Node node, Reservation reservation, HashSet<Integer> result) {
-        if (node == null) {
-            return;
-        }
-
-        if (reservation.conflicts(node.reservation)) {
-            result.add(node.reservation.mobileId);
-        }
-
-        if (node.left != null && node.left.max > reservation.start) {
-            allConflictingMobileIds(node.left, reservation, result);
-        }
-
-        if (node.right != null && node.max > reservation.start && node.reservation.start < reservation.end) {
-            allConflictingMobileIds(node.right, reservation, result);
-        }
-    }
-
-    public boolean isAvailable(Reservation reservation) {
-        return isAvailable(this.root, reservation);
-    }
-
-    public ArrayList<Reservation> allConflicts(Reservation reservation) {
-        ArrayList<Reservation> result = new ArrayList<>();
-        allConflicts(this.root, reservation, result);
-        return result;
-    }
-
-    public HashSet<Integer> allConflictingMobileIds(Reservation reservation) {
-        HashSet<Integer> result = new HashSet<>();
-        allConflictingMobileIds(this.root, reservation, result);
-        return result;
+        return interval;
     }
 
     static class Node {
@@ -209,6 +269,6 @@ public class ReservationTree {
             Node right = this.right != null ? this.right.clone() : null;
             return new Node(this.reservation, left, right, this.height, this.max);
         }
-    }
+    }*/
 
 }

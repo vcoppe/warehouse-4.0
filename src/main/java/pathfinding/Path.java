@@ -5,6 +5,7 @@ import util.Vector3D;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.TreeSet;
 
 public class Path {
@@ -113,5 +114,19 @@ public class Path {
             }
         }
         return this.actions;
+    }
+
+    public void truncate(Vector3D position) {
+        Iterator<Pair<Vector3D, Double>> iterator = this.path.iterator();
+        boolean found = false;
+
+        while (iterator.hasNext()) {
+            Pair<Vector3D, Double> timedPosition = iterator.next();
+            if (timedPosition.first.equals(position) && timedPosition.second < Double.MAX_VALUE) {
+                found = true;
+            } else if (found) {
+                iterator.remove();
+            }
+        }
     }
 }

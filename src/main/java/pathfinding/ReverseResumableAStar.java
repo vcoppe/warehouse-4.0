@@ -14,69 +14,55 @@ public class ReverseResumableAStar {
 
     private static final Comparator<Pair<Vector3D, Vector2D>> manhattanDistanceComparator = (a, b) -> Vector2D.manhattanDistanceComparator.compare(a.second, b.second);
     private final Graph graph;
-    private final HashMap<Integer, Pair<Vector3D, Vector3D>> lastRoute;
-    private final HashMap<Integer, HashMap<Vector3D, Vector2D>> resumableDist;
-    private final HashMap<Integer, PriorityQueue<Pair<Vector3D, Vector2D>>> resumablePq;
-    private final HashMap<Integer, HashSet<Vector3D>> resumableClosed;
+    private final HashMap<Vector3D, Vector2D> resumableDist;
+    private final PriorityQueue<Pair<Vector3D, Vector2D>> resumablePq;
+    private final HashSet<Vector3D> resumableClosed;
+    private Pair<Vector3D, Vector3D> lastRoute;
 
     public ReverseResumableAStar(Graph graph) {
         this.graph = graph;
-        this.lastRoute = new HashMap<>();
+        this.lastRoute = null;
         this.resumableDist = new HashMap<>();
-        this.resumablePq = new HashMap<>();
-        this.resumableClosed = new HashMap<>();
+        this.resumablePq = new PriorityQueue<>(manhattanDistanceComparator);
+        this.resumableClosed = new HashSet<>();
     }
 
-    public void init(Mobile mobile) {
-        Vector3D startPosition = mobile.getPosition();
-        Vector3D endPosition = mobile.getTargetPosition();
-
-        if (this.lastRoute.containsKey(mobile.getId())) {
-            Pair<Vector3D, Vector3D> route = this.lastRoute.get(mobile.getId());
-            if (startPosition.equals(route.first) && endPosition.equals(route.second)) {
-                return;
-            }
+    public void init(Vector3D startPosition, Vector3D endPosition) {
+        if (this.lastRoute != null && startPosition.equals(lastRoute.first) && endPosition.equals(lastRoute.second)) {
+            return;
         }
 
-        HashMap<Vector3D, Vector2D> dist = new HashMap<>();
-        PriorityQueue<Pair<Vector3D, Vector2D>> pq = new PriorityQueue<>(manhattanDistanceComparator);
-        HashSet<Vector3D> closed = new HashSet<>();
+        this.resumableDist.clear();
+        this.resumablePq.clear();
+        this.resumableClosed.clear();
 
-        dist.put(endPosition, Vector2D.zero);
-        pq.add(new Pair<>(endPosition, dist.get(endPosition).add(startPosition.manhattanDistance3D(endPosition))));
+        this.resumableDist.put(endPosition, Vector2D.zero);
+        this.resumablePq.add(new Pair<>(endPosition, this.resumableDist.get(endPosition).add(startPosition.manhattanDistance3D(endPosition))));
 
-        this.resumableDist.put(mobile.getId(), dist);
-        this.resumablePq.put(mobile.getId(), pq);
-        this.resumableClosed.put(mobile.getId(), closed);
-
-        this.lastRoute.put(mobile.getId(), new Pair<>(startPosition, endPosition));
+        this.lastRoute = new Pair<>(startPosition, endPosition);
     }
 
-    public Vector2D distance(Mobile mobile, Vector3D endPosition, Vector3D finalPosition) {
-        HashMap<Vector3D, Vector2D> dist = this.resumableDist.get(mobile.getId());
-        PriorityQueue<Pair<Vector3D, Vector2D>> pq = this.resumablePq.get(mobile.getId());
-        HashSet<Vector3D> closed = this.resumableClosed.get(mobile.getId());
-
-        if (closed.contains(endPosition)) {
-            return dist.get(endPosition);
+    public Vector2D distance(Mobile mobile, Vector3D endPosition) {
+        if (this.resumableClosed.contains(endPosition)) {
+            return this.resumableDist.get(endPosition);
         }
 
-        while (!pq.isEmpty()) {
-            Pair<Vector3D, Vector2D> p = pq.peek();
+        while (!this.resumablePq.isEmpty()) {
+            Pair<Vector3D, Vector2D> p = this.resumablePq.peek();
             Vector3D u = p.first;
             Vector2D estimateU = p.second;
 
-            if (Vector2D.manhattanDistanceComparator.compare(estimateU.subtract(u.manhattanDistance3D(finalPosition)), dist.get(u)) > 0) { // not the shortest path anymore
-                pq.poll();
+            if (Vector2D.manhattanDistanceComparator.compare(estimateU.subtract(u.manhattanDistance3D(this.lastRoute.first)), this.resumableDist.get(u)) > 0) { // not the shortest path anymore
+                this.resumablePq.poll();
                 continue;
             }
 
             if (u.equals(endPosition)) {
-                return dist.get(endPosition);
+                return this.resumableDist.get(endPosition);
             }
 
-            pq.poll();
-            closed.add(u);
+            this.resumablePq.poll();
+            this.resumableClosed.add(u);
 
             for (Edge edge : this.graph.getReverseEdges(u)) { // reverse edges for reverse A star
                 Vector3D v = edge.to;
@@ -84,12 +70,12 @@ public class ReverseResumableAStar {
 
                 if (!this.graph.getEdge(v, u).canCross(mobile)) continue;
 
-                Vector2D otherDist = dist.get(u).add(w);
+                Vector2D otherDist = this.resumableDist.get(u).add(w);
 
-                if (!dist.containsKey(v) || Vector2D.manhattanDistanceComparator.compare(otherDist, dist.get(v)) < 0) {
-                    dist.put(v, otherDist);
-                    Vector2D estimateV = otherDist.add(v.manhattanDistance3D(finalPosition));
-                    pq.add(new Pair<>(v, estimateV));
+                if (!this.resumableDist.containsKey(v) || Vector2D.manhattanDistanceComparator.compare(otherDist, this.resumableDist.get(v)) < 0) {
+                    this.resumableDist.put(v, otherDist);
+                    Vector2D estimateV = otherDist.add(v.manhattanDistance3D(this.lastRoute.first));
+                    this.resumablePq.add(new Pair<>(v, estimateV));
                 }
             }
         }

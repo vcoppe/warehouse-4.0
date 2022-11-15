@@ -332,7 +332,7 @@ public class Configuration {
                     this.warehouse.addEdge(new Vector3D(x1, y1, z), new Vector3D(x1, y1, z + palletSize));
                 }
             }
-            this.controller.getPathFinder().addGraphConstraint(new LiftConstraint(positions));
+            this.controller.getPathFinder().addGraphConstraint(new LiftConstraint(this.controller.getPathFinder().getReservationTable(), positions));
         }
         if (liftNE) {
             this.lifts.add(new Lift(new Vector3D(x2 - palletSize, y1, 0), height));
@@ -351,7 +351,7 @@ public class Configuration {
                     this.warehouse.addEdge(new Vector3D(x2 - palletSize, y1, z), new Vector3D(x2 - palletSize, y1, z + palletSize));
                 }
             }
-            this.controller.getPathFinder().addGraphConstraint(new LiftConstraint(positions));
+            this.controller.getPathFinder().addGraphConstraint(new LiftConstraint(this.controller.getPathFinder().getReservationTable(), positions));
         }
         if (liftSW) {
             this.lifts.add(new Lift(new Vector3D(x1, y2 - palletSize, 0), height));
@@ -370,7 +370,7 @@ public class Configuration {
                     this.warehouse.addEdge(new Vector3D(x1, y2 - palletSize, z), new Vector3D(x1, y2 - palletSize, z + palletSize));
                 }
             }
-            this.controller.getPathFinder().addGraphConstraint(new LiftConstraint(positions));
+            this.controller.getPathFinder().addGraphConstraint(new LiftConstraint(this.controller.getPathFinder().getReservationTable(), positions));
         }
         if (liftSE) {
             this.lifts.add(new Lift(new Vector3D(x2 - palletSize, y2 - palletSize, 0), height));
@@ -389,7 +389,7 @@ public class Configuration {
                     this.warehouse.addEdge(new Vector3D(x2 - palletSize, y2 - palletSize, z), new Vector3D(x2 - palletSize, y2 - palletSize, z + palletSize));
                 }
             }
-            this.controller.getPathFinder().addGraphConstraint(new LiftConstraint(positions));
+            this.controller.getPathFinder().addGraphConstraint(new LiftConstraint(this.controller.getPathFinder().getReservationTable(), positions));
         }
 
         for (int x = x1; x < x2; x += palletSize) {
@@ -443,7 +443,7 @@ public class Configuration {
                 positions[cnt++] = new Vector3D(x, y, 0);
             }
         }
-        this.controller.getPathFinder().addGraphConstraint(new ZoneCapacityConstraint(positions, 1));
+        this.controller.getPathFinder().addGraphConstraint(new ZoneConstraint(this.controller.getPathFinder().getReservationTable(), positions));
 
         for (Edge edge : edges) {
             edge.addCrossCondition(new DockEdgeCondition(dock, this.dockWidth, this.truckDepth, edge));
@@ -475,7 +475,7 @@ public class Configuration {
                 positions[cnt++] = new Vector3D(x, y, 0);
             }
         }
-        this.controller.getPathFinder().addGraphConstraint(new ZoneCapacityConstraint(positions, 2));
+        this.controller.getPathFinder().addGraphConstraint(new ZoneConstraint(this.controller.getPathFinder().getReservationTable(), positions));
 
         for (int y = y1; y < y2; y += palletSize) {
             edges.add(this.warehouse.getEdge(new Vector3D(x1 - palletSize, y, 0), new Vector3D(x1, y, 0)));

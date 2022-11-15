@@ -3,6 +3,8 @@ package pathfinding;
 import junit.framework.TestCase;
 import util.Vector3D;
 
+import java.util.ArrayList;
+
 public class ReservationTreeTest extends TestCase {
 
     private static final Vector3D position = new Vector3D(0, 0, 0);
@@ -20,38 +22,60 @@ public class ReservationTreeTest extends TestCase {
         this.tree = null;
     }
 
-    public void testFirstConflicts() {
-        this.tree.insert(new Reservation(position, 0, 10, 0));
-        this.tree.insert(new Reservation(position, 20, 30, 0));
-        this.tree.insert(new Reservation(position, 40, 50, 0));
+    public void testSafeIntervals() {
+        ArrayList<Interval> safeIntervals = null;
+        Interval interval = null;
 
-        assertTrue(this.tree.isAvailable(new Reservation(position, -10, 60, 0)));
-
-        assertTrue(this.tree.isAvailable(new Reservation(position, -10, 0, 1)));
-        assertFalse(this.tree.isAvailable(new Reservation(position, 0, 10, 1)));
-        assertTrue(this.tree.isAvailable(new Reservation(position, 10, 20, 1)));
-        assertFalse(this.tree.isAvailable(new Reservation(position, 20, 30, 1)));
-        assertTrue(this.tree.isAvailable(new Reservation(position, 30, 40, 1)));
-        assertFalse(this.tree.isAvailable(new Reservation(position, 40, 50, 1)));
-        assertTrue(this.tree.isAvailable(new Reservation(position, 50, 60, 1)));
-    }
-
-    public void testAllConflicts() {
         this.tree.insert(new Reservation(position, 0, 10, 0));
 
-        assertEquals(0, this.tree.allConflicts(new Reservation(position, 10, 20, 1)).size());
-        assertEquals(1, this.tree.allConflicts(new Reservation(position, 2, 8, 1)).size());
+        safeIntervals = this.tree.getSafeIntervals();
 
-        this.tree.insert(new Reservation(position, 0, 20, 0));
+        assertEquals(2, safeIntervals.size());
+
+        if (safeIntervals.size() == 2) {
+            interval = safeIntervals.get(0);
+            assertEquals(-Double.MAX_VALUE, interval.start, 1e-3);
+            assertEquals(0, interval.end, 1e-3);
+
+            interval = safeIntervals.get(1);
+            assertEquals(10, interval.start, 1e-3);
+            assertEquals(Double.MAX_VALUE, interval.end, 1e-3);
+        }
+
         this.tree.insert(new Reservation(position, 10, 20, 0));
 
-        assertEquals(2, this.tree.allConflicts(new Reservation(position, 2, 8, 1)).size());
-        assertEquals(3, this.tree.allConflicts(new Reservation(position, 5, 15, 1)).size());
+        safeIntervals = this.tree.getSafeIntervals();
 
-        this.tree.insert(new Reservation(position, -20, -10, 0));
-        this.tree.insert(new Reservation(position, -20, 20, 0));
+        assertEquals(2, safeIntervals.size());
 
-        assertEquals(2, this.tree.allConflicts(new Reservation(position, -15, -5, 1)).size());
-        assertEquals(4, this.tree.allConflicts(new Reservation(position, -15, 10, 1)).size());
+        if (safeIntervals.size() == 2) {
+            interval = safeIntervals.get(0);
+            assertEquals(-Double.MAX_VALUE, interval.start, 1e-3);
+            assertEquals(0, interval.end, 1e-3);
+
+            interval = safeIntervals.get(1);
+            assertEquals(20, interval.start, 1e-3);
+            assertEquals(Double.MAX_VALUE, interval.end, 1e-3);
+        }
+
+        this.tree.insert(new Reservation(position, 30, 40, 0));
+
+        safeIntervals = this.tree.getSafeIntervals();
+
+        assertEquals(3, safeIntervals.size());
+
+        if (safeIntervals.size() == 3) {
+            interval = safeIntervals.get(0);
+            assertEquals(-Double.MAX_VALUE, interval.start, 1e-3);
+            assertEquals(0, interval.end, 1e-3);
+
+            interval = safeIntervals.get(1);
+            assertEquals(20, interval.start, 1e-3);
+            assertEquals(30, interval.end, 1e-3);
+
+            interval = safeIntervals.get(2);
+            assertEquals(40, interval.start, 1e-3);
+            assertEquals(Double.MAX_VALUE, interval.end, 1e-3);
+        }
     }
 }

@@ -24,8 +24,6 @@ public class MobileMissionPickUpEventTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-        PathFinderEvent.reset();
-
         this.configuration = new Configuration();
         this.mobile = this.configuration.mobiles.get(0);
 
@@ -159,11 +157,9 @@ public class MobileMissionPickUpEventTest extends TestCase {
                 assertEquals(3, this.configuration.simulation.queueSize());
                 assertTrue(this.configuration.simulation.nextEvent() instanceof TruckDoneEvent);
                 assertTrue(this.configuration.simulation.getEventAt(1) instanceof ControllerEvent);
-                assertTrue(this.configuration.simulation.getEventAt(2) instanceof PathFinderEvent);
             } else {
                 assertEquals(2, this.configuration.simulation.queueSize());
                 assertTrue(this.configuration.simulation.nextEvent() instanceof ControllerEvent);
-                assertTrue(this.configuration.simulation.getEventAt(1) instanceof PathFinderEvent);
             }
         }
     }
@@ -182,7 +178,6 @@ public class MobileMissionPickUpEventTest extends TestCase {
         event.run();
         assertEquals(2, this.configuration.simulation.queueSize());
         assertTrue(this.configuration.simulation.nextEvent() instanceof ControllerEvent);
-        assertTrue(this.configuration.simulation.getEventAt(1) instanceof PathFinderEvent);
     }
 
 }

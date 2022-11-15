@@ -14,6 +14,7 @@ public class Mobile extends Observable {
     private final int id;
     private static final double speed = 0.05; // in second per distance unit
     private static final double loadedSpeedFactor = 2; // time factor when loaded
+    private final Vector3D chargingPosition;
     private Vector3D position, targetPosition;
     private double pathTime;
     private Mission mission;
@@ -25,6 +26,7 @@ public class Mobile extends Observable {
         this.id = MOBILE_ID++;
         this.position = position;
         this.targetPosition = position;
+        this.chargingPosition = position;
         this.mission = null;
     }
 
@@ -58,6 +60,10 @@ public class Mobile extends Observable {
 
     public Vector3D getTargetPosition() {
         return this.targetPosition;
+    }
+
+    public Vector3D getChargingPosition() {
+        return this.chargingPosition;
     }
 
     public Path getPath() {

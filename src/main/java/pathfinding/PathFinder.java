@@ -2,41 +2,54 @@ package pathfinding;
 
 import agent.Mobile;
 import util.Pair;
-import util.Vector2D;
 import util.Vector3D;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.PriorityQueue;
 
 public abstract class PathFinder {
 
     protected final Graph graph;
     protected final ReservationTable table;
-    protected final HashMap<Integer, Pair<Vector3D, Vector3D>> lastRoute;
-    protected final HashMap<Integer, HashMap<Vector3D, Vector2D>> resumableDist;
-    protected final HashMap<Integer, PriorityQueue<Pair<Vector3D, Vector2D>>> resumablePq;
-    protected final HashMap<Integer, HashSet<Vector3D>> resumableClosed;
-    protected double nextUpdateTime;
 
-    public PathFinder(Graph graph) {
+    public PathFinder(Graph graph, ArrayList<Mobile> mobiles) {
         this.graph = graph;
         this.table = new ReservationTable();
-        this.lastRoute = new HashMap<>();
-        this.resumableDist = new HashMap<>();
-        this.resumablePq = new HashMap<>();
-        this.resumableClosed = new HashMap<>();
     }
 
-    public abstract void computePaths(double time, ArrayList<Mobile> mobiles);
-
-    public double getNextUpdateTime() {
-        return this.nextUpdateTime;
+    public ReservationTable getReservationTable() {
+        return this.table;
     }
+
+    public void computePath(double time, Mobile mobile) {
+        this.table.removeAll(mobile.getId());
+
+        Path newPath = this.findPath(time, mobile);
+        if (newPath == null) {
+            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
+        }
+
+        // make reservations that begins when leaving previous position and ends when reaching next position
+        for (Action action : newPath.getActions()) {
+            if (action.isWaitAction()) {
+                this.table.reserve(action.startPosition(), action.startTime(), action.endTime(), mobile.getId());
+            } else {
+                this.table.reserve(action.startPosition(), action.startTime(), action.endTime(), mobile.getId());
+                this.table.reserve(action.endPosition(), action.startTime(), action.endTime(), mobile.getId());
+            }
+        }
+
+        newPath.truncate(mobile.getTargetPosition());
+
+        mobile.setPath(time, newPath);
+    }
+
+    protected abstract Path findPath(double time, Mobile mobile);
 
     public void addGraphConstraint(GraphConstraint constraint) {
         this.table.addGraphConstraint(constraint);
     }
 
+    public void add(Mobile mobile) {
+        this.table.reserve(mobile.getPosition(), 0.0, Double.MAX_VALUE, mobile.getId());
+    }
 }

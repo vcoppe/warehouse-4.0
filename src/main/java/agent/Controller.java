@@ -5,8 +5,8 @@ import brain.PalletPositionSelector;
 import brain.TravelTimeEstimator;
 import brain.TruckDockSelector;
 import observer.Observable;
-import pathfinding.ConflictBasedSearch;
 import pathfinding.PathFinder;
+import pathfinding.SafeIntervalPathPlanning;
 import scheduling.TimeEstimationPropagator;
 import warehouse.Configuration;
 import warehouse.Mission;
@@ -47,7 +47,7 @@ public class Controller extends Observable {
         this.warehouse = configuration.warehouse;
         this.stock = configuration.stock;
         this.productionLines = configuration.productionLines;
-        this.pathFinder = new ConflictBasedSearch(configuration.warehouse.getGraph());
+        this.pathFinder = new SafeIntervalPathPlanning(configuration.warehouse.getGraph(), configuration.mobiles);
         this.docks = configuration.docks;
         this.lifts = configuration.lifts;
         this.allMobiles = configuration.mobiles;
@@ -115,6 +115,7 @@ public class Controller extends Observable {
 
     public void add(Mobile mobile) {
         this.availableMobiles.add(mobile);
+        this.pathFinder.add(mobile);
         this.changed();
     }
 

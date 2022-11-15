@@ -48,8 +48,9 @@ public class Main extends Application {
         for (int i = 0; i < 5; i++) this.configuration.addOutdoorDock(i * this.configuration.dockWidth, depth);
         for (int i = 0; i < 3; i++)
             this.configuration.addIndoorDock(300 + i * this.configuration.dockWidth * 2, depth - this.configuration.truckDepth);
-        for (int i = 0; i < 5; i++)
-            this.configuration.addMobile(new Vector3D(this.configuration.dockWidth * i, depth - Configuration.palletSize));
+        int nMobiles = 20;
+        for (int i = 0; i < nMobiles; i++)
+            this.configuration.addMobile(new Vector3D(0, this.configuration.warehouse.getDepth() / 2 + (nMobiles / 2 - i) * Configuration.palletSize, 0));
 
         // disable JavaFX logging
         Logger logger = Logger.getLogger("javafx");

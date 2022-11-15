@@ -1,11 +1,11 @@
 package event;
 
 import agent.*;
+import pathfinding.PathFinder;
 import simulation.Event;
 import simulation.Simulation;
 import util.Pair;
 import util.Vector3D;
-import warehouse.Configuration;
 import warehouse.Mission;
 import warehouse.Pallet;
 import warehouse.Production;
@@ -16,11 +16,13 @@ import java.util.stream.Collectors;
 public class ControllerEvent extends Event {
 
     private final Controller controller;
+    private final PathFinder pathFinder;
     private final Stock stock;
 
     public ControllerEvent(Simulation simulation, double time, Controller controller) {
         super(simulation, time, Integer.MAX_VALUE-1); // set large id to have ControllerEvents at the end of each timestep
         this.controller = controller;
+        this.pathFinder = controller.getPathFinder();
         this.stock = controller.getStock();
     }
 
@@ -150,11 +152,11 @@ public class ControllerEvent extends Event {
             this.controller.remove(dock);
         }
 
-        // send free mobiles to waiting zone
-        // TODO define a waiting zone?
+        // send free mobiles to charging zone
         for (Mobile mobile : this.controller.getAvailableMobiles()) {
-            if (mobile.isAvailable()) {
-                mobile.replace(new Vector3D(0, this.controller.getWarehouse().getDepth() - (mobile.getId() + 1) * Configuration.palletSize * 2, 0));
+            if (mobile.isAvailable() && !mobile.getTargetPosition().equals(mobile.getChargingPosition())) {
+                mobile.replace(mobile.getChargingPosition());
+                this.pathFinder.computePath(this.time, mobile);
             }
         }
 
