@@ -2,7 +2,6 @@ package agent;
 
 import brain.MobileMissionSelector;
 import brain.PalletPositionSelector;
-import brain.TravelTimeEstimator;
 import brain.TruckDockSelector;
 import observer.Observable;
 import pathfinding.PathFinder;
@@ -21,7 +20,6 @@ public class Controller extends Observable {
     public final MobileMissionSelector mobileMissionSelector;
     public final TruckDockSelector truckDockSelector;
     public final PalletPositionSelector palletPositionSelector;
-    public final TravelTimeEstimator travelTimeEstimator;
     public final TimeEstimationPropagator timeEstimationPropagator;
     private final Configuration configuration;
     private final Warehouse warehouse;
@@ -41,8 +39,7 @@ public class Controller extends Observable {
         this.mobileMissionSelector = mobileMissionSelector;
         this.truckDockSelector = truckDockSelector;
         this.palletPositionSelector = palletPositionSelector;
-        this.travelTimeEstimator = configuration.travelTimeEstimator;
-        this.timeEstimationPropagator = new TimeEstimationPropagator(this.travelTimeEstimator);
+        this.timeEstimationPropagator = new TimeEstimationPropagator();
         this.configuration = configuration;
         this.warehouse = configuration.warehouse;
         this.stock = configuration.stock;

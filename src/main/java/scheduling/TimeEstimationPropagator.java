@@ -1,6 +1,5 @@
 package scheduling;
 
-import brain.TravelTimeEstimator;
 import warehouse.Mission;
 
 import java.util.ArrayList;
@@ -13,11 +12,9 @@ import java.util.TreeSet;
  */
 public class TimeEstimationPropagator {
 
-    private final TravelTimeEstimator travelTimeEstimator;
     private final HashMap<Integer, Mission> missions;
 
-    public TimeEstimationPropagator(TravelTimeEstimator travelTimeEstimator) {
-        this.travelTimeEstimator = travelTimeEstimator;
+    public TimeEstimationPropagator() {
         this.missions = new HashMap<>();
     }
 
@@ -79,11 +76,7 @@ public class TimeEstimationPropagator {
                 if (!mission.isComplete()) {
                     mission.setExpectedEndTime(mission.getExpectedPickUpTime());
                 } else {
-                    mission.setExpectedEndTime(mission.getExpectedPickUpTime() + this.travelTimeEstimator.estimate(
-                            mission.getStartPosition(),
-                            mission.getEndPosition(),
-                            true
-                    ));
+                    mission.setExpectedEndTime(mission.getExpectedPickUpTime());
                 }
             }
 

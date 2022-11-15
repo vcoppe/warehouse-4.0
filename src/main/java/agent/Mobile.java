@@ -34,7 +34,7 @@ public class Mobile extends Observable {
         return this.id;
     }
 
-    public static double getSpeed(boolean loaded) {
+    public double getSpeed(boolean loaded) {
         if (loaded) {
             return speed * loadedSpeedFactor;
         } else {
@@ -44,9 +44,9 @@ public class Mobile extends Observable {
 
     public double getSpeed() {
         if (this.mission == null || !this.mission.pickedUp()) {
-            return getSpeed(false);
+            return this.getSpeed(false);
         } else {
-            return getSpeed(true);
+            return this.getSpeed(true);
         }
     }
 
@@ -109,32 +109,10 @@ public class Mobile extends Observable {
         return this.mission;
     }
 
-    public void forward(double time) {
-        this.pathTime = time;
-        if (this.mission == null && this.path != null) {
-            Pair<Vector3D, Double> last = this.path.getEndTimedPosition();
-            if (time >= last.second) {
-                this.position = last.first;
-                this.targetPosition = last.first;
-                this.path = null;
-            }
-        }
-    }
-
     public void start(Mission mission) {
         this.mission = mission;
         this.mission.start();
         this.targetPosition = mission.getStartPosition();
-    }
-
-    public boolean atPickUp() {
-        if (this.path != null && this.path.size() > 0){
-            Pair<Vector3D, Double> pair = this.path.getEndTimedPosition();
-            return this.targetPosition.equals(this.mission.getStartPosition()) &&
-                    pair.first.equals(this.mission.getStartPosition()) &&
-                    this.pathTime >= pair.second;
-        }
-        return false;
     }
 
     public void pickUp() {
@@ -143,33 +121,11 @@ public class Mobile extends Observable {
         this.targetPosition = this.mission.getEndPosition();
     }
 
-    public boolean atDrop() {
-        if (this.path != null && this.path.size() > 0){
-            Pair<Vector3D, Double> pair = this.path.getEndTimedPosition();
-            return this.targetPosition.equals(this.mission.getEndPosition()) &&
-                    pair.first.equals(this.mission.getEndPosition()) &&
-                    this.pathTime >= pair.second;
-        }
-        return false;
-    }
-
     public void drop() {
         this.mission.drop();
         this.position = this.mission.getEndPosition();
         this.mission = null;
         this.path = null;
-        this.changed();
-    }
-
-    public void interrupt(double time) {
-        this.mission = null;
-        Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = this.getTimedPositionsAt(time);
-        this.path = new Path();
-        this.path.add(pair.first);
-        this.path.add(pair.second);
-        this.pathTime = time;
-        this.position = pair.first.first;
-        this.targetPosition = pair.second.first;
         this.changed();
     }
 

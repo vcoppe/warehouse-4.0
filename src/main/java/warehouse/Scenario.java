@@ -14,7 +14,7 @@ public class Scenario {
     // generates distribution of pallet types
     // (later) distribution evolves over time
 
-    private static final Random random = new Random(0);
+    private static final Random random = new Random(1);
     public final int nLocations, nProducts, nIOPoints, nDocks;
     public final ArrayList<Vector3D> locations;
     public final int[] productSpace, locationCapacity;

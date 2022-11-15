@@ -6,6 +6,7 @@ import util.DoublePrecisionConstraint;
 import util.Pair;
 import util.Vector2D;
 import util.Vector3D;
+import warehouse.Mission;
 
 import java.util.*;
 
@@ -42,9 +43,23 @@ public class SafeIntervalPathPlanning extends PathFinder {
         Vector3D chargingPosition = mobile.getChargingPosition();
 
         ArrayList<Landmark> landmarks = new ArrayList<>();
-        landmarks.add(new Landmark(startTimedPosition.first, startTimedPosition.second));
-        landmarks.add(new Landmark(endPosition, startTimedPosition.second));
-        landmarks.add(new Landmark(chargingPosition, startTimedPosition.second));
+
+        if (mobile.isAvailable()) {
+            landmarks.add(new Landmark(startTimedPosition.first, startTimedPosition.second, false));
+            landmarks.add(new Landmark(endPosition, startTimedPosition.second, false));
+            landmarks.add(new Landmark(chargingPosition, startTimedPosition.second, false));
+        } else {
+            Mission mission = mobile.getMission();
+            if (mission.pickedUp()) {
+                landmarks.add(new Landmark(startTimedPosition.first, startTimedPosition.second, true));
+                landmarks.add(new Landmark(endPosition, startTimedPosition.second, false));
+                landmarks.add(new Landmark(chargingPosition, startTimedPosition.second, false));
+            } else {
+                landmarks.add(new Landmark(startTimedPosition.first, startTimedPosition.second, false));
+                landmarks.add(new Landmark(endPosition, startTimedPosition.second, true));
+                landmarks.add(new Landmark(chargingPosition, startTimedPosition.second, false));
+            }
+        }
 
         State solution = this.findPath(landmarks);
 
@@ -71,6 +86,9 @@ public class SafeIntervalPathPlanning extends PathFinder {
         }
 
         for (int i = 1; i < landmarks.size(); i++) {
+            for (State start : starts) {
+                start.loaded = landmarks.get(i - 1).loaded;
+            }
             ArrayList<State> goals = this.getStates(landmarks.get(i), false);
             starts = this.findPaths(starts, goals);
         }
@@ -121,7 +139,8 @@ public class SafeIntervalPathPlanning extends PathFinder {
                                 state.intervalId,
                                 state.interval,
                                 new Cost(Math.max(state.cost.g, goal.interval.start), state.cost.h),
-                                state.parent
+                                state.parent,
+                                state.loaded
                         ));
                     }
                 }
@@ -154,8 +173,8 @@ public class SafeIntervalPathPlanning extends PathFinder {
             Vector2D dist2D = this.reverseResumableAStar.distance(this.mobile, position);
             if (dist2D == null) continue;
 
-            double edgeCost = this.getEdgeCost(edge.from, edge.to);
-            double h = DoublePrecisionConstraint.round(dist2D.getX() * this.mobile.getSpeed() + dist2D.getY() * Lift.speed);
+            double edgeCost = this.getEdgeCost(edge.from, edge.to, parent.loaded);
+            double h = DoublePrecisionConstraint.round(dist2D.getX() * this.mobile.getSpeed(parent.loaded) + dist2D.getY() * Lift.speed);
 
             ArrayList<Interval> safeIntervals = this.getSafeIntervals(position);
             for (int intervalId = 0; intervalId < safeIntervals.size(); intervalId++) {
@@ -173,7 +192,7 @@ public class SafeIntervalPathPlanning extends PathFinder {
                     continue;
                 }
 
-                State child = new State(position, intervalId, safeInterval, childCost, parent);
+                State child = new State(position, intervalId, safeInterval, childCost, parent, parent.loaded);
 
                 if (this.visited.contains(child)) {
                     continue;
@@ -196,7 +215,7 @@ public class SafeIntervalPathPlanning extends PathFinder {
 
         while (current != null) {
             if (previous != null && !previous.position.equals(current.position)) {
-                double edgeCost = this.getEdgeCost(current.position, previous.position);
+                double edgeCost = this.getEdgeCost(current.position, previous.position, current.loaded);
                 if (DoublePrecisionConstraint.round(current.cost.g + edgeCost) < previous.cost.g) { // mobile waited there
                     path.add(current.position, DoublePrecisionConstraint.round(previous.cost.g - edgeCost));
                 }
@@ -242,9 +261,9 @@ public class SafeIntervalPathPlanning extends PathFinder {
         return safeIntervals;
     }
 
-    private double getEdgeCost(Vector3D from, Vector3D to) {
+    private double getEdgeCost(Vector3D from, Vector3D to, boolean loaded) {
         Vector2D distance = from == to ? Vector2D.zero : this.graph.getWeight(from, to);
-        return DoublePrecisionConstraint.round(distance.getX() * this.mobile.getSpeed() + distance.getY() * Lift.speed);
+        return DoublePrecisionConstraint.round(distance.getX() * this.mobile.getSpeed(loaded) + distance.getY() * Lift.speed);
     }
 
     static class State implements Comparable<State> {
@@ -254,17 +273,19 @@ public class SafeIntervalPathPlanning extends PathFinder {
         Cost cost;
         int intervalId;
         Interval interval;
+        boolean loaded;
 
-        public State(Vector3D position, int intervalId, Interval interval, Cost cost, State parent) {
+        public State(Vector3D position, int intervalId, Interval interval, Cost cost, State parent, boolean loaded) {
             this.position = position;
             this.intervalId = intervalId;
             this.interval = interval;
             this.cost = cost;
             this.parent = parent;
+            this.loaded = loaded;
         }
 
         public State(Vector3D position, int intervalId, Interval interval) {
-            this(position, intervalId, interval, new Cost(0, 0), null);
+            this(position, intervalId, interval, new Cost(0, 0), null, false);
         }
 
         @Override
@@ -313,10 +334,12 @@ public class SafeIntervalPathPlanning extends PathFinder {
 
         Vector3D position;
         double time;
+        boolean loaded;
 
-        public Landmark(Vector3D position, double time) {
+        public Landmark(Vector3D position, double time, boolean loaded) {
             this.position = position;
             this.time = time;
+            this.loaded = loaded;
         }
 
     }

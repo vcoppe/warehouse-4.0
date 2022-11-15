@@ -4,7 +4,6 @@ import agent.Controller;
 import agent.Mobile;
 import agent.Stock;
 import agent.Truck;
-import brain.TravelTimeEstimator;
 import pathfinding.PathFinder;
 import scheduling.TimeEstimationPropagator;
 import simulation.Event;
@@ -15,7 +14,6 @@ public class MobileMissionPickUpEvent extends Event {
 
     private final Controller controller;
     private final PathFinder pathFinder;
-    private final TravelTimeEstimator travelTimeEstimator;
     private final TimeEstimationPropagator timeEstimationPropagator;
     private final Stock stock;
     private final Mobile mobile;
@@ -25,7 +23,6 @@ public class MobileMissionPickUpEvent extends Event {
         super(simulation, time);
         this.controller = controller;
         this.pathFinder = controller.getPathFinder();
-        this.travelTimeEstimator = controller.travelTimeEstimator;
         this.timeEstimationPropagator = controller.timeEstimationPropagator;
         this.stock = controller.getStock();
         this.mobile = mobile;
@@ -40,11 +37,6 @@ public class MobileMissionPickUpEvent extends Event {
                         this.mobile.getId(),
                         this.mission.getId()));
 
-        this.travelTimeEstimator.update(
-                this.mobile.getPosition(),
-                this.mission.getStartPosition(),
-                this.mission.getExpectedEndTime() - this.mission.getExpectedPickUpTime()
-        );
         this.mobile.pickUp();
 
         // tell truck or stock that pallet has left the position
@@ -68,8 +60,7 @@ public class MobileMissionPickUpEvent extends Event {
         Event event = new MobileMissionEndEvent(this.simulation, endTime, this.controller, mobile);
         this.simulation.enqueueEvent(event);
 
-        mission.setExpectedEndTime(endTime);
-
+        this.mission.setExpectedEndTime(endTime);
         this.timeEstimationPropagator.propagate(this.time);
     }
 
