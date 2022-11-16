@@ -32,7 +32,7 @@ public class ClosestUrgentMissionSelector implements MobileMissionSelector {
 
             for (Mission mission : missions) {
                 if (!taken.contains(mission.getId())) {
-                    double dist = offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), mobile);
+                    double dist = offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), mobile, false);
                     if ((dist < shortestDist && (closestMission == null || mission.getInitTime() <= closestMission.getInitTime()))
                             || (closestMission != null && mission.getInitTime() <= closestMission.getInitTime() - 300)) {
                         shortestDist = dist;

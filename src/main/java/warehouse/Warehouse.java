@@ -66,9 +66,9 @@ public class Warehouse {
         return this.graph.getShortestPath(p1, p2);
     }
 
-    public double getTravelTime(Vector3D p1, Vector3D p2, Mobile mobile) {
+    public double getTravelTime(Vector3D p1, Vector3D p2, Mobile mobile, boolean loaded) {
         Vector2D dist2D = this.getDistance(p1, p2);
-        return DoublePrecisionConstraint.round(dist2D.getX() * mobile.getSpeed() + dist2D.getY() * Lift.speed);
+        return DoublePrecisionConstraint.round(dist2D.getX() * mobile.getSpeed(loaded) + dist2D.getY() * Lift.speed);
     }
 
 }

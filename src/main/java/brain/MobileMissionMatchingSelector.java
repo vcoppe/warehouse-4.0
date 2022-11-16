@@ -27,12 +27,24 @@ public class MobileMissionMatchingSelector implements MobileMissionSelector {
 
         for (int i=0; i<mobiles.size(); i++) {
             Mobile mobile = mobiles.get(i);
-            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
-            Vector3D position = pair.second.first;
-            double offset = pair.second.second - time;
+            double offset = 0; // compute time to be available for a new mission
+            Vector3D position = null;
+            if (mobile.isAvailable()) {
+                Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
+                position = pair.second.first;
+                offset = pair.second.second - time;
+            } else {
+                Mission current = mobile.getMission();
+                position = current.getEndPosition();
+                offset = mobile.getPathEndTime() - time;
+                if (!current.pickedUp()) {
+                    offset += this.warehouse.getTravelTime(current.getStartPosition(), current.getEndPosition(), mobile, true);
+                }
+            }
+
             for (int j = 0; j < missions.size(); j++) {
                 Mission mission = missions.get(j);
-                cost[i][j] = offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), mobile);
+                cost[i][j] = offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), mobile, false);
             }
         }
 

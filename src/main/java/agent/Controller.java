@@ -39,7 +39,7 @@ public class Controller extends Observable {
         this.mobileMissionSelector = mobileMissionSelector;
         this.truckDockSelector = truckDockSelector;
         this.palletPositionSelector = palletPositionSelector;
-        this.timeEstimationPropagator = new TimeEstimationPropagator();
+        this.timeEstimationPropagator = new TimeEstimationPropagator(configuration.warehouse);
         this.configuration = configuration;
         this.warehouse = configuration.warehouse;
         this.stock = configuration.stock;
@@ -131,6 +131,10 @@ public class Controller extends Observable {
 
     public ArrayList<Mission> getCompleteStartableMissions() {
         return this.missions.stream().filter(m -> m.isComplete() && m.canStart()).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public ArrayList<Mission> getCompleteSoonStartableMissions() {
+        return this.missions.stream().filter(m -> m.isComplete() && m.getMissionPathMaxLength() <= 1).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public void add(Mission mission) {

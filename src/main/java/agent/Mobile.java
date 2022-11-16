@@ -111,7 +111,7 @@ public class Mobile extends Observable {
 
     public void start(Mission mission) {
         this.mission = mission;
-        this.mission.start();
+        this.mission.start(this);
         this.targetPosition = mission.getStartPosition();
     }
 

@@ -1,6 +1,7 @@
 package scheduling;
 
 import warehouse.Mission;
+import warehouse.Warehouse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,9 +13,11 @@ import java.util.TreeSet;
  */
 public class TimeEstimationPropagator {
 
+    private final Warehouse warehouse;
     private final HashMap<Integer, Mission> missions;
 
-    public TimeEstimationPropagator() {
+    public TimeEstimationPropagator(Warehouse warehouse) {
+        this.warehouse = warehouse;
         this.missions = new HashMap<>();
     }
 
@@ -55,6 +58,7 @@ public class TimeEstimationPropagator {
             if (countParent == 0) {
                 open.add(mission.getId());
             }
+            mission.setMissionPathMaxLength(0); // reset all to 0 before propagating values
             countParents.put(mission.getId(), countParent);
         }
 
@@ -64,29 +68,62 @@ public class TimeEstimationPropagator {
             open.remove(u);
 
             Mission mission = this.missions.get(u);
-            if (!mission.started()) {
-                mission.setExpectedStartTime(Math.max(
-                        time,
-                        mission.getStartConstraint().expectedSatisfactionTime()
-                ));
-                mission.setExpectedPickUpTime(Math.max(
-                        mission.getExpectedStartTime(),
-                        mission.getPickupConstraint().expectedSatisfactionTime()
-                ));
-                if (!mission.isComplete()) {
-                    mission.setExpectedEndTime(mission.getExpectedPickUpTime());
-                } else {
-                    mission.setExpectedEndTime(mission.getExpectedPickUpTime());
-                }
-            }
+            this.updateEstimates(mission, time);
 
             if (children.containsKey(u)) {
                 for (int v : children.get(u)) {
+                    Mission child = this.missions.get(v);
+                    child.setMissionPathMaxLength(Math.max(
+                            child.getMissionPathMaxLength(),
+                            mission.getMissionPathMaxLength() + 1
+                    ));
                     if (countParents.compute(v, (key, value) -> value - 1) == 0) {
                         open.add(v);
                     }
                 }
             }
+        }
+    }
+
+    private void updateEstimates(Mission mission, double time) {
+        if (mission.done()) {
+            return;
+        } else if (mission.pickedUp()) {
+            mission.setExpectedEndTime(Math.max(
+                    mission.getExpectedEndTime(),
+                    mission.dropConstraint.expectedSatisfactionTime()
+            ));
+        } else if (mission.started()) {
+            double travelTime = this.warehouse.getTravelTime(
+                    mission.getStartPosition(),
+                    mission.getEndPosition(),
+                    mission.getMobile(),
+                    true
+            );
+            mission.setExpectedPickUpTime(Math.max(
+                    mission.getExpectedPickUpTime(),
+                    mission.pickupConstraint.expectedSatisfactionTime()
+            ));
+            mission.setExpectedEndTime(Math.max(
+                    mission.getExpectedEndTime(),
+                    Math.max(
+                            mission.getExpectedPickUpTime() + travelTime,
+                            mission.dropConstraint.expectedSatisfactionTime()
+                    )
+            ));
+        } else {
+            mission.setExpectedStartTime(Math.max(
+                    Math.max(time, mission.getExpectedStartTime()),
+                    mission.startConstraint.expectedSatisfactionTime()
+            ));
+            mission.setExpectedPickUpTime(Math.max(
+                    Math.max(mission.getExpectedStartTime(), mission.getExpectedPickUpTime()),
+                    mission.pickupConstraint.expectedSatisfactionTime()
+            ));
+            mission.setExpectedEndTime(Math.max(
+                    Math.max(mission.getExpectedPickUpTime(), mission.getExpectedEndTime()),
+                    mission.dropConstraint.expectedSatisfactionTime()
+            ));
         }
     }
 

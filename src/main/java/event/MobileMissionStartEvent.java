@@ -3,15 +3,15 @@ package event;
 import agent.Controller;
 import agent.Mobile;
 import pathfinding.PathFinder;
-import scheduling.TimeEstimationPropagator;
 import simulation.Event;
 import simulation.Simulation;
 import warehouse.Mission;
+import warehouse.Warehouse;
 
 public class MobileMissionStartEvent extends Event {
 
     private final Controller controller;
-    private final TimeEstimationPropagator timeEstimationPropagator;
+    private final Warehouse warehouse;
     private final PathFinder pathFinder;
     private final Mobile mobile;
     private final Mission mission;
@@ -19,8 +19,8 @@ public class MobileMissionStartEvent extends Event {
     public MobileMissionStartEvent(Simulation simulation, double time, Controller controller, Mobile mobile, Mission mission) {
         super(simulation, time);
         this.controller = controller;
+        this.warehouse = controller.getWarehouse();
         this.pathFinder = controller.getPathFinder();
-        this.timeEstimationPropagator = controller.timeEstimationPropagator;
         this.mobile = mobile;
         this.mission = mission;
     }
@@ -44,7 +44,14 @@ public class MobileMissionStartEvent extends Event {
         this.simulation.enqueueEvent(event);
 
         this.mission.setExpectedPickUpTime(pickupTime);
-        this.timeEstimationPropagator.propagate(this.time);
+
+        double travelTime = this.warehouse.getTravelTime(
+                this.mission.getStartPosition(),
+                this.mission.getEndPosition(),
+                this.mobile,
+                true
+        );
+        this.mission.setExpectedEndTime(pickupTime + travelTime);
     }
 
 }

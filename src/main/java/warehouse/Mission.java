@@ -1,5 +1,6 @@
 package warehouse;
 
+import agent.Mobile;
 import agent.Truck;
 import scheduling.ConjunctionConstraint;
 import scheduling.PrecedenceConstraint;
@@ -15,20 +16,24 @@ public class Mission {
     private final Pallet pallet;
     private final Truck startTruck;
     private final Truck endTruck;
-    private final ConjunctionConstraint startConstraint, pickupConstraint, dropConstraint;
+    public final ConjunctionConstraint startConstraint, pickupConstraint, dropConstraint;
     private Vector3D startPosition, endPosition;
+    private Mobile mobile;
     private double expectedStartTime, expectedPickUpTime, expectedEndTime;
+    private int missionPathMaxLength;
     private Status status;
 
     public Mission(double initTime, Pallet pallet, Truck startTruck, Truck endTruck, Vector3D startPosition, Vector3D endPosition) {
         this.id = MISSION_ID++;
         this.initTime = initTime;
-        this.expectedStartTime = Double.MAX_VALUE;
-        this.expectedPickUpTime = Double.MAX_VALUE;
-        this.expectedEndTime = Double.MAX_VALUE;
+        this.expectedStartTime = -Double.MAX_VALUE;
+        this.expectedPickUpTime = -Double.MAX_VALUE;
+        this.expectedEndTime = -Double.MAX_VALUE;
+        this.missionPathMaxLength = 0;
         this.pallet = pallet;
         this.startTruck = startTruck;
         this.endTruck = endTruck;
+        this.mobile = null;
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.status = Status.WAITING;
@@ -81,6 +86,14 @@ public class Mission {
         this.expectedEndTime = expectedEndTime;
     }
 
+    public int getMissionPathMaxLength() {
+        return this.missionPathMaxLength;
+    }
+
+    public void setMissionPathMaxLength(int missionPathMaxLength) {
+        this.missionPathMaxLength = missionPathMaxLength;
+    }
+
     public Pallet getPallet() {
         return this.pallet;
     }
@@ -91,6 +104,10 @@ public class Mission {
 
     public Truck getEndTruck() {
         return this.endTruck;
+    }
+
+    public Mobile getMobile() {
+        return this.mobile;
     }
 
     public void setEndPosition(Vector3D position) {
@@ -111,8 +128,9 @@ public class Mission {
         return this.startConstraint.satisfied();
     }
 
-    public void start() {
+    public void start(Mobile mobile) {
         this.status = Status.STARTED;
+        this.mobile = mobile;
     }
 
     public boolean started() {

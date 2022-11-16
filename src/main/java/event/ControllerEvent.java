@@ -2,6 +2,7 @@ package event;
 
 import agent.*;
 import pathfinding.PathFinder;
+import scheduling.TimeEstimationPropagator;
 import simulation.Event;
 import simulation.Simulation;
 import util.Pair;
@@ -16,12 +17,14 @@ import java.util.stream.Collectors;
 public class ControllerEvent extends Event {
 
     private final Controller controller;
+    private final TimeEstimationPropagator timeEstimationPropagator;
     private final PathFinder pathFinder;
     private final Stock stock;
 
     public ControllerEvent(Simulation simulation, double time, Controller controller) {
         super(simulation, time, Integer.MAX_VALUE-1); // set large id to have ControllerEvents at the end of each timestep
         this.controller = controller;
+        this.timeEstimationPropagator = controller.timeEstimationPropagator;
         this.pathFinder = controller.getPathFinder();
         this.stock = controller.getStock();
     }
@@ -115,21 +118,24 @@ public class ControllerEvent extends Event {
         }
 
         // match available mobiles with waiting missions
+        this.timeEstimationPropagator.propagate(this.time);
         ArrayList<Pair<Mobile, Mission>> mobileMissionPairs = this.controller.mobileMissionSelector.matchMobileMission(
                 this.time,
                 this.controller.getAvailableMobiles(),
-                this.controller.getCompleteStartableMissions()
+                this.controller.getCompleteSoonStartableMissions()
         );
 
         for (Pair<Mobile, Mission> pair : mobileMissionPairs) {
             Mobile mobile = pair.first;
             Mission mission = pair.second;
 
-            this.controller.remove(mobile);
-            this.controller.remove(mission);
+            if (mobile.isAvailable() && mission.canStart()) {
+                this.controller.remove(mobile);
+                this.controller.remove(mission);
 
-            Event event = new MobileMissionStartEvent(this.simulation, this.time, this.controller, mobile, mission);
-            this.simulation.enqueueEvent(event);
+                Event event = new MobileMissionStartEvent(this.simulation, this.time, this.controller, mobile, mission);
+                this.simulation.enqueueEvent(event);
+            }
         }
 
         // match available docks with waiting trucks
