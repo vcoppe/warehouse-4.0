@@ -121,7 +121,7 @@ public class ControllerEvent extends Event {
         this.timeEstimationPropagator.propagate(this.time);
         ArrayList<Pair<Mobile, Mission>> mobileMissionPairs = this.controller.mobileMissionSelector.matchMobileMission(
                 this.time,
-                this.controller.getAvailableMobiles(),
+                this.controller.getAllMobiles(),
                 this.controller.getCompleteSoonStartableMissions()
         );
 

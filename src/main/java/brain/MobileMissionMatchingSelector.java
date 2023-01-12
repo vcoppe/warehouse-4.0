@@ -44,7 +44,10 @@ public class MobileMissionMatchingSelector implements MobileMissionSelector {
 
             for (int j = 0; j < missions.size(); j++) {
                 Mission mission = missions.get(j);
-                cost[i][j] = offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), mobile, false);
+                cost[i][j] = Math.max(
+                        offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), mobile, false),
+                        mission.getExpectedStartTime() - time
+                );
             }
         }
 
