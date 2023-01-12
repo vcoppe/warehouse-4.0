@@ -69,6 +69,7 @@ public class TruckDockEvent extends Event {
                         Mission aboveMission = unloadMissions.get(abovePosition);
                         mission.addStartConstraint(new MissionPickedUpConstraint(aboveMission));
                     }
+                    break;
                 case SIDES:
                     DisjunctionConstraint startCondition = new DisjunctionConstraint();
                     Vector3D leftPosition = palletPosition.subtract(deltaX);
@@ -86,6 +87,7 @@ public class TruckDockEvent extends Event {
                         startCondition.add(PrecedenceConstraint.emptyConstraint);
                     }
                     mission.addStartConstraint(startCondition);
+                    break;
             }
         }
 
@@ -118,6 +120,7 @@ public class TruckDockEvent extends Event {
                         Mission belowMission = loadMissions.get(belowPosition);
                         mission.addStartConstraint(new MissionDoneConstraint(belowMission));
                     }
+                    break;
                 case SIDES:
                     Vector3D leftPosition = palletPosition.subtract(deltaX);
                     Vector3D leftPosition2 = leftPosition.subtract(deltaX);
@@ -133,6 +136,7 @@ public class TruckDockEvent extends Event {
                         Mission rightMission = loadMissions.get(rightPosition);
                         mission.addStartConstraint(new MissionDoneConstraint(rightMission));
                     }
+                    break;
             }
         }
 
