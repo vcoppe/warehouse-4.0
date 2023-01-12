@@ -49,7 +49,7 @@ public class TruckGeneratorEvent extends Event {
                 type = Scenario.pickFromDistribution(this.scenario.dockThroughput);
             } while (loadQuantities.getOrDefault(type, 0) == this.stock.getQuantity(type));
             toLoad.put(
-                    new Vector3D((i / 9) * Configuration.palletSize, (i % 9) * Configuration.palletSize),
+                    new Vector3D((i % 3) * Configuration.palletSize, (i / 3) * Configuration.palletSize),
                     new Pallet(type)
             );
             loadQuantities.computeIfPresent(type, (key, val) -> val + 1);
@@ -58,7 +58,7 @@ public class TruckGeneratorEvent extends Event {
 
         for (int i = 0; i < nPalletsToUnload; i++) {
             toUnload.put(
-                    new Vector3D((i / 9) * Configuration.palletSize, (i % 9) * Configuration.palletSize),
+                    new Vector3D((i % 3) * Configuration.palletSize, (i / 3) * Configuration.palletSize),
                     new Pallet(Scenario.pickFromDistribution(this.scenario.dockThroughput))
             );
         }
