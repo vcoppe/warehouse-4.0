@@ -78,7 +78,6 @@ public class SafeIntervalPathPlanning extends PathFinder {
         ArrayList<State> starts = this.getStates(landmarks.get(0), true);
 
         if (starts.isEmpty()) {
-            System.out.println("no start state");
             return null;
         } else {
             State start = starts.get(0);
@@ -90,20 +89,21 @@ public class SafeIntervalPathPlanning extends PathFinder {
                 start.loaded = landmarks.get(i - 1).loaded;
             }
             ArrayList<State> goals = this.getStates(landmarks.get(i), false);
+            if (goals.isEmpty()) {
+                return null;
+            }
+
             starts = this.findPaths(starts, goals);
+            if (starts.isEmpty()) {
+                return null;
+            }
         }
 
-        if (starts.isEmpty()) {
-            System.out.println("no goal state");
+        State goal = starts.get(starts.size() - 1);
+        if (goal.interval.end < Double.MAX_VALUE) {
             return null;
         } else {
-            State goal = starts.get(starts.size() - 1);
-            if (goal.interval.end < Double.MAX_VALUE) {
-                System.out.println("cannot stay indefinitely");
-                return null;
-            } else {
-                return goal;
-            }
+            return goal;
         }
     }
 
@@ -174,7 +174,7 @@ public class SafeIntervalPathPlanning extends PathFinder {
             if (dist2D == null) continue;
 
             double edgeCost = this.getEdgeCost(edge.from, edge.to, parent.loaded);
-            double h = DoublePrecisionConstraint.round(dist2D.getX() * this.mobile.getSpeed(parent.loaded) + dist2D.getY() * Lift.speed);
+            double h = DoublePrecisionConstraint.round(dist2D.getX() * Mobile.getSpeed(parent.loaded) + dist2D.getY() * Lift.speed);
 
             ArrayList<Interval> safeIntervals = this.getSafeIntervals(position);
             for (int intervalId = 0; intervalId < safeIntervals.size(); intervalId++) {
@@ -263,7 +263,7 @@ public class SafeIntervalPathPlanning extends PathFinder {
 
     private double getEdgeCost(Vector3D from, Vector3D to, boolean loaded) {
         Vector2D distance = from == to ? Vector2D.zero : this.graph.getWeight(from, to);
-        return DoublePrecisionConstraint.round(distance.getX() * this.mobile.getSpeed(loaded) + distance.getY() * Lift.speed);
+        return DoublePrecisionConstraint.round(distance.getX() * Mobile.getSpeed(loaded) + distance.getY() * Lift.speed);
     }
 
     static class State implements Comparable<State> {

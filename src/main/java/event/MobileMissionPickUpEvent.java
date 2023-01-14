@@ -56,8 +56,6 @@ public class MobileMissionPickUpEvent extends Event {
 
         Event event = new MobileMissionEndEvent(this.simulation, endTime, this.controller, mobile);
         this.simulation.enqueueEvent(event);
-
-        this.mission.setExpectedEndTime(endTime);
     }
 
 }

@@ -1,8 +1,6 @@
 package pathfinding;
 
 import agent.Mobile;
-import util.Pair;
-import util.Vector3D;
 
 import java.util.ArrayList;
 
@@ -20,12 +18,12 @@ public abstract class PathFinder {
         return this.table;
     }
 
-    public void computePath(double time, Mobile mobile) {
+    public Path computePath(double time, Mobile mobile) {
         this.table.removeAll(mobile.getId());
 
         Path newPath = this.findPath(time, mobile);
         if (newPath == null) {
-            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
+            return null;
         }
 
         // make reservations that begins when leaving previous position and ends when reaching next position
@@ -41,6 +39,8 @@ public abstract class PathFinder {
         newPath.truncate(mobile.getTargetPosition());
 
         mobile.setPath(time, newPath);
+
+        return newPath;
     }
 
     protected abstract Path findPath(double time, Mobile mobile);

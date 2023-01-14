@@ -89,39 +89,45 @@ public class TimeEstimationPropagator {
         if (mission.done()) {
             return;
         } else if (mission.pickedUp()) {
+            double pathEndTime = mission.getMobile().getPathEndTime();
             mission.setExpectedEndTime(Math.max(
-                    mission.getExpectedEndTime(),
+                    pathEndTime,
                     mission.dropConstraint.expectedSatisfactionTime()
             ));
         } else if (mission.started()) {
+            double pathEndTime = mission.getMobile().getPathEndTime();
             double travelTime = this.warehouse.getTravelTime(
                     mission.getStartPosition(),
                     mission.getEndPosition(),
-                    mission.getMobile(),
                     true
             );
             mission.setExpectedPickUpTime(Math.max(
-                    mission.getExpectedPickUpTime(),
+                    pathEndTime,
                     mission.pickupConstraint.expectedSatisfactionTime()
             ));
             mission.setExpectedEndTime(Math.max(
-                    mission.getExpectedEndTime(),
-                    Math.max(
-                            mission.getExpectedPickUpTime() + travelTime,
-                            mission.dropConstraint.expectedSatisfactionTime()
-                    )
+                    pathEndTime + travelTime,
+                    mission.dropConstraint.expectedSatisfactionTime()
             ));
         } else {
+            double travelTime = 0;
+            if (mission.isComplete()) {
+                travelTime = this.warehouse.getTravelTime(
+                        mission.getStartPosition(),
+                        mission.getEndPosition(),
+                        true
+                );
+            }
             mission.setExpectedStartTime(Math.max(
-                    Math.max(time, mission.getExpectedStartTime()),
+                    time,
                     mission.startConstraint.expectedSatisfactionTime()
             ));
             mission.setExpectedPickUpTime(Math.max(
-                    Math.max(mission.getExpectedStartTime(), mission.getExpectedPickUpTime()),
+                    mission.getExpectedStartTime(),
                     mission.pickupConstraint.expectedSatisfactionTime()
             ));
             mission.setExpectedEndTime(Math.max(
-                    Math.max(mission.getExpectedPickUpTime(), mission.getExpectedEndTime()),
+                    mission.getExpectedPickUpTime() + travelTime,
                     mission.dropConstraint.expectedSatisfactionTime()
             ));
         }

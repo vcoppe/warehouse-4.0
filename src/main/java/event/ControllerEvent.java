@@ -11,7 +11,9 @@ import warehouse.Mission;
 import warehouse.Pallet;
 import warehouse.Production;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 
 public class ControllerEvent extends Event {
@@ -95,26 +97,42 @@ public class ControllerEvent extends Event {
         }
 
         // get incomplete startable missions and try to complete them
-        for (Mission mission : this.controller.getIncompleteStartableMissions()) {
-            if (mission.getStartPosition() == null) { // load mission
-                ArrayList<Vector3D> startPositions = this.stock.getStartPositions(mission.getPallet());
-                // TODO check for unaccessible pallets
-                if (startPositions.isEmpty()) continue;
+        while (true) {
+            boolean completedMission = false;
+            for (Mission mission : this.controller.getIncompleteSoonStartableMissions()) {
+                if (mission.getStartPosition() == null) { // load mission
+                    ArrayList<Vector3D> startPositions = this.stock.getStartPositions(mission.getPallet());
+                    // TODO check for unaccessible pallets
+                    if (startPositions.isEmpty()) continue;
 
-                Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(mission.getPallet(), mission.getEndPosition(), startPositions);
+                    Vector3D startPosition = this.controller.palletPositionSelector.selectStartPosition(mission.getPallet(), mission.getEndPosition(), startPositions);
 
-                mission.setStartPosition(startPosition);
-                this.stock.lock(startPosition);
-            } else if (mission.getEndPosition() == null) { // unload mission
-                ArrayList<Vector3D> endPositions = this.stock.getEndPositions(mission.getPallet());
-                // TODO check for unaccessible free locations
-                if (endPositions.isEmpty()) continue;
+                    mission.setStartPosition(startPosition);
+                    this.stock.lock(startPosition);
 
-                Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(mission.getPallet(), mission.getStartPosition(), endPositions);
+                    completedMission = true;
+                } else if (mission.getEndPosition() == null) { // unload mission
+                    ArrayList<Vector3D> endPositions = this.stock.getEndPositions(mission.getPallet());
+                    // TODO check for unaccessible free locations
+                    if (endPositions.isEmpty()) continue;
 
-                mission.setEndPosition(endPosition);
-                this.stock.lock(endPosition);
+                    Vector3D endPosition = this.controller.palletPositionSelector.selectEndPosition(mission.getPallet(), mission.getStartPosition(), endPositions);
+
+                    mission.setEndPosition(endPosition);
+                    this.stock.lock(endPosition);
+
+                    completedMission = true;
+                }
             }
+
+            if (!completedMission) {
+                break;
+            }
+        }
+
+        // reset available mobiles with potential mission
+        for (Mobile mobile : this.controller.getAvailableMobiles()) {
+            mobile.reset();
         }
 
         // match available mobiles with waiting missions
@@ -129,12 +147,28 @@ public class ControllerEvent extends Event {
             Mobile mobile = pair.first;
             Mission mission = pair.second;
 
-            if (mobile.isAvailable() && mission.canStart()) {
-                this.controller.remove(mobile);
-                this.controller.remove(mission);
+            if (mobile.isAvailable()) {
+                if (mission.canStart()) {
+                    this.controller.remove(mobile);
+                    this.controller.remove(mission);
 
-                Event event = new MobileMissionStartEvent(this.simulation, this.time, this.controller, mobile, mission);
-                this.simulation.enqueueEvent(event);
+                    Event event = new MobileMissionStartEvent(this.simulation, this.time, this.controller, mobile, mission);
+                    this.simulation.enqueueEvent(event);
+                } else {
+                    mobile.setMission(mission);
+                    if (this.pathFinder.computePath(this.time, mobile) == null) {
+                        Vector3D position = mobile.getTimedPositionsAt(this.time).getSecond().first;
+                        ArrayDeque<Vector3D> path = this.controller.getWarehouse().getPath(position, mission.getStartPosition());
+
+                        for (Iterator<Vector3D> it = path.descendingIterator(); it.hasNext(); ) {
+                            Vector3D targetPosition = it.next();
+                            mobile.replace(targetPosition);
+                            if (this.pathFinder.computePath(this.time, mobile) != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -160,8 +194,7 @@ public class ControllerEvent extends Event {
 
         // send free mobiles to charging zone
         for (Mobile mobile : this.controller.getAvailableMobiles()) {
-            if (mobile.isAvailable() && !mobile.getTargetPosition().equals(mobile.getChargingPosition())) {
-                mobile.replace(mobile.getChargingPosition());
+            if (mobile.getMission() == null) {
                 this.pathFinder.computePath(this.time, mobile);
             }
         }

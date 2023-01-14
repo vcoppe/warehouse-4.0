@@ -42,16 +42,6 @@ public class MobileMissionStartEvent extends Event {
 
         Event event = new MobileMissionPickUpEvent(this.simulation, pickupTime, this.controller, mobile);
         this.simulation.enqueueEvent(event);
-
-        this.mission.setExpectedPickUpTime(pickupTime);
-
-        double travelTime = this.warehouse.getTravelTime(
-                this.mission.getStartPosition(),
-                this.mission.getEndPosition(),
-                this.mobile,
-                true
-        );
-        this.mission.setExpectedEndTime(pickupTime + travelTime);
     }
 
 }

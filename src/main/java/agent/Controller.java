@@ -125,12 +125,27 @@ public class Controller extends Observable {
         return this.missions;
     }
 
-    public ArrayList<Mission> getIncompleteStartableMissions() {
-        return this.missions.stream().filter(m -> !m.isComplete() && m.canStart()).collect(Collectors.toCollection(ArrayList::new));
+    public ArrayList<Mission> getCompleteMissions() {
+        return this.missions.stream().filter(Mission::isComplete).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public ArrayList<Mission> getCompleteStartableMissions() {
-        return this.missions.stream().filter(m -> m.isComplete() && m.canStart()).collect(Collectors.toCollection(ArrayList::new));
+    public ArrayList<Mission> getIncompleteSoonStartableMissions() {
+        ArrayList<Mission> incompleteSoonStartableMissions = new ArrayList<>();
+        for (Mission mission : this.missions) {
+            if (!mission.isComplete()) {
+                boolean incompleteParent = false;
+                for (Mission parent : mission.getPrecedingMissions()) {
+                    if (!parent.isComplete()) {
+                        incompleteParent = true;
+                        break;
+                    }
+                }
+                if (!incompleteParent) {
+                    incompleteSoonStartableMissions.add(mission);
+                }
+            }
+        }
+        return incompleteSoonStartableMissions;
     }
 
     public ArrayList<Mission> getCompleteSoonStartableMissions() {

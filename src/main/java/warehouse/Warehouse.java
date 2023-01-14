@@ -8,6 +8,8 @@ import util.DoublePrecisionConstraint;
 import util.Vector2D;
 import util.Vector3D;
 
+import java.util.ArrayDeque;
+
 public class Warehouse {
 
     private final int width, depth, height; // dimensions
@@ -63,12 +65,16 @@ public class Warehouse {
     }
 
     public Vector2D getDistance(Vector3D p1, Vector3D p2) {
+        return this.graph.getShortestDistance(p1, p2);
+    }
+
+    public ArrayDeque<Vector3D> getPath(Vector3D p1, Vector3D p2) {
         return this.graph.getShortestPath(p1, p2);
     }
 
-    public double getTravelTime(Vector3D p1, Vector3D p2, Mobile mobile, boolean loaded) {
+    public double getTravelTime(Vector3D p1, Vector3D p2, boolean loaded) {
         Vector2D dist2D = this.getDistance(p1, p2);
-        return DoublePrecisionConstraint.round(dist2D.getX() * mobile.getSpeed(loaded) + dist2D.getY() * Lift.speed);
+        return DoublePrecisionConstraint.round(dist2D.getX() * Mobile.getSpeed(loaded) + dist2D.getY() * Lift.speed);
     }
 
 }

@@ -34,7 +34,7 @@ public class Mobile extends Observable {
         return this.id;
     }
 
-    public double getSpeed(boolean loaded) {
+    public static double getSpeed(boolean loaded) {
         if (loaded) {
             return speed * loadedSpeedFactor;
         } else {
@@ -44,14 +44,14 @@ public class Mobile extends Observable {
 
     public double getSpeed() {
         if (this.mission == null || !this.mission.pickedUp()) {
-            return this.getSpeed(false);
+            return getSpeed(false);
         } else {
-            return this.getSpeed(true);
+            return getSpeed(true);
         }
     }
 
     public boolean isAvailable() {
-        return this.mission == null;
+        return this.mission == null || !this.mission.started();
     }
 
     public Vector3D getPosition() {
@@ -105,6 +105,11 @@ public class Mobile extends Observable {
         }
     }
 
+    public void setMission(Mission mission) {
+        this.mission = mission;
+        this.targetPosition = mission.getStartPosition();
+    }
+
     public Mission getMission() {
         return this.mission;
     }
@@ -124,13 +129,19 @@ public class Mobile extends Observable {
     public void drop() {
         this.mission.drop();
         this.position = this.mission.getEndPosition();
+        this.targetPosition = null;
         this.mission = null;
         this.path = null;
         this.changed();
     }
 
-    public void replace(Vector3D position) {
-        this.targetPosition = position;
+    public void replace(Vector3D targetPosition) {
+        this.targetPosition = targetPosition;
+    }
+
+    public void reset() {
+        this.replace(this.chargingPosition);
+        this.mission = null;
     }
 
     public void setPath(double time, Path path) {
@@ -138,5 +149,4 @@ public class Mobile extends Observable {
         this.pathTime = time;
         this.changed();
     }
-
 }

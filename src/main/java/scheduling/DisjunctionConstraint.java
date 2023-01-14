@@ -9,6 +9,9 @@ public class DisjunctionConstraint extends PrecedenceConstraint {
 
     public DisjunctionConstraint(PrecedenceConstraint... constraints) {
         this.constraints = new ArrayList<>(Arrays.asList(constraints));
+        for (PrecedenceConstraint precedenceConstraint : constraints) {
+            this.precedingMissions.addAll(precedenceConstraint.precedingMissions);
+        }
     }
 
     public void add(PrecedenceConstraint constraint) {

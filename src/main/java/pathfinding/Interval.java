@@ -30,4 +30,11 @@ public class Interval implements Comparable<Interval> {
         return Double.compare(this.start, other.start);
     }
 
+    @Override
+    public String toString() {
+        return "Interval{" +
+                "start=" + start +
+                ", end=" + end +
+                '}';
+    }
 }

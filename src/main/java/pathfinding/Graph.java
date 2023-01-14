@@ -133,7 +133,7 @@ public class Graph {
         this.aStar(s, t, this.dist.get(s), this.prev.get(s));
     }
 
-    public Vector2D getShortestPath(Vector3D s, Vector3D t) {
+    public Vector2D getShortestDistance(Vector3D s, Vector3D t) {
         if (!this.dist.containsKey(s) || !this.dist.get(s).containsKey(t)) {
             this.computeShortestPath(s, t);
         }
@@ -146,6 +146,29 @@ public class Graph {
         }
 
         return dist;
+    }
+
+    public ArrayDeque<Vector3D> getShortestPath(Vector3D s, Vector3D t) {
+        if (!this.prev.containsKey(s) || !this.prev.get(s).containsKey(t)) {
+            this.computeShortestPath(s, t);
+        }
+
+        HashMap<Vector3D, Vector3D> prev = this.prev.get(s);
+        ArrayDeque<Vector3D> path = new ArrayDeque<>();
+
+        Vector3D current = t;
+        while (!current.equals(s)) {
+            path.addFirst(current);
+
+            current = prev.get(current);
+            if (current == null) {
+                System.out.println("No path between " + s + " and " + t);
+                System.exit(0);
+            }
+        }
+        path.addFirst(current);
+
+        return path;
     }
 
 }

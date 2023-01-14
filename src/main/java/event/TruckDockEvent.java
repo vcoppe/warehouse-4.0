@@ -6,7 +6,6 @@ import agent.Truck;
 import scheduling.DisjunctionConstraint;
 import scheduling.MissionDoneConstraint;
 import scheduling.MissionPickedUpConstraint;
-import scheduling.PrecedenceConstraint;
 import simulation.Event;
 import simulation.Simulation;
 import util.Vector3D;
@@ -71,23 +70,17 @@ public class TruckDockEvent extends Event {
                     }
                     break;
                 case SIDES:
-                    DisjunctionConstraint startCondition = new DisjunctionConstraint();
                     Vector3D leftPosition = palletPosition.subtract(deltaX);
-                    if (unloadMissions.containsKey(leftPosition)) {
-                        Mission leftMission = unloadMissions.get(leftPosition);
-                        startCondition.add(new MissionPickedUpConstraint(leftMission));
-                    } else {
-                        startCondition.add(PrecedenceConstraint.emptyConstraint);
-                    }
                     Vector3D rightPosition = palletPosition.add(deltaX);
-                    if (unloadMissions.containsKey(rightPosition)) {
+                    if (unloadMissions.containsKey(leftPosition) && unloadMissions.containsKey(rightPosition)) {
+                        Mission leftMission = unloadMissions.get(leftPosition);
                         Mission rightMission = unloadMissions.get(rightPosition);
-                        startCondition.add(new MissionPickedUpConstraint(rightMission));
-                    } else {
-                        startCondition.add(PrecedenceConstraint.emptyConstraint);
+                        DisjunctionConstraint startConstraint = new DisjunctionConstraint(
+                                new MissionPickedUpConstraint(leftMission),
+                                new MissionPickedUpConstraint(rightMission)
+                        );
+                        mission.addStartConstraint(startConstraint);
                     }
-                    mission.addStartConstraint(startCondition);
-                    break;
             }
         }
 

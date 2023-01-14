@@ -53,7 +53,7 @@ public class GraphTest extends TestCase {
             graph.addEdge(this.positions[i], this.positions[i + 1]);
         }
 
-        assertEquals(10, graph.getShortestPath(this.positions[0], this.positions[10]).norm());
+        assertEquals(10, graph.getShortestDistance(this.positions[0], this.positions[10]).norm());
     }
 
 }

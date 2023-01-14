@@ -8,6 +8,7 @@ import warehouse.Mission;
 import warehouse.Warehouse;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class MobileMissionMatchingSelector implements MobileMissionSelector {
 
@@ -18,36 +19,26 @@ public class MobileMissionMatchingSelector implements MobileMissionSelector {
     }
 
     @Override
-    public ArrayList<Pair<Mobile, Mission>> matchMobileMission(double time, ArrayList<Mobile> mobiles, ArrayList<Mission> missions) {
+    public ArrayList<Pair<Mobile, Mission>> matchMobileMission(double time, ArrayList<Mobile> allMobiles, ArrayList<Mission> allMissions) {
+        ArrayList<Mobile> mobiles = allMobiles.stream().filter(Mobile::isAvailable).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Mission> missions = allMissions.stream().filter(Mission::canStart).collect(Collectors.toCollection(ArrayList::new));
+
         if (mobiles.size() == 0 || missions.size() == 0) {
             return new ArrayList<>();
         }
 
         double[][] cost = new double[mobiles.size()][missions.size()];
 
-        for (int i=0; i<mobiles.size(); i++) {
+        for (int i = 0; i < mobiles.size(); i++) {
             Mobile mobile = mobiles.get(i);
-            double offset = 0; // compute time to be available for a new mission
-            Vector3D position = null;
-            if (mobile.isAvailable()) {
-                Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
-                position = pair.second.first;
-                offset = pair.second.second - time;
-            } else {
-                Mission current = mobile.getMission();
-                position = current.getEndPosition();
-                offset = mobile.getPathEndTime() - time;
-                if (!current.pickedUp()) {
-                    offset += this.warehouse.getTravelTime(current.getStartPosition(), current.getEndPosition(), mobile, true);
-                }
-            }
+
+            Pair<Pair<Vector3D, Double>, Pair<Vector3D, Double>> pair = mobile.getTimedPositionsAt(time);
+            Vector3D position = pair.second.first;
+            double offset = pair.second.second - time;
 
             for (int j = 0; j < missions.size(); j++) {
                 Mission mission = missions.get(j);
-                cost[i][j] = Math.max(
-                        offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), mobile, false),
-                        mission.getExpectedStartTime() - time
-                );
+                cost[i][j] = offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), false);
             }
         }
 
