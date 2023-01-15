@@ -236,19 +236,17 @@ public class Configuration {
                 for (int z = 0; z < height; z += palletSize) {
                     edges.add(this.warehouse.addEdge(new Vector3D(x, y1, z), new Vector3D(x, y1 + palletSize, z)));
                     edges.add(this.warehouse.addEdge(new Vector3D(x, y2 - palletSize, z), new Vector3D(x, y2 - 2 * palletSize, z)));
-                    if (z > 0) {
-                        if (x + palletSize < x2) {
-                            if (y1 < yStart)
-                                this.warehouse.addEdge(new Vector3D(x, y1, z), new Vector3D(x + palletSize, y1, z));
-                            if (y2 > yEnd)
-                                this.warehouse.addEdge(new Vector3D(x, y2 - palletSize, z), new Vector3D(x + palletSize, y2 - palletSize, z));
-                        }
-                        if (x - palletSize >= x1) {
-                            if (y1 < yStart)
-                                this.warehouse.addEdge(new Vector3D(x, y1, z), new Vector3D(x - palletSize, y1, z));
-                            if (y2 > yEnd)
-                                this.warehouse.addEdge(new Vector3D(x, y2 - palletSize, z), new Vector3D(x - palletSize, y2 - palletSize, z));
-                        }
+                    if (x + palletSize < x2) {
+                        if (y1 < yStart)
+                            this.warehouse.addEdge(new Vector3D(x, y1, z), new Vector3D(x + palletSize, y1, z));
+                        if (y2 > yEnd)
+                            this.warehouse.addEdge(new Vector3D(x, y2 - palletSize, z), new Vector3D(x + palletSize, y2 - palletSize, z));
+                    }
+                    if (x - palletSize >= x1) {
+                        if (y1 < yStart)
+                            this.warehouse.addEdge(new Vector3D(x, y1, z), new Vector3D(x - palletSize, y1, z));
+                        if (y2 > yEnd)
+                            this.warehouse.addEdge(new Vector3D(x, y2 - palletSize, z), new Vector3D(x - palletSize, y2 - palletSize, z));
                     }
                 }
             }
@@ -263,19 +261,17 @@ public class Configuration {
                 for (int z = 0; z < height; z += palletSize) {
                     edges.add(this.warehouse.addEdge(new Vector3D(x1, y, z), new Vector3D(x1 + palletSize, y, z)));
                     edges.add(this.warehouse.addEdge(new Vector3D(x2 - palletSize, y, z), new Vector3D(x2 - 2 * palletSize, y, z)));
-                    if (z > 0) {
-                        if (y + palletSize < y2) {
-                            if (x1 < xStart)
-                                this.warehouse.addEdge(new Vector3D(x1, y, z), new Vector3D(x1, y + palletSize, z));
-                            if (x2 > xEnd)
-                                this.warehouse.addEdge(new Vector3D(x2 - palletSize, y, z), new Vector3D(x2 - palletSize, y + palletSize, z));
-                        }
-                        if (y - palletSize >= y1) {
-                            if (x1 < xStart)
-                                this.warehouse.addEdge(new Vector3D(x1, y, z), new Vector3D(x1, y - palletSize, z));
-                            if (x2 > xEnd)
-                                this.warehouse.addEdge(new Vector3D(x2 - palletSize, y, z), new Vector3D(x2 - palletSize, y - palletSize, z));
-                        }
+                    if (y + palletSize < y2) {
+                        if (x1 < xStart)
+                            this.warehouse.addEdge(new Vector3D(x1, y, z), new Vector3D(x1, y + palletSize, z));
+                        if (x2 > xEnd)
+                            this.warehouse.addEdge(new Vector3D(x2 - palletSize, y, z), new Vector3D(x2 - palletSize, y + palletSize, z));
+                    }
+                    if (y - palletSize >= y1) {
+                        if (x1 < xStart)
+                            this.warehouse.addEdge(new Vector3D(x1, y, z), new Vector3D(x1, y - palletSize, z));
+                        if (x2 > xEnd)
+                            this.warehouse.addEdge(new Vector3D(x2 - palletSize, y, z), new Vector3D(x2 - palletSize, y - palletSize, z));
                     }
                 }
             }
