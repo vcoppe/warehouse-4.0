@@ -43,8 +43,8 @@ public class Configuration {
 
         this.productClustering = new DedicatedStorage();
         this.clusterLocationAssignment = new SLAP();
-        this.mobileMissionSelector = new MobileMissionMatchingSelector(this.warehouse);
-        //this.mobileMissionSelector = new MobileMissionAnticipationMatchingSelector(this.warehouse);
+        //this.mobileMissionSelector = new MobileMissionMatchingSelector(this.warehouse);
+        this.mobileMissionSelector = new MobileMissionAnticipationMatchingSelector(this.warehouse);
         this.palletPositionSelector = new ClosestPositionSelector(this.warehouse);
         this.truckDockSelector = new NaiveSelector();
 
@@ -228,24 +228,14 @@ public class Configuration {
         ArrayList<Edge> edges = new ArrayList<>();
 
         for (int x = x1; x < x2; x += palletSize) {
+            edges.add(this.warehouse.addEdge(new Vector3D(x, y1, 0), new Vector3D(x, y1 - palletSize, 0)));
+            edges.add(this.warehouse.addEdge(new Vector3D(x, y2 - palletSize, 0), new Vector3D(x, y2, 0)));
+            edges.add(this.warehouse.getEdge(new Vector3D(x, y1 - palletSize, 0), new Vector3D(x, y1, 0)));
+            edges.add(this.warehouse.getEdge(new Vector3D(x, y2, 0), new Vector3D(x, y2 - palletSize, 0)));
             if (vertical) {
-                if (x >= xStart && x < xEnd) {
-                    edges.add(this.warehouse.addEdge(new Vector3D(x, y1, 0), new Vector3D(x, y1 - palletSize, 0)));
-                    edges.add(this.warehouse.addEdge(new Vector3D(x, y2 - palletSize, 0), new Vector3D(x, y2, 0)));
-                    edges.add(this.warehouse.getEdge(new Vector3D(x, y1 - palletSize, 0), new Vector3D(x, y1, 0)));
-                    edges.add(this.warehouse.getEdge(new Vector3D(x, y2, 0), new Vector3D(x, y2 - palletSize, 0)));
-                } else if (x < xStart) { // remove edges (horizontal ones)
-                    this.warehouse.removeEdge(new Vector3D(x - palletSize, y1, 0), new Vector3D(x, y1, 0));
-                    this.warehouse.removeEdge(new Vector3D(x - palletSize, y2 - palletSize, 0), new Vector3D(x, y2 - palletSize, 0));
-                } else if (x >= xEnd) {
-                    this.warehouse.removeEdge(new Vector3D(x + palletSize, y1, 0), new Vector3D(x, y1, 0));
-                    this.warehouse.removeEdge(new Vector3D(x + palletSize, y2 - palletSize, 0), new Vector3D(x, y2 - palletSize, 0));
-                }
                 for (int z = 0; z < height; z += palletSize) {
-                    if (x >= xStart && x < xEnd) {
-                        edges.add(this.warehouse.addEdge(new Vector3D(x, y1, z), new Vector3D(x, y1 + palletSize, z)));
-                        edges.add(this.warehouse.addEdge(new Vector3D(x, y2 - palletSize, z), new Vector3D(x, y2 - 2 * palletSize, z)));
-                    }
+                    edges.add(this.warehouse.addEdge(new Vector3D(x, y1, z), new Vector3D(x, y1 + palletSize, z)));
+                    edges.add(this.warehouse.addEdge(new Vector3D(x, y2 - palletSize, z), new Vector3D(x, y2 - 2 * palletSize, z)));
                     if (z > 0) {
                         if (x + palletSize < x2) {
                             if (y1 < yStart)
@@ -261,34 +251,18 @@ public class Configuration {
                         }
                     }
                 }
-            } else {
-                this.warehouse.removeEdge(new Vector3D(x, y1 - palletSize, 0), new Vector3D(x, y1, 0));
-                this.warehouse.removeEdge(new Vector3D(x, y2, 0), new Vector3D(x, y2 - palletSize, 0));
             }
         }
 
         for (int y = y1; y < y2; y += palletSize) {
-            if (vertical) {
-                this.warehouse.removeEdge(new Vector3D(x1 - palletSize, y, 0), new Vector3D(x1, y, 0));
-                this.warehouse.removeEdge(new Vector3D(x2, y, 0), new Vector3D(x2 - palletSize, y, 0));
-            } else {
-                if (y >= yStart && y < yEnd) {
-                    edges.add(this.warehouse.addEdge(new Vector3D(x1, y, 0), new Vector3D(x1 - palletSize, y, 0)));
-                    edges.add(this.warehouse.addEdge(new Vector3D(x2 - palletSize, y, 0), new Vector3D(x2, y, 0)));
-                    edges.add(this.warehouse.getEdge(new Vector3D(x1 - palletSize, y, 0), new Vector3D(x1, y, 0)));
-                    edges.add(this.warehouse.getEdge(new Vector3D(x2, y, 0), new Vector3D(x2 - palletSize, y, 0)));
-                } else if (y < yStart) { // remove edges (vertical ones)
-                    this.warehouse.removeEdge(new Vector3D(x1, y - palletSize, 0), new Vector3D(x1, y, 0));
-                    this.warehouse.removeEdge(new Vector3D(x2 - palletSize, y - palletSize, 0), new Vector3D(x2 - palletSize, y, 0));
-                } else if (y >= yEnd) {
-                    this.warehouse.removeEdge(new Vector3D(x1, y + palletSize, 0), new Vector3D(x1, y, 0));
-                    this.warehouse.removeEdge(new Vector3D(x2 - palletSize, y + palletSize, 0), new Vector3D(x2 - palletSize, y, 0));
-                }
+            edges.add(this.warehouse.addEdge(new Vector3D(x1, y, 0), new Vector3D(x1 - palletSize, y, 0)));
+            edges.add(this.warehouse.addEdge(new Vector3D(x2 - palletSize, y, 0), new Vector3D(x2, y, 0)));
+            edges.add(this.warehouse.getEdge(new Vector3D(x1 - palletSize, y, 0), new Vector3D(x1, y, 0)));
+            edges.add(this.warehouse.getEdge(new Vector3D(x2, y, 0), new Vector3D(x2 - palletSize, y, 0)));
+            if (!vertical) {
                 for (int z = 0; z < height; z += palletSize) {
-                    if (y >= yStart && y < yEnd) {
-                        edges.add(this.warehouse.addEdge(new Vector3D(x1, y, z), new Vector3D(x1 + palletSize, y, z)));
-                        edges.add(this.warehouse.addEdge(new Vector3D(x2 - palletSize, y, z), new Vector3D(x2 - 2 * palletSize, y, z)));
-                    }
+                    edges.add(this.warehouse.addEdge(new Vector3D(x1, y, z), new Vector3D(x1 + palletSize, y, z)));
+                    edges.add(this.warehouse.addEdge(new Vector3D(x2 - palletSize, y, z), new Vector3D(x2 - 2 * palletSize, y, z)));
                     if (z > 0) {
                         if (y + palletSize < y2) {
                             if (x1 < xStart)
@@ -310,13 +284,6 @@ public class Configuration {
         // lift vertical edges + exits
         if (liftNW) {
             this.lifts.add(new Lift(new Vector3D(x1, y1, 0), height));
-            if (vertical) {
-                this.warehouse.addEdge(new Vector3D(x1, y1, 0), new Vector3D(x1, y1 + palletSize, 0));
-                this.warehouse.addEdge(new Vector3D(x1, y1 + palletSize, 0), new Vector3D(x1 - palletSize, y1 + palletSize, 0));
-            } else {
-                this.warehouse.addEdge(new Vector3D(x1, y1, 0), new Vector3D(x1 + palletSize, y1, 0));
-                this.warehouse.addEdge(new Vector3D(x1 + palletSize, y1, 0), new Vector3D(x1 + palletSize, y1 - palletSize, 0));
-            }
             Vector3D[] positions = new Vector3D[height / palletSize];
             for (int z = 0; z < height; z += palletSize) {
                 positions[z / palletSize] = new Vector3D(x1, y1, z);
@@ -329,13 +296,6 @@ public class Configuration {
         }
         if (liftNE) {
             this.lifts.add(new Lift(new Vector3D(x2 - palletSize, y1, 0), height));
-            if (vertical) {
-                this.warehouse.addEdge(new Vector3D(x2 - palletSize, y1, 0), new Vector3D(x2 - palletSize, y1 + palletSize, 0));
-                this.warehouse.addEdge(new Vector3D(x2 - palletSize, y1 + palletSize, 0), new Vector3D(x2, y1 + palletSize, 0));
-            } else {
-                this.warehouse.addEdge(new Vector3D(x2 - palletSize, y1, 0), new Vector3D(x2 - 2 * palletSize, y1, 0));
-                this.warehouse.addEdge(new Vector3D(x2 - 2 * palletSize, y1, 0), new Vector3D(x2 - 2 * palletSize, y1 - palletSize, 0));
-            }
             Vector3D[] positions = new Vector3D[height / palletSize];
             for (int z = 0; z < height; z += palletSize) {
                 positions[z / palletSize] = new Vector3D(x2 - palletSize, y1, z);
@@ -348,13 +308,6 @@ public class Configuration {
         }
         if (liftSW) {
             this.lifts.add(new Lift(new Vector3D(x1, y2 - palletSize, 0), height));
-            if (vertical) {
-                this.warehouse.addEdge(new Vector3D(x1, y2 - palletSize, 0), new Vector3D(x1, y2 - 2 * palletSize, 0));
-                this.warehouse.addEdge(new Vector3D(x1, y2 - 2 * palletSize, 0), new Vector3D(x1 - palletSize, y2 - 2 * palletSize, 0));
-            } else {
-                this.warehouse.addEdge(new Vector3D(x1, y2 - palletSize, 0), new Vector3D(x1 + palletSize, y2 - palletSize, 0));
-                this.warehouse.addEdge(new Vector3D(x1 + palletSize, y2 - palletSize, 0), new Vector3D(x1 + palletSize, y2, 0));
-            }
             Vector3D[] positions = new Vector3D[height / palletSize];
             for (int z = 0; z < height; z += palletSize) {
                 positions[z / palletSize] = new Vector3D(x1, y2 - palletSize, z);
@@ -367,13 +320,6 @@ public class Configuration {
         }
         if (liftSE) {
             this.lifts.add(new Lift(new Vector3D(x2 - palletSize, y2 - palletSize, 0), height));
-            if (vertical) {
-                this.warehouse.addEdge(new Vector3D(x2 - palletSize, y2 - palletSize, 0), new Vector3D(x2 - palletSize, y2 - 2 * palletSize, 0));
-                this.warehouse.addEdge(new Vector3D(x2 - palletSize, y2 - 2 * palletSize, 0), new Vector3D(x2, y2 - 2 * palletSize, 0));
-            } else {
-                this.warehouse.addEdge(new Vector3D(x2 - palletSize, y2 - palletSize, 0), new Vector3D(x2 - 2 * palletSize, y2 - palletSize, 0));
-                this.warehouse.addEdge(new Vector3D(x2 - 2 * palletSize, y2 - palletSize, 0), new Vector3D(x2 - 2 * palletSize, y2, 0));
-            }
             Vector3D[] positions = new Vector3D[height / palletSize];
             for (int z = 0; z < height; z += palletSize) {
                 positions[z / palletSize] = new Vector3D(x2 - palletSize, y2 - palletSize, z);
