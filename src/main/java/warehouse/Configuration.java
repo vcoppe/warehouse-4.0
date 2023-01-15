@@ -26,9 +26,9 @@ public class Configuration {
     public final TruckDockSelector truckDockSelector;
 
     public static final int palletSize = 10;
-    public int dockWidth = 3 * palletSize;
-    public int truckWidth = dockWidth;
-    public int truckDepth = 3 * truckWidth;
+    public static int dockWidth = 3 * palletSize;
+    public static int truckWidth = dockWidth;
+    public static int truckDepth = 3 * truckWidth;
 
     public Configuration(int width, int depth, int height) {
         this.simulation = new Simulation();
@@ -44,6 +44,7 @@ public class Configuration {
         this.productClustering = new DedicatedStorage();
         this.clusterLocationAssignment = new SLAP();
         this.mobileMissionSelector = new MobileMissionMatchingSelector(this.warehouse);
+        //this.mobileMissionSelector = new MobileMissionAnticipationMatchingSelector(this.warehouse);
         this.palletPositionSelector = new ClosestPositionSelector(this.warehouse);
         this.truckDockSelector = new NaiveSelector();
 
@@ -68,7 +69,7 @@ public class Configuration {
 
         this.addStockSection(20, 20, 120, 120, 20, true);
 
-        for (int i = 0; i < 5; i++) this.addOutdoorDock(i * this.dockWidth, depth);
+        for (int i = 0; i < 5; i++) this.addOutdoorDock(i * dockWidth, depth);
         for (int i = 0; i < 5; i++) this.addMobile(new Vector3D(dockWidth * i, depth - palletSize));
     }
 
@@ -141,10 +142,8 @@ public class Configuration {
                         } else {
                             this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x + palletSize, y, 0));
                             this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x - palletSize, y, 0));
-                            if (typeX == 1)
-                                this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y + palletSize, 0));
-                            else if (typeX == 2)
-                                this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y - palletSize, 0));
+                            this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y + palletSize, 0));
+                            this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y - palletSize, 0));
                         }
                     } else {
                         if (typeX == 0 || typeX == 1) {
@@ -161,10 +160,8 @@ public class Configuration {
                         } else {
                             this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x + palletSize, y, 0));
                             this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x - palletSize, y, 0));
-                            if (typeX == 2)
-                                this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y + palletSize, 0));
-                            else if (typeX == 3)
-                                this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y - palletSize, 0));
+                            this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y + palletSize, 0));
+                            this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y - palletSize, 0));
                         }
                     }
                 } else {
@@ -183,10 +180,8 @@ public class Configuration {
                         } else {
                             this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y + palletSize, 0));
                             this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y - palletSize, 0));
-                            if (typeY == 1)
-                                this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x + palletSize, y, 0));
-                            else if (typeY == 2)
-                                this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x - palletSize, y, 0));
+                            this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x + palletSize, y, 0));
+                            this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x - palletSize, y, 0));
                         }
                     } else {
                         if (typeY == 0 || typeY == 1) {
@@ -203,15 +198,15 @@ public class Configuration {
                         } else {
                             this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y + palletSize, 0));
                             this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y - palletSize, 0));
-                            if (typeY == 2)
-                                this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x + palletSize, y, 0));
-                            else if (typeY == 3)
-                                this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x - palletSize, y, 0));
+                            this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x + palletSize, y, 0));
+                            this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x - palletSize, y, 0));
                         }
                     }
                 }
             }
         }
+
+        this.controller.closestOpenPositionFinder.updatePositions();
     }
 
     public void addAutoStockSection(int x1, int y1, int x2, int y2, int height, boolean vertical, boolean liftNW, boolean liftNE, boolean liftSW, boolean liftSE) {
@@ -412,6 +407,8 @@ public class Configuration {
         for (Edge edge : edges) {
             edge.addCrossCondition(new StockEdgeCondition(this.stock, edge));
         }
+
+        this.controller.closestOpenPositionFinder.updatePositions();
     }
 
     public void addOutdoorDock(int x1, int y1) {
@@ -419,7 +416,7 @@ public class Configuration {
         this.docks.add(dock);
 
         int depth = this.warehouse.getDepth();
-        int x2 = x1 + this.truckWidth, y2 = y1 + this.truckDepth;
+        int x2 = x1 + truckWidth, y2 = y1 + truckDepth;
 
         ArrayList<Edge> edges = new ArrayList<>();
 
@@ -427,7 +424,7 @@ public class Configuration {
             edges.add(this.warehouse.addEdge(new Vector3D(x, depth - palletSize, 0), new Vector3D(x, depth, 0), true));
         }
 
-        Vector3D[] positions = new Vector3D[(this.truckWidth / palletSize) * (this.truckDepth / palletSize)];
+        Vector3D[] positions = new Vector3D[(truckWidth / palletSize) * (truckDepth / palletSize)];
         int cnt = 0;
         for (int x = x1; x < x2; x += palletSize) {
             for (int y = y1; y < y2; y += palletSize) {
@@ -444,14 +441,16 @@ public class Configuration {
         this.controller.getPathFinder().addGraphConstraint(new ZoneConstraint(this.controller.getPathFinder().getReservationTable(), positions));
 
         for (Edge edge : edges) {
-            edge.addCrossCondition(new DockEdgeCondition(dock, this.dockWidth, this.truckDepth, edge));
+            edge.addCrossCondition(new DockEdgeCondition(dock, dockWidth, truckDepth, edge));
         }
+
+        this.controller.closestOpenPositionFinder.updatePositions();
     }
 
     public void addIndoorDock(int x1, int y1) {
         Dock dock = new Dock(new Vector3D(x1, y1), Truck.Type.SIDES);
         this.docks.add(dock);
-        int x2 = x1 + this.truckWidth, y2 = y1 + this.truckDepth;
+        int x2 = x1 + truckWidth, y2 = y1 + truckDepth;
 
         this.removeGraphEdges(x1, y1, x2, y2);
 
@@ -463,13 +462,17 @@ public class Configuration {
         }
 
         ArrayList<Edge> edges = new ArrayList<>();
-        Vector3D[] positions = new Vector3D[(this.truckWidth / palletSize) * (this.truckDepth / palletSize)];
+        Vector3D[] positions = new Vector3D[(truckWidth / palletSize) * (truckDepth / palletSize)];
         int cnt = 0;
 
         for (int x = x1; x < x2; x += palletSize) {
             for (int y = y1; y < y2; y += palletSize) {
                 edges.add(this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x - palletSize, y, 0)));
                 edges.add(this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x + palletSize, y, 0)));
+                if (y - palletSize >= y1)
+                    edges.add(this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y - palletSize, 0)));
+                if (y + palletSize < y2)
+                    edges.add(this.warehouse.addEdge(new Vector3D(x, y, 0), new Vector3D(x, y + palletSize, 0)));
                 positions[cnt++] = new Vector3D(x, y, 0);
             }
         }
@@ -481,8 +484,10 @@ public class Configuration {
         }
 
         for (Edge edge : edges) {
-            edge.addCrossCondition(new DockEdgeCondition(dock, this.dockWidth, this.truckDepth, edge));
+            edge.addCrossCondition(new DockEdgeCondition(dock, dockWidth, truckDepth, edge));
         }
+
+        this.controller.closestOpenPositionFinder.updatePositions();
     }
 
     public void addProductionLine(int x1, int y1, int x2, int y2, int capacity, ArrayList<Vector3D> startBuffer, ArrayList<Vector3D> endBuffer) {
@@ -516,6 +521,8 @@ public class Configuration {
         }
 
         this.productionLines.add(new ProductionLine(this.stock, new Vector3D(x1, y1), x2 - x1, y2 - y1, capacity, startBuffer, endBuffer));
+
+        this.controller.closestOpenPositionFinder.updatePositions();
     }
 
     public void addMobile(Vector3D position) {

@@ -19,12 +19,12 @@ public abstract class PathFinder {
     }
 
     public Path computePath(double time, Mobile mobile) {
-        this.table.removeAll(mobile.getId());
-
         Path newPath = this.findPath(time, mobile);
         if (newPath == null) {
             return null;
         }
+
+        this.table.removeAll(mobile.getId());
 
         // make reservations that begins when leaving previous position and ends when reaching next position
         for (Action action : newPath.getActions()) {

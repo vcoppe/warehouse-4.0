@@ -44,7 +44,7 @@ public class DockEdgeCondition implements EdgeCondition {
         boolean hasPallet = truck.getCurrentLoad().containsKey(inTruckPosition);
 
         Mission mission = mobile.getMission();
-        if (mission == null) {
+        if (mission == null || !mission.started()) {
             return startedInside && !ingoingEdge && !hasPallet;
         }
 
@@ -54,13 +54,13 @@ public class DockEdgeCondition implements EdgeCondition {
 
         boolean targetInside = this.isInside(mobile.getTargetPosition());
 
-        if (truck.getType() == Truck.Type.SIDES) {
+        /*if (truck.getType() == Truck.Type.SIDES) {
             if (targetInside &&
                     (this.edge.from().getY() != mobile.getTargetPosition().getY() ||
                             this.edge.to().getY() != mobile.getTargetPosition().getY())) {
                 return false;
             }
-        }
+        }*/
 
         if (!startedInside && !targetInside) {
             return false;

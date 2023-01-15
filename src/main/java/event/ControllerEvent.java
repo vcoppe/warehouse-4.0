@@ -11,9 +11,7 @@ import warehouse.Mission;
 import warehouse.Pallet;
 import warehouse.Production;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.stream.Collectors;
 
 public class ControllerEvent extends Event {
@@ -156,19 +154,27 @@ public class ControllerEvent extends Event {
                     this.simulation.enqueueEvent(event);
                 } else {
                     mobile.setMission(mission);
-                    if (this.pathFinder.computePath(this.time, mobile) == null) {
-                        Vector3D position = mobile.getTimedPositionsAt(this.time).getSecond().first;
-                        ArrayDeque<Vector3D> path = this.controller.getWarehouse().getPath(position, mission.getStartPosition());
 
-                        for (Iterator<Vector3D> it = path.descendingIterator(); it.hasNext(); ) {
-                            Vector3D targetPosition = it.next();
-                            mobile.replace(targetPosition);
-                            if (this.pathFinder.computePath(this.time, mobile) != null) {
-                                break;
-                            }
+                    boolean foundPath = false;
+                    ArrayList<Vector3D> targetPositions = this.controller.closestOpenPositionFinder.getClosestOpenPositions(mission.getStartPosition());
+
+                    for (Vector3D targetPosition : targetPositions) {
+                        mobile.replace(targetPosition);
+                        if (this.pathFinder.computePath(this.time, mobile) != null) {
+                            foundPath = true;
+                            break;
                         }
                     }
+
+                    if (!foundPath) mobile.reset();
                 }
+            }
+        }
+
+        // send free mobiles to charging zone
+        for (Mobile mobile : this.controller.getAvailableMobiles()) {
+            if (mobile.getMission() == null) {
+                this.pathFinder.computePath(this.time, mobile);
             }
         }
 
@@ -192,13 +198,6 @@ public class ControllerEvent extends Event {
             this.controller.remove(dock);
         }
 
-        // send free mobiles to charging zone
-        for (Mobile mobile : this.controller.getAvailableMobiles()) {
-            if (mobile.getMission() == null) {
-                this.pathFinder.computePath(this.time, mobile);
-            }
-        }
-
         // launch waiting productions if components have arrived
         for (ProductionLine productionLine : this.controller.getProductionLines()) {
             ArrayList<Production> startableProductions = productionLine.getStartableProductions();
@@ -211,7 +210,6 @@ public class ControllerEvent extends Event {
                 productionLine.reserveCapacity(production.getCapacity());
             }
         }
-
     }
 
 }

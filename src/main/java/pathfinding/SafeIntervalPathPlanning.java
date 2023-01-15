@@ -12,6 +12,8 @@ import java.util.*;
 
 public class SafeIntervalPathPlanning extends PathFinder {
 
+    private static final boolean debug = false;
+
     private final ReverseResumableAStar reverseResumableAStar;
     private final HashMap<Vector3D, ArrayList<Interval>> safeIntervals;
     private final PriorityQueue<State> queue;
@@ -33,6 +35,8 @@ public class SafeIntervalPathPlanning extends PathFinder {
 
     @Override
     protected Path findPath(double time, Mobile mobile) {
+        if (debug)
+            System.out.println("compute path for mobile " + mobile.getId() + " available? " + mobile.isAvailable());
         this.mobile = mobile;
         this.safeIntervals.clear();
 
@@ -47,7 +51,7 @@ public class SafeIntervalPathPlanning extends PathFinder {
         if (mobile.isAvailable()) {
             landmarks.add(new Landmark(startTimedPosition.first, startTimedPosition.second, false));
             landmarks.add(new Landmark(endPosition, startTimedPosition.second, false));
-            landmarks.add(new Landmark(chargingPosition, startTimedPosition.second, false));
+            landmarks.add(new Landmark(endPosition, Double.MAX_VALUE, false));
         } else {
             Mission mission = mobile.getMission();
             if (mission.pickedUp()) {
@@ -75,9 +79,17 @@ public class SafeIntervalPathPlanning extends PathFinder {
     }
 
     private State findPath(ArrayList<Landmark> landmarks) {
-        ArrayList<State> starts = this.getStates(landmarks.get(0), true);
+        ArrayList<State> starts = this.getStates(landmarks.get(0), true, mobile.getId());
+
+        if (debug) {
+            System.out.println("landmarks");
+            for (Landmark landmark : landmarks) {
+                System.out.println(landmark.position);
+            }
+        }
 
         if (starts.isEmpty()) {
+            if (debug) System.out.println("starts empty right away");
             return null;
         } else {
             State start = starts.get(0);
@@ -88,13 +100,16 @@ public class SafeIntervalPathPlanning extends PathFinder {
             for (State start : starts) {
                 start.loaded = landmarks.get(i - 1).loaded;
             }
-            ArrayList<State> goals = this.getStates(landmarks.get(i), false);
+            ArrayList<State> goals = this.getStates(landmarks.get(i), false, mobile.getId());
             if (goals.isEmpty()) {
+                if (debug) System.out.println("goals empty");
                 return null;
             }
 
+            if (debug) System.out.println("from " + starts.get(0).position + " to " + goals.get(0).position);
             starts = this.findPaths(starts, goals);
             if (starts.isEmpty()) {
+                if (debug) System.out.println("starts empty");
                 return null;
             }
         }
@@ -128,6 +143,8 @@ public class SafeIntervalPathPlanning extends PathFinder {
 
             if (this.visited.contains(state)) continue;
             if (state.cost.g > this.distance.get(state).g) continue;
+
+            if (debug) System.out.println(state.position + " " + state.cost.g + " " + state.interval);
 
             this.visited.add(state);
 
@@ -165,20 +182,27 @@ public class SafeIntervalPathPlanning extends PathFinder {
 
         for (Edge edge : this.graph.getEdges(parent.position)) {
             if (!edge.canCross(this.mobile)) {
+                if (debug) System.out.println("cannot cross to " + edge.to);
                 continue;
             }
 
             Vector3D position = edge.to;
 
+            if (debug) System.out.println("trying to reach " + position);
+
             Vector2D dist2D = this.reverseResumableAStar.distance(this.mobile, position);
-            if (dist2D == null) continue;
+            if (dist2D == null) {
+                if (debug) System.out.println("no reverse path");
+                continue;
+            }
 
             double edgeCost = this.getEdgeCost(edge.from, edge.to, parent.loaded);
             double h = DoublePrecisionConstraint.round(dist2D.getX() * Mobile.getSpeed(parent.loaded) + dist2D.getY() * Lift.speed);
 
-            ArrayList<Interval> safeIntervals = this.getSafeIntervals(position);
+            ArrayList<Interval> safeIntervals = this.getSafeIntervals(position, mobile.getId());
             for (int intervalId = 0; intervalId < safeIntervals.size(); intervalId++) {
                 Interval safeInterval = safeIntervals.get(intervalId);
+                if (debug) System.out.println(safeInterval);
                 Cost childCost = new Cost(DoublePrecisionConstraint.round(parent.cost.g + edgeCost), h);
 
                 // check if parent and child intervals are compatible with the move
@@ -202,6 +226,7 @@ public class SafeIntervalPathPlanning extends PathFinder {
                     continue;
                 }
 
+                if (debug) System.out.println("added");
                 this.successors.add(child);
             }
         }
@@ -230,10 +255,10 @@ public class SafeIntervalPathPlanning extends PathFinder {
         return path;
     }
 
-    private ArrayList<State> getStates(Landmark landmark, boolean startLandmark) {
+    private ArrayList<State> getStates(Landmark landmark, boolean startLandmark, int id) {
         ArrayList<State> states = new ArrayList<>();
 
-        ArrayList<Interval> safeIntervals = this.getSafeIntervals(landmark.position);
+        ArrayList<Interval> safeIntervals = this.getSafeIntervals(landmark.position, id);
         for (int intervalId = 0; intervalId < safeIntervals.size(); intervalId++) {
             Interval interval = safeIntervals.get(intervalId);
             if (startLandmark) {
@@ -250,12 +275,12 @@ public class SafeIntervalPathPlanning extends PathFinder {
         return states;
     }
 
-    private ArrayList<Interval> getSafeIntervals(Vector3D position) {
+    private ArrayList<Interval> getSafeIntervals(Vector3D position, int id) {
         if (this.safeIntervals.containsKey(position)) {
             return this.safeIntervals.get(position);
         }
 
-        ArrayList<Interval> safeIntervals = this.table.getSafeIntervals(position);
+        ArrayList<Interval> safeIntervals = this.table.getSafeIntervals(position, id);
         this.safeIntervals.put(position, safeIntervals);
 
         return safeIntervals;

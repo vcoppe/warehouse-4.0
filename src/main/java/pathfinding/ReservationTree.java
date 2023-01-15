@@ -19,11 +19,12 @@ public class ReservationTree {
         this.reservations.add(reservation);
     }
 
-    public ArrayList<Interval> getSafeIntervals() {
+    public ArrayList<Interval> getSafeIntervals(int id) {
         ArrayList<Interval> safeIntervals = new ArrayList<>();
         double start = -Double.MAX_VALUE;
 
         for (Reservation reservation : this.reservations) {
+            if (reservation.mobileId == id) continue;
             if (start < reservation.start) {
                 safeIntervals.add(new Interval(start, reservation.start));
                 start = reservation.end;

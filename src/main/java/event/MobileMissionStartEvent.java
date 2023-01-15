@@ -36,9 +36,11 @@ public class MobileMissionStartEvent extends Event {
         this.mobile.start(this.mission);
         this.mission.setExpectedStartTime(this.time);
 
-        this.pathFinder.computePath(this.time, this.mobile);
+        if (this.pathFinder.computePath(this.time, this.mobile) == null) {
+            Thread.dumpStack();
+        }
 
-        double pickupTime = mobile.getPathEndTime();
+        double pickupTime = Math.max(mobile.getPathEndTime(), this.time);
 
         Event event = new MobileMissionPickUpEvent(this.simulation, pickupTime, this.controller, mobile);
         this.simulation.enqueueEvent(event);

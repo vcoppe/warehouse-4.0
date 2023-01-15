@@ -28,7 +28,7 @@ public class ReservationTreeTest extends TestCase {
 
         this.tree.insert(new Reservation(position, 0, 10, 0));
 
-        safeIntervals = this.tree.getSafeIntervals();
+        safeIntervals = this.tree.getSafeIntervals(0);
 
         assertEquals(2, safeIntervals.size());
 
@@ -44,7 +44,7 @@ public class ReservationTreeTest extends TestCase {
 
         this.tree.insert(new Reservation(position, 10, 20, 0));
 
-        safeIntervals = this.tree.getSafeIntervals();
+        safeIntervals = this.tree.getSafeIntervals(0);
 
         assertEquals(2, safeIntervals.size());
 
@@ -60,7 +60,7 @@ public class ReservationTreeTest extends TestCase {
 
         this.tree.insert(new Reservation(position, 30, 40, 0));
 
-        safeIntervals = this.tree.getSafeIntervals();
+        safeIntervals = this.tree.getSafeIntervals(0);
 
         assertEquals(3, safeIntervals.size());
 

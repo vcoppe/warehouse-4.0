@@ -56,7 +56,7 @@ public class ReservationTable {
         this.reservationsById.get(id).add(reservation);
     }
 
-    public ArrayList<Interval> getSafeIntervals(Vector3D position) {
+    public ArrayList<Interval> getSafeIntervals(Vector3D position, int id) {
         if (!this.reservations.containsKey(position)) {
             ArrayList<Interval> safeIntervals = new ArrayList<>();
             safeIntervals.add(new Interval(-Double.MAX_VALUE, Double.MAX_VALUE));
@@ -65,6 +65,6 @@ public class ReservationTable {
 
         ReservationTree reservationTree = this.reservations.get(position);
 
-        return reservationTree.getSafeIntervals();
+        return reservationTree.getSafeIntervals(id);
     }
 }

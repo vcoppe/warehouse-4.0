@@ -4,6 +4,7 @@ import brain.MobileMissionSelector;
 import brain.PalletPositionSelector;
 import brain.TruckDockSelector;
 import observer.Observable;
+import pathfinding.ClosestOpenPositionFinder;
 import pathfinding.PathFinder;
 import pathfinding.SafeIntervalPathPlanning;
 import scheduling.TimeEstimationPropagator;
@@ -21,6 +22,7 @@ public class Controller extends Observable {
     public final TruckDockSelector truckDockSelector;
     public final PalletPositionSelector palletPositionSelector;
     public final TimeEstimationPropagator timeEstimationPropagator;
+    public final ClosestOpenPositionFinder closestOpenPositionFinder;
     private final Configuration configuration;
     private final Warehouse warehouse;
     private final Stock stock;
@@ -52,6 +54,7 @@ public class Controller extends Observable {
         this.trucks = new ArrayList<>();
         this.missions = new ArrayList<>();
         this.productions = new ArrayList<>();
+        this.closestOpenPositionFinder = new ClosestOpenPositionFinder(this);
     }
 
     public Configuration getConfiguration() {
@@ -72,6 +75,10 @@ public class Controller extends Observable {
 
     public PathFinder getPathFinder() {
         return this.pathFinder;
+    }
+
+    public ArrayList<Lift> getLifts() {
+        return this.lifts;
     }
 
     public ArrayList<Dock> getDocks() {
@@ -149,7 +156,7 @@ public class Controller extends Observable {
     }
 
     public ArrayList<Mission> getCompleteSoonStartableMissions() {
-        return this.missions.stream().filter(m -> m.isComplete() && m.getMissionPathMaxLength() <= 1).collect(Collectors.toCollection(ArrayList::new));
+        return this.missions.stream().filter(m -> m.isComplete() && m.getMissionPathMaxLength() <= 5).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public void add(Mission mission) {

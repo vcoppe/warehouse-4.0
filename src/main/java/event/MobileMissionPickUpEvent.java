@@ -50,11 +50,13 @@ public class MobileMissionPickUpEvent extends Event {
 
         this.simulation.enqueueEvent(new ControllerEvent(this.simulation, this.time, this.controller)); // some missions might have become startable after pickup
 
-        this.pathFinder.computePath(this.time, this.mobile);
+        if (this.pathFinder.computePath(this.time, this.mobile) == null) {
+            Thread.dumpStack();
+        }
 
-        double endTime = mobile.getPathEndTime();
+        double endTime = Math.max(this.mobile.getPathEndTime(), this.time);
 
-        Event event = new MobileMissionEndEvent(this.simulation, endTime, this.controller, mobile);
+        Event event = new MobileMissionEndEvent(this.simulation, endTime, this.controller, this.mobile);
         this.simulation.enqueueEvent(event);
     }
 
