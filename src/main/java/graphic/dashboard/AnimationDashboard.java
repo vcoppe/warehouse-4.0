@@ -71,8 +71,8 @@ public class AnimationDashboard {
             DockShape dockShape = new DockShape(
                     dock.getPosition().getX(),
                     dock.getPosition().getY(),
-                    configuration.dockWidth,
-                    configuration.truckDepth
+                    Configuration.dockWidth,
+                    Configuration.truckDepth
             );
             this.add(dockShape);
         }
@@ -180,8 +180,6 @@ public class AnimationDashboard {
                 }
 
                 this.animation.setRate(this.rate);
-                this.animation.play();
-
                 this.animation.setOnFinished((event) -> {
                     this.animation = null;
                     this.animations.clear();
@@ -189,6 +187,9 @@ public class AnimationDashboard {
                         this.play();
                     }
                 });
+                this.animation.play();
+            } else {
+                System.out.println("no events");
             }
         } else {
             this.animation.play();
