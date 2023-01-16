@@ -95,12 +95,17 @@ public class TimeEstimationPropagator {
                     mission.dropConstraint.expectedSatisfactionTime()
             ));
         } else if (mission.started()) {
+            double pathStartTime = mission.getMobile().getPathTime();
             double pathEndTime = mission.getMobile().getPathEndTime();
             double travelTime = this.warehouse.getTravelTime(
                     mission.getStartPosition(),
                     mission.getEndPosition(),
                     true
             );
+            mission.setExpectedStartTime(Math.max(
+                    pathStartTime,
+                    mission.startConstraint.expectedSatisfactionTime()
+            ));
             mission.setExpectedPickUpTime(Math.max(
                     pathEndTime,
                     mission.pickupConstraint.expectedSatisfactionTime()

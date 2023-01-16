@@ -9,6 +9,7 @@ import warehouse.Warehouse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class MobileMissionAnticipationMatchingSelector implements MobileMissionSelector {
 
@@ -29,8 +30,8 @@ public class MobileMissionAnticipationMatchingSelector implements MobileMissionS
 
 
     @Override
-    public ArrayList<Pair<Mobile, Mission>> matchMobileMission(double time, ArrayList<Mobile> mobiles, ArrayList<Mission> /*allM*/missions) {
-        //ArrayList<Mission> missions = allMissions.stream().filter(Mission::canStart).collect(Collectors.toCollection(ArrayList::new));
+    public ArrayList<Pair<Mobile, Mission>> matchMobileMission(double time, ArrayList<Mobile> mobiles, ArrayList<Mission> allMissions) {
+        ArrayList<Mission> missions = allMissions.stream().filter(Mission::canStart).collect(Collectors.toCollection(ArrayList::new));
 
         if (mobiles.size() == 0 || missions.size() == 0) {
             return new ArrayList<>();
@@ -61,10 +62,6 @@ public class MobileMissionAnticipationMatchingSelector implements MobileMissionS
                         offset + this.warehouse.getTravelTime(position, mission.getStartPosition(), false),
                         mission.getExpectedStartTime() - time
                 );
-
-                if (!mission.canStart()) {
-                    cost[i][j] += 1000000;
-                }
             }
         }
 
@@ -97,15 +94,13 @@ public class MobileMissionAnticipationMatchingSelector implements MobileMissionS
                 expr = new GRBLinExpr();
                 int nParents = 0;
 
-                //System.out.println("mission " + mission.getId() + " (startable=" + mission.canStart() + ") depends on");
+                //System.out.println("mission " + mission.getId() + " depends on");
                 for (Mission parent : mission.getPrecedingMissions()) {
                     if (missionIndex.containsKey(parent.getId())) {
-                        //System.out.println("- mission " + parent.getId());
+                        //System.out.println(" - mission " + parent.getId());
                         int k = missionIndex.get(parent.getId());
                         expr.addTerm(1, y[k]);
                         nParents++;
-                    } else {
-                        //System.out.println("- mission " + parent.getId() + " (complete=" + parent.isComplete() + ") (started=" + parent.started() + ")");
                     }
                 }
 
@@ -128,9 +123,23 @@ public class MobileMissionAnticipationMatchingSelector implements MobileMissionS
                     expr.addTerm(1, x[i][j]);
                 }
             }
+            /*GRBLinExpr expr = new GRBLinExpr();
+            for (int j = 0; j < missions.size(); j++) {
+                expr.addTerm(1, y[j]);
+            }*/
             model.addConstr(expr, GRB.GREATER_EQUAL, Math.min(mobiles.size(), missions.size()), "c4");
 
             model.optimize();
+
+            if (model.get(GRB.IntAttr.Status) != GRB.OPTIMAL) {
+                model.computeIIS();
+
+                for (GRBConstr constr : model.getConstrs()) {
+                    if (constr.get(GRB.IntAttr.IISConstr) == 1) {
+                        System.out.println(constr.get(GRB.StringAttr.ConstrName));
+                    }
+                }
+            }
 
             ArrayList<Pair<Mobile, Mission>> matching = new ArrayList<>();
             for (int i = 0; i < mobiles.size(); i++) {
